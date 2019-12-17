@@ -1,0 +1,166 @@
+Introduction
+
+In this document we descrive the XTA format of Uppaal 4.x and the Uppaal Timed Automata Parser library (libutap).
+
+File Formats
+
+UPPAAL 3.4 and 4.x support three different file formats.
+
+The TA file format is the oldest of the three formats. It is a clear text, human readable describtion of a network of timed automata. In this description, an automaton is called a process. The format does not handle templates.
+The XTA format is very similar to the TA format, except that processes are really parameterised templates that can be instantiated to form processes. It is supported by the GUI since version 3.0 and by the verification engine since version 3.4.
+The XML format is an XML comforming version of the XTA format. Elements like templates, locations, transitions and labels are described using tags. This format was introduced in the GUI in version 3.2. As of version 3.4, the XML format is also supported by the verification engine. The GUI uses this format as its native file format. The level of abstraction in the format is chosen so that the format is independent of the actual syntax of declarations, invariants, guards, etc. Thus all labels are simply treated as strings without structure. In a GUI, this is very important, since the user might enter arbitrary text into the label fields and the file format must be able to cope with this situation. Before the introduction of the XML format, the XTA format was used. With this format it was not possible to save syntactically incorrect systems, i.e., if the user made a mistake in the syntax of a label it was not possible to save this systems. The DTD of the XML format can be downloaded here.
+All of the file formats exist in a 3.x and a 4.x version: The 4.x version introduces a non-trivial subset of C and as a consequence we have updated the syntax to look more like C. The parser library supports both 3.x and 4.x files.
+
+Notice that the XML file format might change before UPPAAL 4.x is released.
+
+Syntax
+
+The 4.x version of the syntax has been enriched with a number of C constructs. Infact, it is easier to state which parts of C will not be allowed in UPPAAL. Pointers and recursive functions will not be allowed. Data types are limited to UPPAAL style bounded integers, booleans, arrays and structs (besides the usual clock, chan and constant types). The feature to specify the bit-width of fields in a struct will not be supported. Enumeration and union types are not supported. The goto statement is not allowed. The use of the comma expression is limited to certain special cases. The bitwise negation operator is not allowed (it is incompatible with UPPAAL's bounded integers). For booleans, the C++ bool data type is supported. Also, C++ style reference types will be supported in function parameters. All other features of C are allowed.
+
+The new syntax is not compatible with the syntax of UPPAAL 3.x. Requiring backwards compatibility made the language ambiguous and was dropped. Instead, UPPAAL 4.x will support the old syntax via an option.
+
+The following modifications to existing language elements where made:
+
+Initialisers.
+The use of := as the initialiser symbol has been deprecated in favor of C style = assignments, i.e. instead of int x := 2; you write int x = 2;.
+Constants.
+The use of the const keyword as a type is deprecated. Constants should be declared as constant integers, i.e. instead of const i 2; you write const int i = 2;.
+Process Parameter Declaration.
+Uses C++ style parameter declarations, i.e. instead of (int i, j; clock x) you now write (int &i, int &j, clock &x).
+Invariants and Guards.
+Invariants and guards are now C expression (for invariants, the type of this expression is limited, i.e. only upper bounds on clocks and clock differences are allowed) and the comma separated list is no longer supported, i.e., instead of x < 4, y < 2 you write x < 4 && y < 2. There will be limited support for disjunctions (it will be limited in such a way that splitting of zones is avoided).
+Assignments.
+The use of := as the assignment symbol has been deprecated in favor of the C-style = symbol, i.e. instead of i := 2 you write i = 2.
+Process Instantiations.
+The use of := as the instantiation symbol has been deprecated in favor of the C-style = symbol.
+BNF
+
+The BNF is split into an BNF for the old syntax and one for the new syntax (although some productions in the new syntax are also used in the old syntax).
+
+The lexical analyser used depends on the syntax parsed. The keywords 'true', 'false', 'for', 'while', 'do', 'break', 'continue', 'switch', 'if', 'else', 'case', 'default', 'return', 'typedef', and 'struct' are not recognised by the lexical analyser for the old syntax. Also 'const' is not recognised as a prefix. Finally, the ASSIGNMENT token in the old syntax is ':=' whereas it is '=' in the new syntax.
+
+BNF for the 3.x TA/XTA format
+
+          OldXTA ::= <OldDeclaration> * <Instantiation>* <System>  
+  OldDeclaration ::= <VariableDecl> | <OldConstDecl> | <OldProcDecl>
+    OldConstDecl ::=  'const' <OldConstDeclId> (',' <OldConstDeclId>)* ';'
+  OldConstDeclId ::= ID <ArrayDecl>* [<Initialiser>]
+
+     OldProcDecl ::= 'process' ID [ <OldProcParams> ] '{' <OldProcBody> '}'
+   OldProcParams ::= '(' [ <OldProcParam> (';' <OldProcParam>)* ] ')'
+    OldProcParam ::= <Type> ID <ArrayDecl>* (',' ID <ArrayDecl>*)*
+                  |  'const' ID <ArrayDecl>* (',' ID <ArrayDecl>*)*
+
+     OldProcBody ::= (<VarDecl> | <OldConstDecl>)* 
+                     <OldStates> [<Commit>] [<Urgent>] <Init> [<OldTransitions>]
+
+       OldStates ::= 'state' <OldStateDecl> (',' <OldStateDecl>)* ';'
+    OldStateDecl ::= ID [ '{' <OldInvariant> '}' ]
+    OldInvariant ::= <Expression> (',' <Expression>)*
+                                
+  OldTransitions ::= 'trans' <OldTransition> (',' <OldTransitionOpt>)* ';'
+
+   OldTransition ::= ID '->' ID <OldTransBody>
+OldTransitionOpt ::= OldTransition | '->' ID <OldTransBody>
+    OldTransBody ::= '{' [<OldGuard>] [<Sync>] [<Assign>] '}'
+
+        OldGuard ::= 'guard' <Expression> (',' <Expression>)* ';'
+BNF for the 4.x XTA format
+
+            XTA ::= <Declaration>* <Instantiation>* <System>  
+    Declaration ::= <FunctionDecl> | <VariableDecl> | <TypeDecl> | <ProcDecl>
+  Instantiation ::= ID ASSIGNMENT ID '(' <ArgList> ')' ';'
+         System ::= 'system' ID (',' ID)* ';'  
+
+  ParameterList ::= '(' [ <Parameter> ( ',' <Parameter> )* ] ')'
+      Parameter ::= <Type> [ '&' ] ID <ArrayDecl>*
+
+   FunctionDecl ::= <Type> ID <ParameterList> <Block>
+
+       ProcDecl ::= 'process' ID <ParameterList> '{' <ProcBody> '}'
+       ProcBody ::= (<FunctionDecl> | <VariableDecl> | <TypeDecl>)*
+                    <States> [<Commit>] [<Urgent>] <Init> [<Transitions>]
+
+         States ::= 'state' <StateDecl> (',' <StateDecl>)* ';'
+      StateDecl ::= ID [ '{' <Expression> '}' ]
+                                
+         Commit ::= 'commit' StateList ';'
+         Urgent ::= 'urgent' StateList ';'
+      StateList ::= ID (',' ID)*
+
+           Init ::= 'init' ID ';'
+
+    Transitions ::= 'trans' <Transition> (',' <TransitionOpt>)* ';'
+     Transition ::= ID '->' ID <TransitionBody>
+  TransitionOpt ::= Transition | '->' ID <TransitionBody> 
+ TransitionBody ::= '{' [<Guard>] [<Sync>] [<Assign>] '}'
+
+          Guard ::= 'guard' <Expression> ';'
+           Sync ::= 'sync' <Expression> ('!' | '?') ';'
+         Assign ::= 'assign' <ExprList> ';'
+
+       TypeDecl ::= 'typedef' <Type> <TypeIdList> (',' <TypeIdList>)* ';'
+     TypeIdList ::= ID <ArrayDecl>*
+BNF for variable declarations
+
+   VariableDecl ::= <Type> <DeclId> (',' <DeclId>)* ';'
+         DeclId ::= ID <ArrayDecl>* [ ASSIGNMENT <Initialiser> ]
+    Initialiser ::= <Expression>
+                 |  '{' <FieldInit> ( ',' <FieldInit> )* '}'
+      FieldInit ::= [ ID ':' ] <Initialiser>
+
+      ArrayDecl ::= '[' <Expression> ']'
+
+           Type ::= <Prefix> ID [ <Range> ]
+                 |  <Prefix> 'struct' '{' <FieldDecl>+ '}'
+      FieldDecl ::= <Type> <FieldDeclId> (',' <FieldDeclId>)* ';'
+    FieldDeclId ::= ID <ArrayDecl>*
+
+         Prefix ::= ( [ 'urgent' ] [ 'broadcast' ] | ['const'] )
+          Range ::= '[' <Expression> ',' <Expression> ']'
+BNF for statements
+
+    Block ::= '{' ( <VariableDecl> | <TypeDecl> )* <Statement>* '}'
+Statement ::= <Block>
+           |  ';'
+           |  <Expression> ';'
+           |  'for' '(' <ExprList> ';' <ExprList> ';' 
+                   <ExprList> ')' <Statement>
+           |  'while' '(' <ExprList> ')' <Statement>
+           |  'do' <Statement> 'while' '(' <ExprList> ')' ';'
+           |  'if' '(' <ExprList> ')' <Statement> 
+                   [ 'else' <Statement> ]
+           |  'break' ';'
+           |  'continue' ';'
+           |  'switch' '(' <ExprList> ')' '{' <Case>+ '}'
+           |  'return' ';'
+           |  'return' <Expression> ';'
+Case      ::= 'case' <Expression> ':' <Statement>*
+           |  'default' ':' <Statement>*
+BNF for expressions
+
+   ExprList ::= <Expression> ( ',' <Expression> )*
+ Expression ::= ID
+            |   NAT
+            |   'true' | 'false'
+            |   ID '(' <ArgList> ')'
+            |   <Expression> '[' <Expression> ']'
+            |   '(' <Expression> ')' 
+            |   <Expression> '++' | '++' <Expression>
+            |   <Expression> '--' | '--' <Expression>
+            |   <Expression> <AssignOp> <Expression>
+            |   <UnaryOp> <Expression>
+            |   <Expression> <Rel> <Expression>
+            |   <Expression> <BinIntOp> <Expression>
+            |   <Expression> <BinBoolOp> <Expression>
+            |   <Expression> '?' <Expression> ':' <Expression>
+            |   <Expression> '.' ID>
+
+   AssignOp ::= ASSIGNMENT | '+=' | '-=' | '*=' | '/=' | '%=' 
+            | '|=' | '&=' | '^=' | '<<=' | '>>='
+    UnaryOp ::= '-' | '!' 
+        Rel ::= '<' | '<=' | '==' | '!=' | '>=' | '>'
+   BinIntOp ::= '+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '<<' | '>>' 
+  BinBoolOp ::= '&&' | '||'
+    ArgList ::= [ <Expression> ( ',' <Expression> )* ]
+Last updated .

@@ -1,0 +1,7 @@
+The package is designed based on the command design pattern (https://en.wikipedia.org/wiki/Command_pattern), its different classes represent the different entities of this pattern.
+
+The class UppaalContext implements the receiver of the command design pattern, it provides all methods to modify the uppaal context composed of a document, a list of queries and an engine.
+
+The class CommandHandler implements the invoker of the command design pattern. It simply receives a command as argument and calls the corresponding method to execute it. Depending on the active mode it will block the access to certain commands to prevent unwanted behaviours, for instance the 'load' command will only be available in edition mode, the 'select' in simulation mode or the 'check' in checking mode.
+
+The class UppaalConsole implements the client of the command design pattern. It runs a user session, starting by connecting the uppaal context, continuing by reading commands from the console and finishing by disconnecting the uppaal context. the UppaalConsole will also be responsible for displaying the result messages returned by each handler or the catched exceptions that they produced.
