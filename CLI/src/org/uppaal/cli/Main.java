@@ -36,18 +36,27 @@ public class Main
 {
     private boolean done = false;
     private PrintStream out = null;
-    private Engine engine = null;    
+    private Engine engine = null;
+    private String version = null;
     private Document doc = null;
     private UppaalSystem system = null;
     
     public static File getUppaalPath(){
         String cp = System.getProperty("java.class.path");
+        if (cp == null || cp.isBlank()) {
+            System.err.println("Error: java.class.path is not set, cannot find uppaal.jar");
+            System.exit(1);
+        }
         String uppaal = null;
         for (String path: cp.split(":"))
             if (path.endsWith("uppaal.jar")) {
                 uppaal = path;
                 break;
             }
+        if (uppaal == null) {
+            System.err.println("Error: uppaal.jar not found in the java.class.path.");
+            System.exit(1);
+        }
         return new File(uppaal).getParentFile();
     }
     
@@ -70,6 +79,7 @@ public class Main
         engine.setServerHost("localhost");
         engine.setConnectionMode(EngineStub.BOTH);
         engine.connect();
+        version = engine.getVersion();
     }
     public UppaalSystem compile(Engine engine, Document doc)
         throws EngineException, IOException
@@ -265,6 +275,9 @@ public class Main
     }
     public void interact(String prompt, InputStream input) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        out.println("Welcome to Uppaal command line interface.");
+        out.println(version);
+        out.println("Type \"help\" for help.");
         while (!done) {
             out.print(prompt);
             out.flush();
