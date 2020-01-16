@@ -1,0 +1,140 @@
+start edition | simulation | verification
+
+Start the specified mode.
+Trying to start simulation or verification without a valid document will cause an error.
+
+import ( document | trace | templates | queries ) FILENAME
+
+Import a document, a trace, a list of templates or queries from a specific file.
+FILENAME is the path to the input file.
+A selection menu will be started for importing templates.
+
+export ( document | trace | templates | queries ) FILENAME
+
+Export a document, a trace, a list of templates or of queries to a specific file.
+FILENAME is the path to the output file.
+
+clear [ document | queries | functions | vars | consts | urgent? chan ]
+
+Clear the current document or specified list of statements.
+If no argument is specified then everything will be cleared.
+
+declare type TYPEDEC NAME
+	| var TYPE NAME VALUE? 
+	| const TYPE NAME VALUE 
+	| function TYPE NAME (PARAMETERS?)
+	| urgent? chan ( NAME \[ CONST \] , )* NAME \[ CONST ]
+	| process NAME (PARAMETERS?)
+	| system ( NAME , )* NAME
+	| query CONST
+	| option NAME VALUE
+
+Declare a statement.
+TYPEDEC can be either int, array or struct.
+NAME can be any string of alphanumeric characters extended with _.
+TYPE can be any declared or preexisting type.
+VALUE must be a value belonging to TYPE.
+PARAMETERS is a list of parameters (TYPE NAME) separated by comas.
+CONST can be a numeric value or the name of a declared constant.
+
+A command line editor will be started for long declarations (struct, function, process, query).
+This declaration can either be saved with ^S or canceled with ^X.
+Saving a wrong declaration will restart the editor with its text and an error summary.
+
+replace type TYPEDEC NAME
+	| var TYPE NAME VALUE? 
+	| const TYPE NAME VALUE 
+	| function TYPE NAME (PARAMETERS?)
+	| urgent? chan ( NAME \[ CONST \] , )* NAME \[ CONST ]
+	| process NAME (PARAMETERS?)
+	| system ( NAME , )* NAME
+	| query CONST [ formula | comment ]
+	| option NAME VALUE
+
+replace a statement.
+TYPEDEC can be either int, array or struct.
+NAME can be any string of alphanumeric characters extended with _.
+TYPE can be any declared or preexisting type.
+VALUE must be a value belonging to TYPE.
+PARAMETERS is a list of parameters (TYPE NAME) separated by comas.
+CONST can be a numeric value or the name of a declared constant.
+
+A command line editor will be started for long declarations (struct, function, process, query).
+This declaration can either be saved with ^S or canceled with ^X.
+Saving a wrong declaration will restart the editor with its text and an error summary.
+
+remove type NAME
+	| var NAME
+	| const NAME
+	| function NAME
+	| urgent? chan NAME
+	| process NAME
+	| system
+	| query CONST
+	| option NAME
+
+Remove a statement and every statement that depends on it.
+NAME can be any alphanumerical string extended with _.
+
+show processes 
+	| variables 
+	| clocks 
+	| differences 
+	| transitions
+	| queries
+	| options
+	| trace
+	| process NAME 
+	| variable NAME 
+	| clock NAME 
+	| difference NAME - NAME
+	| transition NAME
+	| query CONST
+	| option CONST
+
+Show the current state of any entity or list of entities.
+NAME is any alphanumeric string extended with _.
+
+Show trace will start the exploration of the trace and display its current state.
+It is possible to navigate between states and transitions and to select them.
+
+select state NAME | transition NAME | query NAME
+
+Select a state, a transition or a query.
+NAME is any alphanumeric string extended with _.
+
+previous CONST?
+
+In trace exploration mode backtrack of CONST states.
+CONST is any numeric string, 1 if omitted.
+
+next CONST?
+
+In trace exploration mode jump forward of CONST states.
+CONST is any numeric string, 1 if omitted.
+
+finish
+
+finish the exploration of the trace (^D will also work).
+
+unselect query CONST
+
+Unselect a certain query.
+CONST can be any numerical string.
+
+check CONST?
+
+Check the provided query against the model.
+If no query number is provided then the list of all selected queries will be checked.
+CONST can be any numerical string.
+
+help [ MODE | COMMAND ]
+
+Display the help for a specific mode or command.
+If no argument is provided then a list of all available commands will be displayed.
+MODE can be either edition, simulation or verification.
+COMMAND can be every available command, type help for a complete list.
+
+exit
+
+Terminate the uppaal command line.

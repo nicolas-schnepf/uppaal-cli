@@ -1,0 +1,92 @@
+@startuml
+
+class UppaalConsole {
+- console : Console
++ run () : void
+- readDeclaration(command:string):string
+}
+
+class UppaalContext {
+- document : Document
+- queries : list<Query>
+- engine : Engine
+-trace : Trace
+
++ getDocument () : Document
++ newDocument () : void
++ getQueryIterator () : iterator<Query>
++ getQueryNumber () : integer
++ dropQueries () : void
++ connectEngine () : void
++ getEngine () : Engine
++ disconnectEngine () : void
++ getTrace() : Trace
+}
+
+package io {
+class CommandParser {
++ parse(command:string):Comm
+}
+
+class ResultPrinter {
++ printResult (result:CommandResult): void
+}
+}
+
+package command {
+class Command {
+-code : CommandCode
+- object : ObjectCode
+- arguments : list<string>
+
++getCode(): CommandCode
++setCode (code:CommandCode):void
++getObject():ObjectCode
++setObject(object:ObjectCode):void
++getArgumentNumber():integer
++getArgument(idx:integer):string
++addArgument(arg:string):void
++clear():void
+}
+
+class CommandResult {
+-code : ReturnCode
+- object : ObjectCode
+- arguments : list<string>
+
++getCode(): ReturnCode
++setCode (code:ReturnCode):void
++getObject():ObjectCode
++setObject(object:ObjectCode):void
++getArgumentNumber():integer
++getArgument(idx:integer):string
++addArgument(arg:string):void
++clear():void
+}
+
+enum CommandCode {
+}
+
+enum ObjectCode {
+}
+
+enum ReturnCode {
+}
+}
+
+package handler {
+class CommandHandler {
+- active_mode:HandlerCode
++ handle(command:Command): CommandResult
+}
+
+enum HandlerCode {
+}
+}
+
+UppaalConsole -LEFT- UppaalContext
+UppaalConsole -DOWN- CommandParser
+UppaalConsole -DOWN- ResultPrinter
+UppaalConsole -RIGHT- CommandHandler
+
+@enduml
