@@ -1,0 +1,16 @@
+@startuml
+
+participant  user <<(C,#ADD1B2)>>
+participant  ConsoleHandler <<(C,#ADD1B2)>>
+participant  CommandHandler <<(C,#ADD1B2)>>
+
+loop : (line = ConsoleHandler.accept()) != null)
+ConsoleHandler -> CommandHandler : result := handle(command)
+alt : result is correct
+ConsoleHandler -> ConsoleHandler : display_result(result)
+else :
+ConsoleHandler -> ConsoleHandler : display_errors (result)
+end
+end
+
+@enduml

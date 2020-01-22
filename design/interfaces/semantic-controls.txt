@@ -1,0 +1,106 @@
+start editor | simulator | verifier
+
+The mode should be a valid one
+
+import ( document | trace | templates | queries ) FILENAME
+
+The filename should exist.
+The content of the file should respect the type of entity to be loaded.
+
+export ( document | trace | templates | queries ) FILENAME
+
+The path to the file should be valid.
+
+clear [ document | queries | functions | vars | consts | urgent? chan ]
+
+nothing special
+
+declare type TYPEDEC NAME
+	| var TYPE NAME VALUE? 
+	| const TYPE NAME VALUE 
+	| function TYPE NAME (PARAMETERS?)
+	| urgent? chan ( NAME \[ CONST \] , )* NAME \[ CONST ]
+	| template NAME (PARAMETERS?)
+	| system ( NAME , )* NAME
+	| query CONST
+	| option NAME VALUE
+
+The declared statement should not be already declared.
+Its syntax should respect the XTA format.
+
+replace type TYPEDEC NAME
+	| var TYPE NAME VALUE? 
+	| const TYPE NAME VALUE 
+	| function TYPE NAME (PARAMETERS?)
+	| urgent? chan ( NAME \[ CONST \] , )* NAME \[ CONST ]
+	| template NAME (PARAMETERS?)
+	| system ( NAME , )* NAME
+	| query CONST [ formula | comment ]
+	| option NAME VALUE
+
+The statement to replace should already have been declared.
+Its new declaration should respect the XTA format.
+
+remove type NAME
+	| var NAME
+	| const NAME
+	| function NAME
+	| urgent? chan NAME
+	| template NAME
+	| system
+	| query CONST
+	| option NAME
+
+The statement to remove should exist.
+
+show templates 
+	| variables 
+	| clocks 
+	| transitions
+	| queries
+	| options
+	| trace
+	| template NAME 
+	| variable NAME 
+	| clock NAME 
+	| constraints NAME - NAME
+	| transition NAME
+	| query CONST
+	| option CONST
+	| NAME
+	| NAME - NAME
+
+The statement to show should exist.
+
+select state NAME | transition NAME | query NAME
+
+The number of the element should be between 0 and the maximal number of entities of the specified sort.
+
+previous CONST?
+
+CONST should be between 1 and the maximal number of states between the origin and the current state.
+
+next CONST?
+
+CONST should be between 1 and the number of states before the end of the trace.
+
+finish
+
+Nothing particular.
+
+unselect query CONST
+
+CONST should be between 1 and the number of queries.
+It should refer to a selected query.
+
+check CONST?
+
+CONST should be between 1 and the number of declared queries.
+
+help [ MODE | COMMAND ]
+
+The mode or the command should be a valid one.
+
+exit
+
+Terminate the uppaal command line.

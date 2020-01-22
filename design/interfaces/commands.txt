@@ -1,4 +1,4 @@
-start edition | simulation | verification
+start editor | simulator | verifier
 
 Start the specified mode.
 Trying to start simulation or verification without a valid document will cause an error.
@@ -24,7 +24,7 @@ declare type TYPEDEC NAME
 	| const TYPE NAME VALUE 
 	| function TYPE NAME (PARAMETERS?)
 	| urgent? chan ( NAME \[ CONST \] , )* NAME \[ CONST ]
-	| process NAME (PARAMETERS?)
+	| template NAME (PARAMETERS?)
 	| system ( NAME , )* NAME
 	| query CONST
 	| option NAME VALUE
@@ -37,7 +37,7 @@ VALUE must be a value belonging to TYPE.
 PARAMETERS is a list of parameters (TYPE NAME) separated by comas.
 CONST can be a numeric value or the name of a declared constant.
 
-A command line editor will be started for long declarations (struct, function, process, query).
+A command line editor will be started for long declarations (struct, function, template, query).
 This declaration can either be saved with ^S or canceled with ^X.
 Saving a wrong declaration will restart the editor with its text and an error summary.
 
@@ -46,7 +46,7 @@ replace type TYPEDEC NAME
 	| const TYPE NAME VALUE 
 	| function TYPE NAME (PARAMETERS?)
 	| urgent? chan ( NAME \[ CONST \] , )* NAME \[ CONST ]
-	| process NAME (PARAMETERS?)
+	| template NAME (PARAMETERS?)
 	| system ( NAME , )* NAME
 	| query CONST [ formula | comment ]
 	| option NAME VALUE
@@ -59,7 +59,7 @@ VALUE must be a value belonging to TYPE.
 PARAMETERS is a list of parameters (TYPE NAME) separated by comas.
 CONST can be a numeric value or the name of a declared constant.
 
-A command line editor will be started for long declarations (struct, function, process, query).
+A command line editor will be started for long declarations (struct, function, template, query).
 This declaration can either be saved with ^S or canceled with ^X.
 Saving a wrong declaration will restart the editor with its text and an error summary.
 
@@ -68,7 +68,7 @@ remove type NAME
 	| const NAME
 	| function NAME
 	| urgent? chan NAME
-	| process NAME
+	| template NAME
 	| system
 	| query CONST
 	| option NAME
@@ -76,21 +76,22 @@ remove type NAME
 Remove a statement and every statement that depends on it.
 NAME can be any alphanumerical string extended with _.
 
-show processes 
+show templates 
 	| variables 
 	| clocks 
-	| differences 
 	| transitions
 	| queries
 	| options
 	| trace
-	| process NAME 
+	| template NAME 
 	| variable NAME 
 	| clock NAME 
-	| difference NAME - NAME
+	| constraints NAME - NAME
 	| transition NAME
 	| query CONST
 	| option CONST
+	| NAME
+	| NAME - NAME
 
 Show the current state of any entity or list of entities.
 NAME is any alphanumeric string extended with _.

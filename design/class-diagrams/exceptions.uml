@@ -1,0 +1,71 @@
+@startuml
+
+enum ExceptionCode {
+}
+
+class ConsoleException {
+# command:CommandCode
+#message : string
+#code:ExceptionCode
+
++getCommandCode():CommandCode
++setCommandCode(command_code:CommandCode):void
++getMessage() : string
++setMessage (message:string):void
++getCode():ExceptionCode
+}
+
+class WrongModeException {
+-mode : HandlerCode
+
++getHandlerCode():HandlerCode
++setHandlerCode(mode_code:HandlerCode):void
+}
+
+class UnknownCommandException {
+}
+
+class WrongCommandException {
+- modes : list<HandlerCode>
+
++getModeNumber():integer
++getMode(index:integer):HandlerCode
++addMode(code:HandlerCode):void
++clearModes():void
+}
+
+class WrongObjectException {
+- object_code:ObjectCode
+
++ getObjectCode():ObjectCode
++setObjectCode(object_code:ObjectCode):void
+}
+
+class MissingArgumentException {
+}
+
+class EditorException {
+-text : string
+
++getText():string
++setText(text:string):void
+}
+
+class MenuException {
+- menu_items : list<string)
+
++getItemNumber():integer
++getItem(index:integer):string
++addItem(item:string):void
++clear():void
+}
+
+WrongModeException -DOWN-|> ConsoleException
+UnknownCommandException -DOWN-> ConsoleException
+WrongCommandException -DOWN-> ConsoleException
+WrongArgumentException -DOWN-> ConsoleException
+MissingArgumentException -DOWN-> ConsoleException
+EditorException -DOWN-> ConsoleException
+MenuException -DOWN-> ConsoleException
+
+@enduml

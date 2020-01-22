@@ -1,0 +1,10 @@
+The command line interface supports three kinds of screen:
+
+- normal screen:
+simply display the prompt with the active mode, accept commands from user and display errors if any;
+
+- edition screen:
+Show an edition text area, accept text from the user and display compilation errors (if any);
+
+- menu screen:
+display a list of possible choices and accepts user selection commands.
