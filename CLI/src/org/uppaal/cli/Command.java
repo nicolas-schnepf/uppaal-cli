@@ -11,6 +11,16 @@ package org.uppaal.cli;
  */
 public class Command
 {
+public static enum CommandCode {
+ADD, IMPORT, EXPORT
+}
+
+/*** enumeration of object codes */
+
+public static enum ObjectCode {
+DOCUMENT, QUERIES, TEMPLATES, QUERY, TEMPLATE;
+}
+
     private String command = null;
     private String args = null;
     public Command(String line) {
