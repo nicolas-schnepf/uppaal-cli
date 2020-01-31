@@ -1,8 +1,13 @@
+CLASSPATH = src:../uppaal-4.1.24/lib/model.jar:../uppaal-4.1.24/uppaal.jar:../jledit-0.2.2/jline.jar:../jledit-0.2.2/core.jar
+
 CLI = \
-src/org/uppaal/cli/Command.java
+src/org/uppaal/cli/Command.java \
+src/org/uppaal/cli/CommandResult.java \
+src/org/uppaal/cli/Context.java
 
 HANDLERS = \
-src/org/uppaal/cli/handlers/Handler.java
+src/org/uppaal/cli/handlers/Handler.java \
+src/org/uppaal/cli/handlers/AbstractHandler.java
 
 EXCEPTIONS = \
 src/org/uppaal/cli/exceptions/ConsoleException.java \
@@ -12,17 +17,18 @@ src/org/uppaal/cli/exceptions/WrongCommandException.java \
 src/org/uppaal/cli/exceptions/WrongObjectException.java \
 src/org/uppaal/cli/exceptions/MissingArgumentException.java \
 src/org/uppaal/cli/exceptions/EditorException.java \
-src/org/uppaal/cli/exceptions/MenuException.java
+src/org/uppaal/cli/exceptions/MenuException.java \
+src/org/uppaal/cli/exceptions/WrongArgumentException.java
 
 build: cli handlers exceptions
 clean: $(CLI:.java=.class) $(HANDLERS:.java=.class) $(EXCEPTIONS:.java=.class)
 	find . -name \*.class -exec rm {} \;
 
 cli: $(CLI)
-	javac $(CLI)
+	javac -cp $(CLASSPATH) $(CLI)
 
 handlers : $(HANDLERS)
-	javac $(HANDLERS)
+	javac -cp $(CLASSPATH) $(HANDLERS)
 
 exceptions: cli $(EXCEPTIONS)
-	javac -cp src $(EXCEPTIONS)
+	javac -cp $(CLASSPATH) $(EXCEPTIONS)
