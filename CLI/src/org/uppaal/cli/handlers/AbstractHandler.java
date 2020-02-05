@@ -12,11 +12,20 @@ import org.uppaal.cli.Context;
 
 public abstract class AbstractHandler implements Handler {
 protected Context context;
+protected final Command.CommandCode[] accepted_commands;
 private WrongArgumentException wrong_argument_exception;
 private MissingArgumentException missing_argument_exception;
 
-public AbstractHandler (Context context) {
-	this.context = null;
+/**
+* protected constructor of an abstract handler
+* initialize it from a context and an array of accepted commands
+* @param context the context that will be used by this handler
+* @param accepted_commands the array of command codes accepted by this handler
+*/
+
+protected AbstractHandler (Context context, Command.CommandCode[] accepted_commands) {
+	this.context = context;
+	this.accepted_commands = accepted_commands;
 	this.missing_argument_exception = new MissingArgumentException();
 	this.wrong_argument_exception = new WrongArgumentException();
 }
@@ -51,5 +60,25 @@ protected void throwWrongArgumentException (Command.CommandCode command_code, St
 	this .wrong_argument_exception.setCommandCode(command_code);
 	this.wrong_argument_exception.setMessage(argument);
 	throw this.wrong_argument_exception;
+}
+
+@Override
+public Command.CommandCode[] getAcceptedCommands() {
+	return this.accepted_commands;
+}
+
+@Override
+public boolean acceptCommand (Command command) {
+	Command.CommandCode code= command.getCommandCode();
+boolean 	found = false;
+
+	for (int i=0; i<this.accepted_commands.length;i++) {
+		if (code == this.accepted_commands[i]) {
+			found = true;
+			break;
+		}
+	}
+
+	return found;
 }
 }

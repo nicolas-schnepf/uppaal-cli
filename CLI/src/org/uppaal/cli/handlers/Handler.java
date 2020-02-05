@@ -27,5 +27,12 @@ public CommandResult handle (Command command) ;
 * return the list of commands handled by this handler
 * @return the list of commands used by this handler
 */
-public Command.CommandCode[] getCommandList();
+public Command.CommandCode[] getAcceptedCommands();
+
+/**
+* check if a command is accepted by a handler
+* @param command the command to test
+* @return true if and only if the provided command code is accepted by the handler
+*/
+public boolean acceptCommand(Command command);
 }

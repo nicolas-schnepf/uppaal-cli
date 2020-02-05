@@ -3,7 +3,9 @@ CLASSPATH = src:../uppaal-4.1.24/lib/model.jar:../uppaal-4.1.24/uppaal.jar:../jl
 CLI = \
 src/org/uppaal/cli/Command.java \
 src/org/uppaal/cli/CommandResult.java \
-src/org/uppaal/cli/Context.java
+src/org/uppaal/cli/Context.java \
+src/org/uppaal/cli/ConsoleManager.java \
+src/org/uppaal/cli/Main.java
 
 HANDLERS = \
 src/org/uppaal/cli/handlers/Handler.java \
@@ -21,6 +23,10 @@ src/org/uppaal/cli/exceptions/MenuException.java \
 src/org/uppaal/cli/exceptions/WrongArgumentException.java
 
 build: cli handlers exceptions
+
+run: 
+	java -cp $(CLASSPATH) org.uppaal.cli.Main
+
 clean: $(CLI:.java=.class) $(HANDLERS:.java=.class) $(EXCEPTIONS:.java=.class)
 	find . -name \*.class -exec rm {} \;
 

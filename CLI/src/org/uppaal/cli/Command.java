@@ -22,6 +22,7 @@ DOCUMENT, QUERIES, TEMPLATES, QUERY, TEMPLATE;
 }
 
     private String command = null;
+    private CommandCode command_code;
     private String args = null;
     public Command(String line) {
         int pos = 0;
@@ -41,6 +42,9 @@ DOCUMENT, QUERIES, TEMPLATES, QUERY, TEMPLATE;
     public String getCommand() {
         return command;
     }
+public CommandCode getCommandCode () {
+	return this.command_code;
+}
     public String getArgs(){
         return args;
     }
