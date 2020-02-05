@@ -35,4 +35,10 @@ public Command.CommandCode[] getAcceptedCommands();
 * @return true if and only if the provided command code is accepted by the handler
 */
 public boolean acceptCommand(Command command);
+
+/**
+* @return the mode or current mode attached to this handler
+*/
+
+public HandlerCode getMode();
 }

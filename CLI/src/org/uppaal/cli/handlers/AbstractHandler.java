@@ -11,8 +11,9 @@ import org.uppaal.cli.Command;
 import org.uppaal.cli.Context;
 
 public abstract class AbstractHandler implements Handler {
+protected CommandResult command_result;
 protected Context context;
-protected final Command.CommandCode[] accepted_commands;
+protected Command.CommandCode[] accepted_commands;
 private WrongArgumentException wrong_argument_exception;
 private MissingArgumentException missing_argument_exception;
 
@@ -23,9 +24,10 @@ private MissingArgumentException missing_argument_exception;
 * @param accepted_commands the array of command codes accepted by this handler
 */
 
-protected AbstractHandler (Context context, Command.CommandCode[] accepted_commands) {
+protected AbstractHandler (Context context) {
 	this.context = context;
 	this.accepted_commands = accepted_commands;
+	this.command_result = new CommandResult();
 	this.missing_argument_exception = new MissingArgumentException();
 	this.wrong_argument_exception = new WrongArgumentException();
 }
@@ -69,11 +71,11 @@ public Command.CommandCode[] getAcceptedCommands() {
 
 @Override
 public boolean acceptCommand (Command command) {
-	Command.CommandCode code= command.getCommandCode();
+	Command.CommandCode command_code= command.getCommandCode();
 boolean 	found = false;
 
-	for (int i=0; i<this.accepted_commands.length;i++) {
-		if (code == this.accepted_commands[i]) {
+	for (Command.CommandCode code:this.accepted_commands) {
+		if (code == command_code) {
 			found = true;
 			break;
 		}

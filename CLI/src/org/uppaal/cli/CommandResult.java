@@ -12,7 +12,7 @@ public class CommandResult {
 */
 
 public static enum ResultCode {
-OK, FILE_NOT_FOUND, OBJECT_NOT_FOUND, EDIT, MENU
+OK, FILE_NOT_FOUND, OBJECT_NOT_FOUND, EDIT, MENU, EXIT, MODE_CHANGED
 }
 
 // code of the executed command

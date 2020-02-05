@@ -36,10 +36,12 @@ public class Main
 {
 public static void main(String[] args) {
 	try {
-		ConsoleManager console_manager = new ConsoleManager();
+		Context context = new Context();
+		ConsoleManager console_manager = new ConsoleManager(context);
 		console_manager.run();
-	} catch (IOException e) {
+	} catch (Exception e) {
 		System.err.println("Unable to start the console interface.");
+		e.printStackTrace();
 		System.exit(1);
 	}
 }

@@ -9,7 +9,11 @@ src/org/uppaal/cli/Main.java
 
 HANDLERS = \
 src/org/uppaal/cli/handlers/Handler.java \
-src/org/uppaal/cli/handlers/AbstractHandler.java
+src/org/uppaal/cli/handlers/AbstractHandler.java \
+src/org/uppaal/cli/handlers/CommandHandler.java \
+src/org/uppaal/cli/handlers/EditorHandler.java \
+src/org/uppaal/cli/handlers/SimulatorHandler.java \
+src/org/uppaal/cli/handlers/VerifierHandler.java
 
 EXCEPTIONS = \
 src/org/uppaal/cli/exceptions/ConsoleException.java \
