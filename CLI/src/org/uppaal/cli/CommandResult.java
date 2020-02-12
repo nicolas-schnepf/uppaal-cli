@@ -34,6 +34,7 @@ private StringBuffer arguments;
 * public constructor of a command result
 */
 public CommandResult() {
+	this.result_code = ResultCode.OK;
 	this.arguments = new StringBuffer();
 }
 

@@ -11,6 +11,7 @@ public abstract class ConsoleException extends RuntimeException {
 /** exception codes */
 
 public static enum ExceptionCode {
+UNKNOWN_MODE,
 WRONG_MODE,
 UNKNOWN_COMMAND,
 WRONG_COMMAND,

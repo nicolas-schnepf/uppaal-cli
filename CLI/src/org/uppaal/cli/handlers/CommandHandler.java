@@ -1,5 +1,6 @@
 package org.uppaal.cli.handlers;
 
+import org.uppaal.cli.exceptions.UnknownModeException;
 import org.uppaal.cli.CommandResult;
 import org.uppaal.cli.Command;
 import org.uppaal.cli.Context;
@@ -32,6 +33,9 @@ private SimulatorHandler simulator_handler;
 // private VerifierHandler of this handler
 private VerifierHandler verifier_handler;
 
+// private unknown mode exception to throw when receiving an unknown mode
+private UnknownModeException unknown_mode_exception;
+
 /**
 * public constructor of a command handler
 * initializing it from a given context
@@ -45,6 +49,7 @@ public CommandHandler (Context context) {
 	this.simulator_handler = new SimulatorHandler(context);
 	this.verifier_handler = new VerifierHandler(context);
 	this.active_handler = this.editor_handler;
+	this.unknown_mode_exception = new UnknownModeException();
 }
 
 @Override
@@ -77,6 +82,13 @@ public CommandResult handle (Command command) {
 			case VERIFIER:
 			this.active_handler = this.verifier_handler;
 			break;
+
+// if the mode is not known throw an unknown mode exception
+
+			case UNKNOWN:
+				String unknown_mode = command.getArgumentAt(0);
+				this.unknown_mode_exception.setMode(unknown_mode);
+				throw this.unknown_mode_exception;
 		}
 
 		this.command_result.setResultCode(CommandResult.ResultCode.MODE_CHANGED);
@@ -98,14 +110,24 @@ public CommandResult handle (Command command) {
 
 // otherwise throw a wrong mode exception
 
-	return null;
+	return this.command_result;
 }
 
 /**
 * @return the list of active command codes
 */
 public Command.CommandCode[] getActiveCommands() {
-	return this.active_handler.getAcceptedCommands();
+	Command.CommandCode[] handler_commands = this.active_handler.getAcceptedCommands();
+	int n = handler_commands.length+this.accepted_commands.length;
+	Command.CommandCode[] active_commands = new Command.CommandCode [n];
+
+	for (int i = 0 ; i <handler_commands.length;i++)
+		active_commands[i] = handler_commands[i];
+
+	for (int i = 0; i < this.accepted_commands.length;i++)
+		active_commands[handler_commands.length + i] = this.accepted_commands[i];
+
+	return active_commands;
 }
 
 @Override

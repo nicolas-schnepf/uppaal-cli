@@ -12,7 +12,8 @@ public interface Handler {
 public static enum HandlerCode {
 EDITOR,
 SIMULATOR,
-VERIFIER
+VERIFIER,
+UNKNOWN
 }
 
 /**

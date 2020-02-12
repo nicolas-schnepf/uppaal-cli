@@ -24,9 +24,10 @@ src/org/uppaal/cli/exceptions/WrongObjectException.java \
 src/org/uppaal/cli/exceptions/MissingArgumentException.java \
 src/org/uppaal/cli/exceptions/EditorException.java \
 src/org/uppaal/cli/exceptions/MenuException.java \
-src/org/uppaal/cli/exceptions/WrongArgumentException.java
+src/org/uppaal/cli/exceptions/WrongArgumentException.java \
+src/org/uppaal/cli/exceptions/UnknownModeException.java
 
-build: cli handlers exceptions
+build: cli
 
 run: 
 	java -cp $(CLASSPATH) org.uppaal.cli.Main
@@ -34,11 +35,11 @@ run:
 clean: $(CLI:.java=.class) $(HANDLERS:.java=.class) $(EXCEPTIONS:.java=.class)
 	find . -name \*.class -exec rm {} \;
 
-cli: $(CLI)
+cli: $(CLI) exceptions handlers
 	javac -cp $(CLASSPATH) $(CLI)
 
 handlers : $(HANDLERS)
 	javac -cp $(CLASSPATH) $(HANDLERS)
 
-exceptions: cli $(EXCEPTIONS)
+exceptions: $(EXCEPTIONS)
 	javac -cp $(CLASSPATH) $(EXCEPTIONS)
