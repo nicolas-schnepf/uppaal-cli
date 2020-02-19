@@ -13,7 +13,23 @@ public class VerifierHandler extends AbstractHandler {
 // array of accepted command codes
 
 private static Command.CommandCode[] verifier_commands = {
-Command.CommandCode.CHECK
+Command.CommandCode.CHECK,
+Command.CommandCode.IMPORT,
+Command.CommandCode.DECLARE,
+Command.CommandCode.REPLACE,
+Command.CommandCode.SHOW,
+Command.CommandCode.REMOVE,
+Command.CommandCode.SELECT,
+Command.CommandCode.UNSELECT
+};
+
+// array of accepted objects for a verifier handler
+
+private static Command.ObjectCode[] verifier_objects = {
+Command.ObjectCode.QUERIES, 
+Command.ObjectCode.QUERY, 
+Command.ObjectCode.OPTION,
+Command.ObjectCode.OPTIONS
 };
 
 /**
@@ -25,6 +41,7 @@ Command.CommandCode.CHECK
 public VerifierHandler (Context context) {
 	super(context);
 	this.accepted_commands = verifier_commands;
+	this.accepted_objects = verifier_objects;
 }
 
 @Override

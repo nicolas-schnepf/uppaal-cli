@@ -17,8 +17,8 @@ public class CommandHandler extends AbstractHandler {
 private static Command.CommandCode[] default_commands = 
 {Command.CommandCode.START,
 Command.CommandCode.EXIT,
-Command.CommandCode.IMPORT,
-Command.CommandCode.EXPORT
+Command.CommandCode.EXPORT,
+Command.CommandCode.HELP
 };
 
 // current active handler of this command handler
@@ -128,6 +128,11 @@ public Command.CommandCode[] getActiveCommands() {
 		active_commands[handler_commands.length + i] = this.accepted_commands[i];
 
 	return active_commands;
+}
+
+@Override
+public Command.ObjectCode[] getAcceptedObjects() {
+	return this.active_handler.getAcceptedObjects();
 }
 
 @Override

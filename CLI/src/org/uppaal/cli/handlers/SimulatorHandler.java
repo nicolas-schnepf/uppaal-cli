@@ -13,7 +13,26 @@ public class SimulatorHandler extends AbstractHandler {
 // array of accepted command codes
 
 private static Command.CommandCode[] simulator_commands = {
-Command.CommandCode.CHECK
+Command.CommandCode.SHOW,
+Command.CommandCode.SELECT,
+Command.CommandCode.PREVIEW,
+Command.CommandCode.NEXT,
+Command.CommandCode.FINISH
+};
+
+// private array of accepted object codes
+
+private static Command.ObjectCode[] simulator_objects = {
+Command.ObjectCode.TRACE,
+Command.ObjectCode.TEMPLATES, 
+Command.ObjectCode.TEMPLATE, 
+Command.ObjectCode.VARIABLE,
+Command.ObjectCode.VARIABLES,
+Command.ObjectCode.CLOCKS,
+Command.ObjectCode.CLOCK,
+Command.ObjectCode.CONSTRAINT,
+Command.ObjectCode.TRANSITION,
+Command.ObjectCode.TRANSITIONS
 };
 
 /**
@@ -25,6 +44,7 @@ Command.CommandCode.CHECK
 public SimulatorHandler (Context context) {
 	super(context);
 	this.accepted_commands = simulator_commands;
+	this.accepted_objects = simulator_objects;
 }
 
 @Override

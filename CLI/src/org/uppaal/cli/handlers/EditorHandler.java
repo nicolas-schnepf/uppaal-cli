@@ -13,7 +13,31 @@ public class EditorHandler extends AbstractHandler {
 // array of accepted command codes
 
 private static Command.CommandCode[] editor_commands = {
-Command.CommandCode.CHECK
+Command.CommandCode.DECLARE,
+Command.CommandCode.IMPORT,
+Command.CommandCode.CLEAR,
+Command.CommandCode.REPLACE,
+Command.CommandCode.SHOW,
+Command.CommandCode.REMOVE,
+};
+
+// array of accepted object codes
+
+private static Command.ObjectCode[] editor_objects = {
+Command.ObjectCode.DOCUMENT, 
+Command.ObjectCode.QUERIES, 
+Command.ObjectCode.TEMPLATES, 
+Command.ObjectCode.QUERY, 
+Command.ObjectCode.TEMPLATE, 
+Command.ObjectCode.CHANNELS,
+Command.ObjectCode.URGENT_CHANNELS,
+Command.ObjectCode.TYPE,
+Command.ObjectCode.VARIABLE,
+Command.ObjectCode.VARIABLES,
+Command.ObjectCode.CONSTANT,
+Command.ObjectCode.CONSTANTS,
+Command.ObjectCode.FUNCTION,
+Command.ObjectCode.SYSTEM
 };
 
 /**
@@ -25,6 +49,7 @@ Command.CommandCode.CHECK
 public EditorHandler (Context context) {
 	super(context);
 	this.accepted_commands = editor_commands;
+	this.accepted_objects = editor_objects;
 }
 
 @Override

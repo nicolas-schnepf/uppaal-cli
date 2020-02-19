@@ -14,6 +14,7 @@ public abstract class AbstractHandler implements Handler {
 protected CommandResult command_result;
 protected Context context;
 protected Command.CommandCode[] accepted_commands;
+protected Command.ObjectCode[] accepted_objects;
 private WrongArgumentException wrong_argument_exception;
 private MissingArgumentException missing_argument_exception;
 
@@ -67,6 +68,11 @@ protected void throwWrongArgumentException (Command.CommandCode command_code, St
 @Override
 public Command.CommandCode[] getAcceptedCommands() {
 	return this.accepted_commands;
+}
+
+@Override
+public Command.ObjectCode[] getAcceptedObjects() {
+	return this.accepted_objects;
 }
 
 @Override

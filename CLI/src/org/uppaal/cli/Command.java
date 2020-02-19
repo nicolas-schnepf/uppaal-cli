@@ -17,13 +17,54 @@ import java.lang.Iterable;
 public class Command implements Iterable<String>
 {
 public static enum CommandCode {
-ADD, IMPORT, EXPORT, START, EXIT, CHECK, UNKNOWN
+ADD, 
+IMPORT, 
+EXPORT, 
+START, 
+EXIT, 
+CHECK, 
+DECLARE, 
+REPLACE, 
+SHOW, 
+REMOVE, 
+CLEAR,
+SELECT,
+PREVIEW,
+NEXT,
+FINISH,
+UNSELECT,
+HELP,
+UNKNOWN
 }
 
 /*** enumeration of object codes */
 
 public static enum ObjectCode {
-DOCUMENT, QUERIES, TEMPLATES, QUERY, TEMPLATE, NONE, UNKNOWN, MODE
+DOCUMENT, 
+QUERIES, 
+TEMPLATES, 
+QUERY, 
+TEMPLATE, 
+TRACE, 
+CHANNELS, 
+URGENT_CHANNELS, 
+TYPE,
+VARIABLE,
+VARIABLES,
+CONSTANT,
+CONSTANTS,
+FUNCTION,
+SYSTEM,
+OPTION,
+OPTIONS,
+CLOCK,
+TRANSITION,
+TRANSITIONS,
+CONSTRAINT,
+CLOCKS,
+NONE, 
+UNKNOWN, 
+MODE
 }
 
     private String command = null;

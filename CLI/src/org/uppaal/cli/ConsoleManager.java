@@ -9,8 +9,12 @@ import org.uppaal.cli.handlers.Handler;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
+import jline.console.completer.StringsCompleter;
 import jline.console.completer.FileNameCompleter;
 import jline.console.completer.StringsCompleter;
+import jline.console.completer.NullCompleter;
+import jline.console.completer.ArgumentCompleter;
+
 
 import java.util.HashMap;
 import java.io.PrintWriter;
@@ -55,11 +59,11 @@ private HashMap<String, Command.ObjectCode> accepted_objects;
 // hash map of object names for this console manager
 private HashMap<Command.ObjectCode, String> object_names;
 
-// hash map of accepted completers for this console manager
-private HashMap <Handler.HandlerCode, Completer> completers;
+// hash map of accepted command completers for this console manager
+private HashMap <Handler.HandlerCode, Completer> command_completers;
 
-// active completer for this console manager
-private Completer active_completer;
+// active command completer for this console manager
+private Completer command_completer;
 
 // private command handler for this console manager
 private CommandHandler command_handler;
@@ -93,7 +97,7 @@ public ConsoleManager (Context context) throws IOException, IOException {
 	this.mode_names = new HashMap<Handler.HandlerCode, String>();
 	this.accepted_objects = new HashMap<String, Command.ObjectCode>();
 	this.object_names = new HashMap<Command.ObjectCode, String>();
-	this.completers = new HashMap<Handler.HandlerCode, Completer>();
+	this.command_completers = new HashMap<Handler.HandlerCode, Completer>();
 
 // initialize the map of accepted commands
 
@@ -102,6 +106,17 @@ public ConsoleManager (Context context) throws IOException, IOException {
 	this.accepted_commands.put("export", Command.CommandCode.EXPORT);
 	this.accepted_commands.put("import", Command.CommandCode.IMPORT);
 	this.accepted_commands.put("check", Command.CommandCode.CHECK);
+	this.accepted_commands.put("clear", Command.CommandCode.CLEAR);
+	this.accepted_commands.put("declare", Command.CommandCode.DECLARE);
+	this.accepted_commands.put("replace", Command.CommandCode.REPLACE);
+	this.accepted_commands.put("show", Command.CommandCode.SHOW);
+	this.accepted_commands.put("remove", Command.CommandCode.REMOVE);
+	this.accepted_commands.put("select", Command.CommandCode.SELECT);
+	this.accepted_commands.put("preview", Command.CommandCode.PREVIEW);
+	this.accepted_commands.put("next", Command.CommandCode.NEXT);
+	this.accepted_commands.put("finish", Command.CommandCode.FINISH);
+	this.accepted_commands.put("unselect", Command.CommandCode.UNSELECT);
+	this.accepted_commands.put("help", Command.CommandCode.HELP);
 
 // initialize the map of command names from the previous one
 
@@ -130,6 +145,23 @@ public ConsoleManager (Context context) throws IOException, IOException {
 	this.accepted_objects.put("templates", Command.ObjectCode.TEMPLATES);
 	this.accepted_objects.put("query", Command.ObjectCode.QUERY);
 	this.accepted_objects.put("template", Command.ObjectCode.TEMPLATE);
+	this.accepted_objects.put("trace", Command.ObjectCode.TRACE);
+	this.accepted_objects.put("channels", Command.ObjectCode.CHANNELS);
+	this.accepted_objects.put("urgent-channels", Command.ObjectCode.URGENT_CHANNELS);
+	this.accepted_objects.put("type", Command.ObjectCode.TYPE);
+	this.accepted_objects.put("variable", Command.ObjectCode.VARIABLE);
+	this.accepted_objects.put("variables", Command.ObjectCode.VARIABLES);
+	this.accepted_objects.put("constant", Command.ObjectCode.CONSTANT);
+	this.accepted_objects.put("constants", Command.ObjectCode.CONSTANTS);
+	this.accepted_objects.put("function", Command.ObjectCode.FUNCTION);
+	this.accepted_objects.put("system", Command.ObjectCode.SYSTEM);
+	this.accepted_objects.put("option", Command.ObjectCode.OPTION);
+	this.accepted_objects.put("options", Command.ObjectCode.OPTIONS);
+	this.accepted_objects.put("clock", Command.ObjectCode.CLOCK);
+	this.accepted_objects.put("transition", Command.ObjectCode.TRANSITION);
+	this.accepted_objects.put("transitions", Command.ObjectCode.TRANSITIONS);
+	this.accepted_objects.put("constraint", Command.ObjectCode.CONSTRAINT);
+	this.accepted_objects.put("clocks", Command.ObjectCode.CLOCKS);
 
 // initialize the map of object names from the previous one
 
@@ -148,16 +180,15 @@ private void setPrompt () {
 }
 
 /**
-* create a completer for the current mode
-* @return the newly created completer
+* @return the command completer for the current mode
 */
-private Completer getCompleter () {
+private Completer getCommandCompleter () {
 
 // if there is already a completer for the current mode in the corresponding hash map simply return it
 
 	Handler.HandlerCode active_mode= this.command_handler.getMode();
-	if (this.completers.containsKey(active_mode))
-		return this.completers.get(active_mode);
+	if (this.command_completers.containsKey(active_mode))
+		return this.command_completers.get(active_mode);
 
 // create a list of commands for the current active mode
 
@@ -169,20 +200,36 @@ private Completer getCompleter () {
 		commands.add(command_name);
 	}
 
+// create a list of objects for the current active mode
+
+	Command.ObjectCode[] accepted_objects = this.command_handler.getAcceptedObjects();
+	LinkedList<String> objects = new LinkedList<String>();
+
+	for (Command.ObjectCode object_code:accepted_objects) {
+		String object_name = this.object_names.get(object_code);
+		objects.add(object_name);
+	}
+
 // create the new completer, add it to the hash map and return it
 
-	Completer completer = new StringsCompleter(commands);
-	this.completers.put(active_mode, completer);
+	LinkedList<Completer> completers = new LinkedList<Completer>();
+	completers.add(new StringsCompleter(commands));
+	completers.add(new StringsCompleter(objects));
+	completers.add(new FileNameCompleter());
+	completers.add(new NullCompleter());
+
+	ArgumentCompleter completer = new ArgumentCompleter(completers);
+	this.command_completers.put(active_mode, completer);
 	return completer;
 }
 
 /**
 * set the completers for the current mode
 */
-public void setCompleter() {
-	this.reader.removeCompleter(this.active_completer);
-	this.active_completer = this.getCompleter();
-	this.reader.addCompleter(this.active_completer);
+private void setCompleters() {
+	this.reader.removeCompleter(this.command_completer);
+	this.command_completer = this.getCommandCompleter();
+	this.reader.addCompleter(this.command_completer);
 }
 
 /**
@@ -199,8 +246,8 @@ public void run () throws EngineException, IOException {
 
 	this.context.connectEngine();
 	this.setPrompt();
-	this.active_completer = this.getCompleter();
-	this.reader.addCompleter(this.active_completer);
+	this.command_completer = this.getCommandCompleter();
+	this.reader.addCompleter(this.command_completer);
 
 	this.running = true;
 	String line = null;
@@ -324,6 +371,7 @@ private void processResult (CommandResult result) {
 
 	case MODE_CHANGED:
 	this.setPrompt();
+	this.setCompleters();
 	break;
 
 // if return code is exit set the running condition to false

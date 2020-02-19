@@ -31,6 +31,12 @@ public CommandResult handle (Command command) ;
 public Command.CommandCode[] getAcceptedCommands();
 
 /**
+* return the list of objects handled by this handler
+* @return the list of objects used by this handler
+*/
+public Command.ObjectCode[] getAcceptedObjects();
+
+/**
 * check if a command is accepted by a handler
 * @param command the command to test
 * @return true if and only if the provided command code is accepted by the handler
