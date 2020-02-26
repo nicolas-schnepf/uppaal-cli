@@ -1,5 +1,7 @@
 CLASSPATH = src:../uppaal-4.1.24/lib/model.jar:../uppaal-4.1.24/uppaal.jar:../jledit-0.2.2/jline.jar:../jledit-0.2.2/core.jar
 
+JUNITPATH=../junit/hamcrest-core-1.3.jar:../junit/junit-4.13.jar
+
 CLI = \
 src/org/uppaal/cli/Command.java \
 src/org/uppaal/cli/CommandResult.java \
@@ -27,15 +29,22 @@ src/org/uppaal/cli/exceptions/MenuException.java \
 src/org/uppaal/cli/exceptions/WrongArgumentException.java \
 src/org/uppaal/cli/exceptions/UnknownModeException.java
 
+TEST = \
+src/org/uppaal/cli/test/EditorHandlerTest.java \
+src/org/uppaal/cli/test/TestMain.java
+
 build: cli
 
 run: 
 	java -cp $(CLASSPATH) org.uppaal.cli.Main
 
+runtest: 
+	java -cp $(CLASSPATH):$(JUNITPATH) org.uppaal.cli.test.TestMain
+
 clean: $(CLI:.java=.class) $(HANDLERS:.java=.class) $(EXCEPTIONS:.java=.class)
 	find . -name \*.class -exec rm {} \;
 
-cli: $(CLI) exceptions handlers
+cli: $(CLI) exceptions handlers test
 	javac -cp $(CLASSPATH) $(CLI)
 
 handlers : $(HANDLERS)
@@ -43,3 +52,6 @@ handlers : $(HANDLERS)
 
 exceptions: $(EXCEPTIONS)
 	javac -cp $(CLASSPATH) $(EXCEPTIONS)
+
+test: $(TEST)
+	javac -cp $(CLASSPATH):$(JUNITPATH) $(TEST)
