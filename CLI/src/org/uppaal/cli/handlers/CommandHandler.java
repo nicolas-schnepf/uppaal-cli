@@ -4,6 +4,8 @@ import org.uppaal.cli.exceptions.UnknownModeException;
 import org.uppaal.cli.CommandResult;
 import org.uppaal.cli.Command;
 import org.uppaal.cli.Context;
+import java.io.IOException;
+import java.net.MalformedURLException;
 
 /**
 * concrete class implementing a command handler
@@ -53,7 +55,7 @@ public CommandHandler (Context context) {
 }
 
 @Override
-public CommandResult handle (Command command) {
+public CommandResult handle (Command command) throws MalformedURLException, IOException {
 
 // if the command is accepted by this handler simply execute it
 
@@ -100,6 +102,11 @@ public CommandResult handle (Command command) {
 		this.command_result.setResultCode(CommandResult.ResultCode.EXIT);
 		return this.command_result;
 
+// for an export command export the required object
+
+	case EXPORT:
+	return this.handleExport(command);
+
 // otherwise if it is accepted by the current active handler execute it
 
 		default:
@@ -138,5 +145,49 @@ public Command.ObjectCode[] getAcceptedObjects() {
 @Override
 public Handler.HandlerCode getMode() {
 	return this.active_handler.getMode();
+}
+
+
+/**
+* handle export commands
+* @param command the command to handle
+* @return the command result corresponding to this command
+* @exception an exception describing the type of error which was encountered
+*/
+private CommandResult handleExport(Command command) throws MalformedURLException, IOException {
+
+// check that the command contains exactly one argument
+
+	Command.CommandCode command_code= command.getCommandCode();
+	int argument_number = command.getArgumentNumber();
+
+	if (argument_number<1)
+		this.throwMissingArgumentException(command_code, 1, argument_number);
+	else if (argument_number>1)
+		this.throwExtraArgumentException (command_code, 1, argument_number);
+
+// process the command depending on its object code
+
+	Command.ObjectCode object_code = command.getObjectCode();
+	String filename = command.getArgumentAt(0);
+	int index = filename.length()-1;
+	while (filename.charAt(index)!='.' && index>0) index --;
+	String extension = filename.substring(index+1);
+
+	switch (command.getObjectCode()) {
+		case DOCUMENT:
+		if (!extension.equals("xta") && !extension.equals("xml")) 
+			this.throwWrongExtensionException (command_code, object_code, extension);
+		this.context.saveDocument(filename);
+		break;
+
+		case QUERIES:
+		if (!extension.equals("q")) 
+			this.throwWrongExtensionException (command_code, object_code, extension);
+		this.context.saveQueries(filename);
+		break;
+	}
+
+	return this.command_result;
 }
 }

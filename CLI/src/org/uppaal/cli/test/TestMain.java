@@ -11,7 +11,7 @@ public class TestMain {
 
     Result result = JUnitCore.runClasses(EditorHandlerTest.class);
     for (Failure failure : result.getFailures()) {
-      System.out.println(failure.toString());
+      System.out.println(failure.toString()+"\n"+failure.getTrace());
     }
   }
 }

@@ -3,6 +3,8 @@ package org.uppaal.cli.handlers;
 import org.uppaal.cli.CommandResult;
 import org.uppaal.cli.Command;
 import org.uppaal.cli.Context;
+import java.io.IOException;
+import java.net.MalformedURLException;
 
 /**
 * concrete class implementing a simulator handler
@@ -48,7 +50,7 @@ public SimulatorHandler (Context context) {
 }
 
 @Override
-public CommandResult handle (Command command) {
+public CommandResult handle (Command command) throws MalformedURLException, IOException {
 	return this.command_result;
 }
 

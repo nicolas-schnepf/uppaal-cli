@@ -3,6 +3,8 @@ package org.uppaal.cli.handlers;
 import org.uppaal.cli.CommandResult;
 import org.uppaal.cli.Command;
 import java.util.List;
+import java.io.IOException;
+import java.net.MalformedURLException;
 
 /**
 * interface providing the declaration of all public methods for a handler
@@ -22,7 +24,7 @@ UNKNOWN
 * @return the result of the command
 */
 
-public CommandResult handle (Command command) ;
+public CommandResult handle (Command command) throws MalformedURLException, IOException;
 
 /**
 * return the list of commands handled by this handler

@@ -4,10 +4,10 @@ import org.uppaal.cli.handlers.Handler;
 import org.uppaal.cli.Command;
 
 /**
-* missing argument exception, thrown when an argument is missing to a command
+* extra argument exception, thrown when an extra argument is provided to a command
 */
 
-public class MissingArgumentException extends ConsoleException {
+public class ExtraArgumentException extends ConsoleException {
 
 // expected number of arguments
 private int expected_argument_number;
@@ -18,8 +18,8 @@ private int received_argument_number;
 /*** public constructor of a missing argument exception
 */
 
-public MissingArgumentException () {
-	super(ExceptionCode.MISSING_ARGUMENT);
+public ExtraArgumentException () {
+	super(ExceptionCode.EXTRA_ARGUMENT);
 }
 
 /**

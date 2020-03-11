@@ -5,7 +5,10 @@ package org.uppaal.cli;
 * and possibly asking to start another screen
 */
 
-public class CommandResult {
+import java.util.LinkedList;
+import java.util.Iterator;
+
+public class CommandResult implements Iterable {
 
 /**
 * enumeration of all possible return codes
@@ -28,14 +31,14 @@ private ResultCode result_code;
 private Command.ObjectCode object_code;
 
 // arguments of this return code
-private StringBuffer arguments;
+private LinkedList<String> arguments;
 
 /**
 * public constructor of a command result
 */
 public CommandResult() {
 	this.result_code = ResultCode.OK;
-	this.arguments = new StringBuffer();
+	this.arguments = new LinkedList<String>();
 }
 
 /**
@@ -89,21 +92,9 @@ public void setObjectCode(Command.ObjectCode object_code) {
 	this.object_code = object_code;
 }
 
-/**
-* get the arguments of this command result as a single string
-* @return the text corresponding to the arguments of this command result
-*/
-
-public String getArgument() {
-	return this.arguments.toString();
-}
-
-/**
-* return the list of arguments of this command result as an array
-* @return the array containing all arguments of this command result
-*/
-public String[] getArguments() {
-	return this.arguments.toString().split(" | ");
+@Override
+public Iterator<String> iterator () {
+	return this.arguments.iterator();
 }
 
 /**
@@ -112,23 +103,13 @@ public String[] getArguments() {
 */
 
 public void addArgument(String argument) {
-// if no argument simply set the content of the buffer with the argument
-
-	if (this.arguments.length()==0)
-		this.arguments.append(argument);
-
-// otherwise also append a pipe
-
-	else {
-		this.arguments.append(" | ");
-		this.arguments.append(argument);
-	}
+	this.arguments.add(argument);
 }
 
 /**
 * clear this command result
 */
 public void clear () {
-	this.arguments.delete(0, this.arguments.length());
+	this.arguments.clear();
 }
 }

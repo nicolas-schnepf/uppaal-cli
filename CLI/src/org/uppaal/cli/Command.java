@@ -162,4 +162,13 @@ public void clear() {
 public String getArgumentAt (int index) {
 	return this.arguments.get(index);
 }
+
+/**
+* @return the arguments of this command as a single string
+*/
+public String getSingleArgument () {
+	StringBuffer buffer = new StringBuffer();
+	for (String argument:this.arguments) buffer.append(argument+" ");
+	return buffer.toString();
+}
 }

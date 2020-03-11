@@ -19,6 +19,7 @@ import jline.console.completer.ArgumentCompleter;
 import java.util.HashMap;
 import java.io.PrintWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.LinkedList;
 
 /**
@@ -268,7 +269,13 @@ public void run () throws EngineException, IOException {
 
 // if an exception is thrown manage it 
 
-		catch (ConsoleException e) {
+		catch (MalformedURLException e) {
+			this.err.println(e.getMessage());
+			this.err.flush();
+		} catch (IOException e) {
+				this.err.println(e.getMessage());
+				this.err.flush();
+		} catch (ConsoleException e) {
 			this.processException(e);
 		}
 	}

@@ -27,7 +27,10 @@ src/org/uppaal/cli/exceptions/MissingArgumentException.java \
 src/org/uppaal/cli/exceptions/EditorException.java \
 src/org/uppaal/cli/exceptions/MenuException.java \
 src/org/uppaal/cli/exceptions/WrongArgumentException.java \
-src/org/uppaal/cli/exceptions/UnknownModeException.java
+src/org/uppaal/cli/exceptions/UnknownModeException.java \
+src/org/uppaal/cli/exceptions/ExtraArgumentException.java \
+src/org/uppaal/cli/exceptions/WrongExtensionException.java \
+/Users/schnepfnicolas/Travail/accessibility/CLI/src/org/uppaal/cli/exceptions/WrongFormatException.java
 
 TEST = \
 src/org/uppaal/cli/test/EditorHandlerTest.java \

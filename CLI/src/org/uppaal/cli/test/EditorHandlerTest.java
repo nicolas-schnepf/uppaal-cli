@@ -5,6 +5,7 @@ import org.uppaal.cli.handlers.Handler;
 import org.uppaal.cli.handlers.CommandHandler;
 import org.uppaal.cli.Context;
 import org.uppaal.cli.Command;
+import org.uppaal.cli.exceptions.*;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -44,7 +45,7 @@ public void teardown () {
 // first test, the document of the context should not be null after a correct import command
 
 @Test
-public void testImportValidDocument () {
+public void testImportValidDocument () throws Exception {
 	this.command.setCommandCode(Command.CommandCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
@@ -52,5 +53,227 @@ public void testImportValidDocument () {
 	Document document = this.context.getDocument();
 	this.command_handler.handle(this.command);
 	assertNotEquals(this.context.getDocument(), document);
+}
+
+// second test, check that importing a file with a wrong extension raises an exception
+
+@Test (expected = WrongExtensionException.class)
+public void testImportWrongExtension () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.doc");
+
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+}
+
+// third test, check that importing something without argument raises an exception
+
+@Test (expected = MissingArgumentException.class)
+public void testImportWithoutFilename () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+//	this.command.addArgument("train-gate.doc");
+
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+}
+
+// Fourth test, check that importing something with two arguments raises an exception
+
+@Test (expected = ExtraArgumentException.class)
+public void testImportWithTwoFilenames () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.doc");
+	this.command.addArgument("train-gate.doc");
+
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+}
+
+// fivth test, check that importing a valid list of queries add some queries in the context
+
+@Test
+public void testImportValidQueryList () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.QUERIES);
+	this.command.addArgument("train-gate.q");
+
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getQueryNumber(), 0);
+}
+
+// sixth test, check that loading a query file with a wrong exception raise an exception
+
+@Test (expected = WrongExtensionException.class)
+public void testImportWrongQueryExtension () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.QUERIES);
+	this.command.addArgument("train-gate.xta");
+
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getQueryNumber(), 0);
+}
+
+// seventh test, check that exporting a valid document well create a file
+
+@Test
+public void testExportValidDocument () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.xta");
+
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("output.xta");
+	this.command_handler.handle(this.command);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("output.xta");
+
+	document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+}
+
+// eighth test, check that exporting a document with a wrong extension throws an exception
+
+@Test (expected = WrongExtensionException.class)
+public void testExportWrongExtension () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.doc");
+
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+}
+
+// ninth  test, check that exporting something without filename raise an exception
+
+@Test (expected = MissingArgumentException.class)
+public void testExportWithoutFilename () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+//	this.command.addArgument("train-gate.doc");
+
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+}
+
+// tenth test, check that exporting something with two arguments throws an exception
+
+@Test (expected = ExtraArgumentException.class)
+public void testExportWithTwoFilenames () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.doc");
+	this.command.addArgument("train-gate.doc");
+
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+}
+
+
+// eleventh test, check that exporting a valid list of queries create an importable file
+
+@Test
+public void testExportValidQueryList () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.QUERIES);
+	this.command.addArgument("train-gate.q");
+
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getQueryNumber(), 0);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setObjectCode(Command.ObjectCode.QUERIES);
+	this.command.addArgument("output.q");
+	this.command_handler.handle(this.command);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.QUERIES);
+	this.command.addArgument("output.q");
+
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getQueryNumber(), 0);
+}
+
+// twelvth test, check that exporting a list of queries with a wrong extension throws an exception
+
+@Test (expected = WrongExtensionException.class)
+public void testExportWrongQueryExtension () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setObjectCode(Command.ObjectCode.QUERIES);
+	this.command.addArgument("output.xta");
+
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getQueryNumber(), 0);
+}
+
+// Thirteenth test, check that clearing a valid document remove the current one
+
+@Test 
+public void testClearValidDocument () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.xta");
+
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.CLEAR);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+
+	document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+}
+
+// fourteenth test, check that clearing the document with an argument throws an exception
+
+@Test (expected = ExtraArgumentException.class)
+public void testClearExtraArgument () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.CLEAR);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.doc");
+
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getDocument(), document);
+}
+
+// fiveteenth test, check that clearing a valid list of queries removes the queries of the current document
+
+@Test 
+public void testClearValidQueries () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.QUERIES);
+	this.command.addArgument("train-gate.q");
+	this.command_handler.handle(this.command);
+	assertNotEquals(this.context.getQueryNumber(), 0);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.CLEAR);
+	this.command.setObjectCode(Command.ObjectCode.QUERIES);
+	this.command_handler.handle(this.command);
+	assertEquals(this.context.getQueryNumber(), 0);
 }
 }
