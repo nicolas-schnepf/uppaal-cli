@@ -112,4 +112,20 @@ public void addArgument(String argument) {
 public void clear () {
 	this.arguments.clear();
 }
+
+/**
+* @return the number of arguments of this command result
+*/
+public int getArgumentNumber() {
+	return this.arguments.size();
+}
+
+/**
+* return the argument of this command result at a specified index
+* @param index the index of this argument
+* @return the corresponding argument
+*/
+public String getArgumentAt (int index) {
+	return this.arguments.get(index);
+}
 }

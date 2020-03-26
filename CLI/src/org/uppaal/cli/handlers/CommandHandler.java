@@ -159,16 +159,16 @@ private CommandResult handleExport(Command command) throws MalformedURLException
 // check that the command contains exactly one argument
 
 	Command.CommandCode command_code= command.getCommandCode();
+	Command.ObjectCode object_code = command.getObjectCode();
 	int argument_number = command.getArgumentNumber();
 
 	if (argument_number<1)
-		this.throwMissingArgumentException(command_code, 1, argument_number);
+		this.throwMissingArgumentException(command_code, object_code, 1, argument_number);
 	else if (argument_number>1)
-		this.throwExtraArgumentException (command_code, 1, argument_number);
+		this.throwExtraArgumentException (command_code, object_code, 1, argument_number);
 
 // process the command depending on its object code
 
-	Command.ObjectCode object_code = command.getObjectCode();
 	String filename = command.getArgumentAt(0);
 	int index = filename.length()-1;
 	while (filename.charAt(index)!='.' && index>0) index --;

@@ -3,6 +3,7 @@ package org.uppaal.cli.test;
 import com.uppaal.model.core2.Document;
 import org.uppaal.cli.handlers.Handler;
 import org.uppaal.cli.handlers.CommandHandler;
+import org.uppaal.cli.CommandResult;
 import org.uppaal.cli.Context;
 import org.uppaal.cli.Command;
 import org.uppaal.cli.exceptions.*;
@@ -275,5 +276,136 @@ public void testClearValidQueries () throws Exception {
 	this.command.setObjectCode(Command.ObjectCode.QUERIES);
 	this.command_handler.handle(this.command);
 	assertEquals(this.context.getQueryNumber(), 0);
+}
+
+// sixteenth test, check that showing templates after a correct import returns two headers
+
+@Test
+public void testshowTemplates () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.xta");
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setObjectCode(Command.ObjectCode.TEMPLATES);
+	CommandResult result = this.command_handler.handle(command);
+	assertEquals(result.getArgumentNumber(), 2);
+}
+
+// seventeenth test, check that showing templates with an extra argument throws an exception
+
+@Test (expected = ExtraArgumentException.class)
+public void testshowTemplatesWithExtraArgument () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.xta");
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setObjectCode(Command.ObjectCode.TEMPLATES);
+	this.command.addArgument("document");
+	CommandResult result = this.command_handler.handle(command);
+	assertEquals(result.getArgumentNumber(), 2);
+}
+
+// eighteenth test, test that showing declarations well returns the global declaration of the document
+
+@Test
+public void testshowDeclaration () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.xta");
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setObjectCode(Command.ObjectCode.DECLARATION);
+	CommandResult result = this.command_handler.handle(command);
+	assertEquals(result.getArgumentNumber(), 1);
+	assertNotNull(result.getArgumentAt(0));
+}
+
+// nineteenth test, check that showing the declaration of an existing template well returns it
+
+@Test
+public void testshowTemplateDeclaration () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.xta");
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setObjectCode(Command.ObjectCode.DECLARATION);
+	this.command.addArgument("Train");
+	CommandResult result = this.command_handler.handle(command);
+	assertEquals(result.getArgumentNumber(), 1);
+	assertNotNull(result.getArgumentAt(0));
+}
+
+// twentyth test, check that showing an unexisting template throws an exception
+
+@Test (expected = MissingElementException.class)
+public void testshowUnexistingTemplateDeclaration () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.xta");
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setObjectCode(Command.ObjectCode.DECLARATION);
+	this.command.addArgument("Unexisting");
+	CommandResult result = this.command_handler.handle(command);
+	assertEquals(result.getArgumentNumber(), 1);
+	assertNotNull(result.getArgumentAt(0));
+}
+
+// twentyfirst test, check that showing declaration with an extra argument throws an exception
+
+@Test (expected = ExtraArgumentException.class)
+public void testShowDeclarationWithExtraArgument () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.xta");
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setObjectCode(Command.ObjectCode.DECLARATION);
+	this.command.addArgument("Unexisting");
+	this.command.addArgument("Unexisting");
+	CommandResult result = this.command_handler.handle(command);
+	assertEquals(result.getArgumentNumber(), 1);
+	assertNotNull(result.getArgumentAt(0));
+}
+
+// twenty second test, check that showing a template well returns it
+
+@Test
+public void testshowTemplate () throws Exception {
+	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
+	this.command.addArgument("train-gate.xta");
+	Document document = this.context.getDocument();
+	this.command_handler.handle(this.command);
+
+	this.command.clear();
+	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setObjectCode(Command.ObjectCode.TEMPLATE);
+	this.command.addArgument("Train");
+	CommandResult result = this.command_handler.handle(command);
+	assertEquals(result.getArgumentNumber(), 1);
+	assertNotNull(result.getArgumentAt(0));
+	System.out.println(result.getArgumentAt(0));
 }
 }

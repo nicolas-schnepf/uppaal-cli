@@ -5,18 +5,32 @@ package org.uppaal.cli;
 * namely an uppaal document, a list of queries and an uppaal engine
 */
 
+
 import com.uppaal.model.core2.PrototypeDocument;
+import com.uppaal.model.core2.AbstractTemplate;
+import com.uppaal.model.core2.Location;
+import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.QueryList;
+import com.uppaal.model.core2.Query;
 import com.uppaal.model.core2.Document;
 import com.uppaal.model.core2.Element;
+import com.uppaal.model.core2.Node;
 import com.uppaal.engine.Engine;
 import com.uppaal.engine.EngineException;
 import com.uppaal.engine.EngineStub;
-import com.uppaal.model.core2.Query;
 
+import com.uppaal.model.core2.AbstractCommand;
+import com.uppaal.model.core2.RemoveTemplateCommand;
+import com.uppaal.model.core2.RemoveElementCommand;
+
+import org.uppaal.cli.exceptions.MissingElementException;
 import org.uppaal.cli.exceptions.WrongFormatException;
 import java.util.LinkedList;
 import java.util.Iterator;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.BufferedWriter;
@@ -28,6 +42,8 @@ import java.net.URL;
 public class Context {
 private Document document;
 private Engine engine;
+private MissingElementException missing_element_exception;
+private LinkedList<AbstractCommand> commands;
 
 /**
 * create an empty console without any argument
@@ -37,6 +53,17 @@ public Context () {
 	com.uppaal.model.io2.XMLReader.setXMLResolver(new com.uppaal.model.io2.UXMLResolver());
 	this.document = new Document(new PrototypeDocument());
 	this.engine = null;
+	this.missing_element_exception = new MissingElementException();
+	this.commands = new LinkedList<AbstractCommand>();
+}
+
+/**
+* @exception a missing element exception containing the object code and the name of the missing element
+*/
+public void throwMissingElementException (Command.ObjectCode object_code, String name) {
+	this.missing_element_exception.setObjectCode(object_code);
+	this.missing_element_exception.setName(name);
+	throw this.missing_element_exception;
 }
 
 /***
@@ -336,5 +363,365 @@ public void saveQueries (String filename) throws IOException {
 	}
 
 writer.close();
+}
+
+/**
+* @return a list containing all template headers in this document
+*/
+public LinkedList<String> getTemplateHeaders () {
+	LinkedList<String> headers = new LinkedList<String>();
+	AbstractTemplate template = (AbstractTemplate) this.document.getFirst();
+	StringBuffer header = new StringBuffer();
+
+// fetch the name and optionally the parameters of each template in the current document
+
+	while (template!=null) {
+		header.append((String)template.getPropertyValue("name"));
+		header.append(" ");
+
+		if (template.isPropertyLocal("parameter")) 
+			header.append ("("+template.getPropertyValue("parameter")+")");
+		else
+			header.append("()");
+
+		headers.add(header.toString());
+		header.delete(0, header.length());
+		template = (AbstractTemplate) template.getNext();
+	}
+
+	return headers;
+}
+
+/**
+* clear all templates from a document
+*/
+public void clearTemplates() {
+	this.clearDocument();
+}
+
+/**
+* get a textual description of a template in xta format
+* @param name the name of the template
+* @return the description of the specified
+*/
+public String getTemplateDescription (String name) {
+
+// get the template if it exists
+
+	AbstractTemplate template = this.document.getTemplate(name);
+	Location init = null;
+	Location committed = null;
+
+	if (template==null) 
+		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, name);
+
+// loop over the children of the template
+
+	Node node = template.getFirst();
+	StringBuffer locations = new StringBuffer();
+	StringBuffer edges = new StringBuffer();
+
+	while (node!=null) {
+
+// concatenate edge description to the corresponding buffer
+
+		if (node instanceof Location) {
+			Location location = (Location) node;
+			if (locations.length()>0) locations.append(",\n");
+			locations.append("\t");
+			locations.append(this.describeLocation(location));
+
+			if (location.isPropertyLocal("init"))
+				init = location;
+
+			if (location.isPropertyLocal("committed"))
+				committed = location;
+		}
+
+// concatenate edge description to the corresponding buffer
+
+		else if (node instanceof Edge) {
+			Edge edge = (Edge) node;
+			if (edges.length()!=0) edges.append(",\n");
+			edges.append("\t"+this.describeEdge(edge));
+		}
+
+		node = node.getNext();
+	}
+
+// finally build the description of the template and return it
+
+	StringBuffer description = new StringBuffer();
+	description.append("process "+template.getPropertyValue("name"));
+	description.append("("+template.getPropertyValue("parameter")+"){\n");
+	description.append(template.getPropertyValue("declaration")+"\n");;
+
+	if (locations.length()>0) 
+		description.append("states\n"+locations.toString()+";\n");
+
+	if (init!=null) 
+		description.append("init\n\t"+init.getPropertyValue("name")+";\n");
+
+	if (committed!=null) 
+		description.append("committed\n\t"+committed.getPropertyValue("name")+";\n");
+
+	if (edges.length()!=0)
+		description.append("trans\n"+edges.toString()+";\n");
+
+	description.append("}");
+	return description.toString();
+}
+
+/**
+* return the declaration field of a template described by its name
+* @param name the name of the template to return
+* @return the declaration field of the template
+* @exception a missing element exception if the template is missing
+*/
+public String getTemplateDeclaration (String name) {
+	AbstractTemplate template = this.document.getTemplate(name);
+	if (template==null) 
+		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, name);
+	return (String)template.getPropertyValue("name");
+}
+
+/**
+* set the declaration property of an existing template
+* @param name the name of the template to update
+* @param declaration the new value for the declaration property of the template
+* @exception a missing element exception if the template was not found
+*/
+public void setTemplateDeclaration (String name, String declaration) {
+	AbstractTemplate template = this.document.getTemplate(name);
+	if (template==null) 
+		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, name);
+	else
+		template.setProperty("declaration", declaration);
+}
+
+/**
+* remove a template described by its name
+* @param name the name of the template to remove
+*/
+public void removeTemplate (String name) {
+	AbstractTemplate template = this.document.getTemplate(name);
+	if (template==null) return;
+	RemoveTemplateCommand command = new RemoveTemplateCommand(template);
+	command.execute();
+	this.commands.addFirst(command);
+}
+
+/**
+* @return the global declaration field
+* @exception a missing element exception if the global declaration field is not set
+*/
+public String getGlobalDeclaration() {
+	if (!this.document.isPropertyLocal("declaration"))
+		this.throwMissingElementException(Command.ObjectCode.DECLARATION, null);
+	return (String)this.document.getPropertyValue("declaration");
+}
+
+/**
+* set the global declaration of this document
+* @param declaration the new declaration for this document
+*/
+public void setGlobalDeclaration (String declaration) {
+	this.document.setProperty("declaration", declaration);
+}
+
+/**
+* @return a string describing the system of the current document
+*/
+public String getSystem() {
+	if (!this.document.isPropertyLocal("system")) 
+		this.throwMissingElementException (Command.ObjectCode.SYSTEM, null);
+	return (String) this.document.getPropertyValue("system");
+}
+
+/**
+* set the value of the system property of this document
+* @param system the new system value
+*/
+public void setSystem (String system) {
+	this.document.setProperty("system", system);
+}
+
+
+/**
+* return a location based on its name and the name of its template
+* @param template the name of the template to inspect
+* @param name the name of the location to return
+* @return the corresponding location, if found
+* @exception a missing element exception if either the template or the location was not found
+*/
+public Location getLocation (String template_name, String name) {
+
+// get the given template if it exists
+
+	AbstractTemplate template = this.document.getTemplate(template_name);
+	if (template==null) 
+		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, template_name);
+
+// get the given location and return it if it exists
+
+	Node node = template.getFirst();
+	Location location = null;
+
+	while(node!=null && location==null) {
+		if (!(node instanceof Location)) continue;
+		else if (node.getPropertyValue("name")==name) location = (Location)node;
+		node = node.getNext();
+	}
+
+	if (location==null) this.throwMissingElementException(Command.ObjectCode.LOCATION, name);
+	return location;
+}
+
+/**
+* remove a location based on its name and on the name of its template
+* @param template the name of the template to inspect
+* @param location the name of the location to remove
+*/
+public void removeLocation (String template, String name) {
+	try {
+		Location location = this.getLocation(template, name);
+		RemoveElementCommand command = new RemoveElementCommand(location);
+		command.execute();
+		this.commands.addFirst(command);
+	} catch (MissingElementException e) {
+	}
+}
+
+/**
+* return the description of a location given as parameter
+* @param location the location to describe
+* @return the string containing the description of the location
+*/
+private String describeLocation (Location location) {
+	StringBuffer description = new StringBuffer();
+	description.append(location.getPropertyValue("name"));
+
+	if (location.isPropertyLocal("invariant"))
+		description.append(" { "+location.getPropertyValue("invariant")+" } ");
+	return description.toString();
+}
+
+/**
+* return the description of a location given by its name and the name of its template
+* @param template the name of the template to inspect
+* @param name the name of the location to describe
+* @return a string containing the description of the location
+* @exception a missing element exception if either the template or the location does not exist
+*/
+public String getLocationDescription (String template, String name) {
+	Location location = this.getLocation (template, name);
+	return this.describeLocation(location);
+}
+
+/**
+* return an edge based on the name of its source, of its target and of its template
+* @param template the name of the template to inspect
+* @param source the name of the source of the edge to return
+* @param target the name of the target of the edge to return
+* @return the corresponding edge if found
+* @exception a missing element exception if either the template or the edge was not found
+*/
+public Edge getEdge (String template_name, String source, String target) {
+
+// get the given template if it exists
+
+	AbstractTemplate template = this.document.getTemplate(template_name);
+	if (template==null) 
+		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, template_name);
+
+// get the given edge and return it if it exists
+
+	Node node = template.getFirst();
+	Edge res = null;
+
+	while(node!=null && res==null) {
+		if (!(node instanceof Edge)) continue;
+		Edge edge = (Edge) node;
+		Location src = (Location)edge.getSource();
+		Location tar = (Location) edge.getTarget();
+		if (src.getPropertyValue("name")==source && tar.getPropertyValue("name")==target) 
+			res = edge;
+		node = node.getNext();
+	}
+
+	if (res==null) 
+		this.throwMissingElementException(Command.ObjectCode.EDGE, source+" -> "+target);
+	return res;
+}
+
+/**
+* remove an edge based on the name of its source, of its target and of its template
+* @param template the name of the template to inspect
+* @param source the name of the source of the edge to remove
+* @param target the name of the target of the edge to remove
+*/
+public void removeEdge (String template, String source, String target) {
+	try {
+		Edge edge = this.getEdge(template, source, target);
+		RemoveElementCommand command = new RemoveElementCommand(edge);
+		command.execute();
+		this.commands.addFirst(command);
+	} catch (MissingElementException e) {
+	}
+}
+
+/**
+* return the description of an edge given as parameter
+* @param edge the edge to describe
+* @return the string containing the description of the edge
+*/
+private String describeEdge (Edge edge) {
+	StringBuffer description = new StringBuffer();
+	StringBuffer properties = new StringBuffer();
+	Location source = (Location)edge.getSource();
+	Location target = (Location)edge.getTarget();
+	description.append(source.getPropertyValue("name")+" -> "+target.getPropertyValue("name"));
+
+// append the select of the edge if any
+
+	if (edge.isPropertyLocal("select"))
+		properties.append("select "+edge.getPropertyValue("select"));
+
+// append the guard of the edge if any
+
+	if (edge.isPropertyLocal("guard")) {
+		if (properties.length()!=0) properties.append("; ");
+		properties.append("guard "+edge.getPropertyValue("guard"));
+	}
+
+// append the synchronization of the edge if any
+
+	if (edge.isPropertyLocal("synchronisation")) {
+		if (properties.length()!=0) properties.append("; ");
+		properties.append("sync "+edge.getPropertyValue("synchronisation"));
+	}
+
+// append the assignment of the edge if any
+
+	if (edge.isPropertyLocal("assignment")) {
+		if (properties.length()!=0) properties.append("; ");
+		properties.append("assign "+edge.getPropertyValue("assignment"));
+	}
+
+			description.append(" { "+properties.toString()+" } ");
+	return description.toString();
+}
+
+/**
+* return the description of an edge given by the name of its source, of its target and of its template
+* @param template the name of the template to inspect
+* @param source the source of the edge to describe
+* @param target the target of the edge to describe
+* @return a string containing the description of the edge
+* @exception a missing element exception if either the template or the edge does not exist
+*/
+public String getEdgeDescription (String template, String source, String target) {
+	Edge edge = this.getEdge(template, source, target);
+	return this.describeEdge(edge);
 }
 }

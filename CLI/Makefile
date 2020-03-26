@@ -48,13 +48,13 @@ clean: $(CLI:.java=.class) $(HANDLERS:.java=.class) $(EXCEPTIONS:.java=.class)
 	find . -name \*.class -exec rm {} \;
 
 cli: $(CLI) exceptions handlers test
-	javac -cp $(CLASSPATH) $(CLI)
+	javac -Xlint:unchecked -cp $(CLASSPATH) $(CLI)
 
 handlers : $(HANDLERS)
-	javac -cp $(CLASSPATH) $(HANDLERS)
+	javac -Xlint:unchecked -cp $(CLASSPATH) $(HANDLERS)
 
 exceptions: $(EXCEPTIONS)
-	javac -cp $(CLASSPATH) $(EXCEPTIONS)
+	javac -Xlint:unchecked -cp $(CLASSPATH) $(EXCEPTIONS)
 
 test: $(TEST)
-	javac -cp $(CLASSPATH):$(JUNITPATH) $(TEST)
+	javac -Xlint:unchecked -cp $(CLASSPATH):$(JUNITPATH) $(TEST)

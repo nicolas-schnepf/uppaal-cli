@@ -8,6 +8,7 @@ import org.uppaal.cli.exceptions.ExtraArgumentException;
 import org.uppaal.cli.exceptions.MissingArgumentException;
 import org.uppaal.cli.exceptions.WrongExtensionException;
 import org.uppaal.cli.exceptions.WrongArgumentException;
+import org.uppaal.cli.exceptions.WrongObjectException;
 import org.uppaal.cli.CommandResult;
 import org.uppaal.cli.Command;
 import org.uppaal.cli.Context;
@@ -17,6 +18,7 @@ protected CommandResult command_result;
 protected Context context;
 protected Command.CommandCode[] accepted_commands;
 protected Command.ObjectCode[] accepted_objects;
+private WrongObjectException wrong_object_exception;
 private WrongArgumentException wrong_argument_exception;
 private WrongExtensionException wrong_extension_exception;
 private MissingArgumentException missing_argument_exception;
@@ -37,6 +39,7 @@ protected AbstractHandler (Context context) {
 	this.missing_argument_exception = new MissingArgumentException();
 	this.wrong_argument_exception = new WrongArgumentException();
 	this.wrong_extension_exception = new WrongExtensionException();
+	this.wrong_object_exception = new WrongObjectException();
 }
 
 /***
@@ -51,12 +54,14 @@ public void setContext (Context context) {
 /***
 * throw a missing argument exception
 * @param command_code the code of the command
+* @param object_code the object code for which throwing the exception
 * @param expected the expected number of arguments
 * @param received the received number of arguments
 * @exception a missing argument exception
 */
-protected void throwMissingArgumentException (Command.CommandCode command_code, int expected, int received) {
+protected void throwMissingArgumentException (Command.CommandCode command_code, Command.ObjectCode object_code, int expected, int received) {
 	this.missing_argument_exception.setCommandCode(command_code);
+	this.missing_argument_exception.setObjectCode(object_code);
 	this.missing_argument_exception.setExpectedArgumentNumber(expected);
 	this.missing_argument_exception.setReceivedArgumentNumber(received);
 	throw (this.missing_argument_exception);
@@ -65,15 +70,29 @@ protected void throwMissingArgumentException (Command.CommandCode command_code, 
 /***
 * throw a extra argument exception
 * @param command_code the code of the command
+* @param object_code the code of the object
 * @param expected the expected number of arguments
 * @param received the received number of arguments
 * @exception a extra argument exception
 */
-protected void throwExtraArgumentException (Command.CommandCode command_code, int expected, int received) {
+protected void throwExtraArgumentException (Command.CommandCode command_code, Command.ObjectCode object_code, int expected, int received) {
 	this.extra_argument_exception.setCommandCode(command_code);
+	this.extra_argument_exception.setObjectCode(object_code);
 	this.extra_argument_exception.setExpectedArgumentNumber(expected);
 	this.extra_argument_exception.setReceivedArgumentNumber(received);
 	throw (this.extra_argument_exception);
+}
+
+/**
+* throw a wrong object exception
+* @param command_code the name of the command throwing a wrong object exception
+* @param object_code the code of the wrong object
+* @exception an exception describing the kind of wrong object which were received
+*/
+public void throwWrongObjectException (Command.CommandCode command_code, Command.ObjectCode object_code) {
+	this.wrong_object_exception.setCommandCode(command_code);
+	this.wrong_object_exception.setObjectCode(object_code);
+	throw this.wrong_object_exception;
 }
 
 /***

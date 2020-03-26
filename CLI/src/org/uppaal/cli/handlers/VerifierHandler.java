@@ -17,8 +17,8 @@ public class VerifierHandler extends AbstractHandler {
 private static Command.CommandCode[] verifier_commands = {
 Command.CommandCode.CHECK,
 Command.CommandCode.IMPORT,
-Command.CommandCode.DECLARE,
-Command.CommandCode.REPLACE,
+Command.CommandCode.ADD,
+Command.CommandCode.SET,
 Command.CommandCode.SHOW,
 Command.CommandCode.REMOVE,
 Command.CommandCode.SELECT,

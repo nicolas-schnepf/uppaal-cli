@@ -22,12 +22,17 @@ EDITOR,
 MENU,
 WRONG_ARGUMENT,
 WRONG_EXTENSION,
-WRONG_FORMAT
+WRONG_FORMAT,
+MISSING_ELEMENT
 }
 
 // command code
 
 protected Command.CommandCode command_code;
+
+// object code
+
+	protected Command.ObjectCode object_code;
 
 // exception message
 
@@ -60,6 +65,22 @@ public Command.CommandCode getCommandCode() {
 */
 public void setCommandCode (Command.CommandCode command_code) {
 	this.command_code = command_code;
+}
+
+/**
+* @return the object code of this exception
+*/
+
+public Command.ObjectCode getObjectCode() {
+	return this.object_code;
+}
+
+/**
+* set the object code of this exception
+* @param object_code: the new object code of this exception
+*/
+public void setObjectCode (Command.ObjectCode object_code) {
+	this.object_code = object_code;
 }
 
 /**
