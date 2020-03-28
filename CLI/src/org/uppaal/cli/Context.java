@@ -6,8 +6,11 @@ package org.uppaal.cli;
 */
 
 
+import org.uppaal.cli.Command.ObjectCode;
+
 import com.uppaal.model.core2.PrototypeDocument;
 import com.uppaal.model.core2.AbstractTemplate;
+import com.uppaal.model.core2.Template;
 import com.uppaal.model.core2.Location;
 import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.QueryList;
@@ -20,10 +23,18 @@ import com.uppaal.engine.EngineException;
 import com.uppaal.engine.EngineStub;
 
 import com.uppaal.model.core2.AbstractCommand;
+import com.uppaal.model.core2.InsertTemplateCommand;
+import com.uppaal.model.core2.InsertElementCommand;
+import com.uppaal.model.core2.InsertQueryCommand;
 import com.uppaal.model.core2.RemoveTemplateCommand;
 import com.uppaal.model.core2.RemoveElementCommand;
+import com.uppaal.model.core2.RemoveQueryCommand;
+import com.uppaal.model.core2.SetPropertyCommand;
+import com.uppaal.model.core2.SetSourceCommand;
+import com.uppaal.model.core2.SetTargetCommand;
 
 import org.uppaal.cli.exceptions.MissingElementException;
+import org.uppaal.cli.exceptions.ExistingElementException;
 import org.uppaal.cli.exceptions.WrongFormatException;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -43,7 +54,9 @@ public class Context {
 private Document document;
 private Engine engine;
 private MissingElementException missing_element_exception;
+private ExistingElementException existing_element_exception;
 private LinkedList<AbstractCommand> commands;
+private LinkedList<AbstractCommand> undone_commands;
 
 /**
 * create an empty console without any argument
@@ -54,7 +67,9 @@ public Context () {
 	this.document = new Document(new PrototypeDocument());
 	this.engine = null;
 	this.missing_element_exception = new MissingElementException();
+	this.existing_element_exception = new ExistingElementException();
 	this.commands = new LinkedList<AbstractCommand>();
+	this.undone_commands = new LinkedList<AbstractCommand>();
 }
 
 /**
@@ -66,7 +81,16 @@ public void throwMissingElementException (Command.ObjectCode object_code, String
 	throw this.missing_element_exception;
 }
 
-/***
+/**
+* @exception a existing element exception containing the object code and the name of the existing element
+*/
+public void throwExistingElementException (Command.ObjectCode object_code, String name) {
+	this.existing_element_exception.setObjectCode(object_code);
+	this.existing_element_exception.setName(name);
+	throw this.existing_element_exception;
+}
+
+/**
 * @ create a new empty document
 */
 
@@ -113,13 +137,127 @@ public void clearQueries () {
 	this.document.getQueryList().removeAll();
 }
 
-/***
-* add a new query to this context
-* @param query the query to add
+/**
+* get a query described by one of its properties and a corresponding value
+* @param property the name of the property to search for
+* @param the value of the property to search for
+* @return the corresponding query if found, null otherwise
+*/
+private Query getQuery (String property, String value) {
+	for (Query query:this.document.getQueryList()) {
+		if (query.getPropertyValue(property)==value) return query;
+	}
+	return null;
+}
+
+/**
+* show the name of all queries of this document
+* @return the list of names of all queries in this document
 */
 
-public void addQuery (Query query) {
-	this.document.getQueryList().addLast(query);
+public LinkedList<String> showQueries() {
+	QueryList queries = this.document.getQueryList();
+	LinkedList<String> names = new LinkedList<String>();
+	for (Query query : queries) names.addLast((String)query.getPropertyValue("name"));
+	return names;
+}
+
+/**
+* show the information about a specific query described by its name
+* @param name the name of the query to show
+* @return the description of the corresponding query
+* @exception a missing element exception if the query does not exist
+*/
+public String showQuery (String name) {
+
+// check that the query already exists
+
+	Query query = this.getQuery("name", name);
+		if (query==null)
+		this.throwMissingElementException(ObjectCode.QUERY, name);
+
+// otherwise return the name, the formula and the comment of the query
+
+	StringBuffer description = new StringBuffer();
+	description.append("query "+name+" = \n");
+	description.append(query.getFormula()+"\n");
+	description.append(query.getComment());
+	return description.toString();
+}
+/**
+* add a new query to this context
+* @param name the name of the query to add
+* @param formula the formula of the query to add
+* @param comment the comment of the query to add
+*/
+
+public void addQuery (String name, String formula, String comment) {
+
+// check that the query does not already exists
+
+	if (name!=null) {
+		if (this.getQuery("name", name)!=null)
+			this.throwExistingElementException(ObjectCode.QUERY, name);
+	}
+
+// otherwise insert the query at the end of the list
+
+	QueryList list = this.document.getQueryList();
+	InsertQueryCommand command = new InsertQueryCommand(list, list.size());
+	command.execute();
+	this.commands.addFirst(command);
+
+// finally set the properties of the query
+
+	Query query = list.get(list.size()-1);
+	if (name!=null) query.setProperty("name", name);
+	else query.setProperty("name", "q"+(list.size()+1));
+	query.setFormula(formula);
+	query.setComment(comment);
+}
+
+/**
+* remove a query from this context
+* @param name the name of the query to remove
+*/
+
+public void removeQuery (String name) {
+
+// check that the query does not already exists
+
+	Query query = this.getQuery("name", name);
+	if (query==null)
+		return;
+
+// otherwise insert the query at the end of the list
+
+	QueryList list = this.document.getQueryList();
+	int index = list.indexOf(query);
+	RemoveQueryCommand command = new RemoveQueryCommand(list, index);
+	command.execute();
+	this.commands.addFirst(command);
+}
+
+/**
+* update a query in this context
+* @param name the name of the query to update
+* @param property the name of the property to update
+* @param value the value of the property to update
+*/
+
+public void setQueryProperty(String name, String property, String value) {
+
+// check that the query already exists
+
+	Query query = this.getQuery("name", name);
+		if (query==null)
+		this.throwMissingElementException(ObjectCode.QUERY, name);
+
+// otherwise update the provided query
+
+	SetPropertyCommand command = new SetPropertyCommand(query, property, value);
+	command.execute();
+	this.commands.addFirst(command);
 }
 
 /***
@@ -176,10 +314,13 @@ public void disconnectEngine () {
 * @param filename the path to the document to load
 */
 public void loadDocument (String filename) throws IOException, MalformedURLException  {
-		PrototypeDocument doc_loader = new PrototypeDocument();
+	PrototypeDocument doc_loader = new PrototypeDocument();
 		//URL location = new URL("file", null, args[0]);
-		URL location = new URL("file://localhost"+System.getProperty("user.dir")+"/"+filename);
-		this.document = doc_loader.load(location);
+	URL location = new URL("file://localhost"+System.getProperty("user.dir")+"/"+filename);
+	this.document = doc_loader.load(location);
+	QueryList queries = this.document.getQueryList();
+	for (int i=0;i<queries.size();i++)
+		queries.get(i).setProperty("name", "q"+(i+1));
 }
 
 /**
@@ -338,6 +479,7 @@ System.out.println(query.length());
 
 				if (query.length()>0) 
 					queries . addLast(new Query(query.toString(), comment.toString()));
+					queries.get(queries.size()-1).setProperty("name", "q"+queries.size());
 					query.delete(0, query.length());
 					comment.delete(0, comment.length());
 			}
@@ -400,11 +542,26 @@ public void clearTemplates() {
 }
 
 /**
+* add a new template to the current document
+* @param name the name of the template
+* @param parameter the parameter of the template
+*/
+public void addTemplate(String name, String parameter) {
+	Template template = this.document.createTemplate();
+	template.setProperty("name", name);
+	template.setProperty("parameter", parameter);
+
+	InsertTemplateCommand command = new InsertTemplateCommand(this.document, null, template);
+	command.execute();
+	this.commands.addFirst(command);
+}
+
+/**
 * get a textual description of a template in xta format
 * @param name the name of the template
 * @return the description of the specified
 */
-public String getTemplateDescription (String name) {
+public String showTemplate (String name) {
 
 // get the template if it exists
 
@@ -413,7 +570,7 @@ public String getTemplateDescription (String name) {
 	Location committed = null;
 
 	if (template==null) 
-		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, name);
+		this.throwMissingElementException(ObjectCode.TEMPLATE, name);
 
 // loop over the children of the template
 
@@ -473,30 +630,34 @@ public String getTemplateDescription (String name) {
 }
 
 /**
-* return the declaration field of a template described by its name
+* return a certain property of a template
 * @param name the name of the template to return
-* @return the declaration field of the template
+* @return the corresponding property of the template
 * @exception a missing element exception if the template is missing
 */
-public String getTemplateDeclaration (String name) {
+public String getTemplateProperty (String name, String property) {
 	AbstractTemplate template = this.document.getTemplate(name);
 	if (template==null) 
-		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, name);
-	return (String)template.getPropertyValue("name");
+		this.throwMissingElementException(ObjectCode.TEMPLATE, name);
+	return (String)template.getPropertyValue(property);
 }
 
 /**
-* set the declaration property of an existing template
+* set a property of an existing template
 * @param name the name of the template to update
-* @param declaration the new value for the declaration property of the template
+* @param value the value to update
+* @param value the new value for the property of the template
 * @exception a missing element exception if the template was not found
 */
-public void setTemplateDeclaration (String name, String declaration) {
+public void setTemplateProperty (String name, String property, String value) {
 	AbstractTemplate template = this.document.getTemplate(name);
 	if (template==null) 
-		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, name);
-	else
-		template.setProperty("declaration", declaration);
+		this.throwMissingElementException(ObjectCode.TEMPLATE, name);
+	else {
+		SetPropertyCommand command = new SetPropertyCommand(template, property, value);
+		command.execute();
+		this.commands.addFirst(command);
+	}
 }
 
 /**
@@ -517,7 +678,7 @@ public void removeTemplate (String name) {
 */
 public String getGlobalDeclaration() {
 	if (!this.document.isPropertyLocal("declaration"))
-		this.throwMissingElementException(Command.ObjectCode.DECLARATION, null);
+		this.throwMissingElementException(ObjectCode.DECLARATION, null);
 	return (String)this.document.getPropertyValue("declaration");
 }
 
@@ -526,7 +687,9 @@ public String getGlobalDeclaration() {
 * @param declaration the new declaration for this document
 */
 public void setGlobalDeclaration (String declaration) {
-	this.document.setProperty("declaration", declaration);
+	SetPropertyCommand command = new SetPropertyCommand(this.document, "declaration", declaration);
+	command.execute();
+	this.commands.addFirst(command);
 }
 
 /**
@@ -534,7 +697,7 @@ public void setGlobalDeclaration (String declaration) {
 */
 public String getSystem() {
 	if (!this.document.isPropertyLocal("system")) 
-		this.throwMissingElementException (Command.ObjectCode.SYSTEM, null);
+		this.throwMissingElementException (ObjectCode.SYSTEM, null);
 	return (String) this.document.getPropertyValue("system");
 }
 
@@ -543,24 +706,45 @@ public String getSystem() {
 * @param system the new system value
 */
 public void setSystem (String system) {
-	this.document.setProperty("system", system);
+	SetPropertyCommand command = new SetPropertyCommand(this.document, "system", system);
+	command.execute();
+	this.commands.addFirst(command);
 }
 
+/**
+* add a location described by its name and the name of its template
+* @param template_name the name of the template to update
+* @param location_name the name of the new location
+* @exception an exception will be thrown if the template does not exist
+*/
+public void addLocation (String template_name, String location_name) {
+	Template template = (Template) this.document.getTemplate(template_name);
+	if (template==null) this.throwMissingElementException(ObjectCode.TEMPLATE, template_name);
+	if (this.getLocation(template_name, "name", location_name)!=null)
+		this.throwExistingElementException(ObjectCode.LOCATION, location_name);
+
+	Location location = template.createLocation();
+	location.setProperty("name", location_name);
+	InsertElementCommand command = new InsertElementCommand(location.getCommandManager(), template, null, location);
+	command.execute();
+	this.commands.addFirst(command);
+}
 
 /**
-* return a location based on its name and the name of its template
+* return a location based on the name of its template, of one of its properties and its value
 * @param template the name of the template to inspect
-* @param name the name of the location to return
+* @param property the name of the property to inspect
+* @param value the value of the property field of the location to return
 * @return the corresponding location, if found
 * @exception a missing element exception if either the template or the location was not found
 */
-public Location getLocation (String template_name, String name) {
+private Location getLocation (String template_name, String property, Object value) {
 
 // get the given template if it exists
 
 	AbstractTemplate template = this.document.getTemplate(template_name);
 	if (template==null) 
-		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, template_name);
+		this.throwMissingElementException(ObjectCode.TEMPLATE, template_name);
 
 // get the given location and return it if it exists
 
@@ -569,13 +753,13 @@ public Location getLocation (String template_name, String name) {
 
 	while(node!=null && location==null) {
 		if (!(node instanceof Location)) continue;
-		else if (node.getPropertyValue("name")==name) location = (Location)node;
+		else if (node.getPropertyValue(property)==value) location = (Location)node;
 		node = node.getNext();
 	}
 
-	if (location==null) this.throwMissingElementException(Command.ObjectCode.LOCATION, name);
 	return location;
 }
+
 
 /**
 * remove a location based on its name and on the name of its template
@@ -583,13 +767,11 @@ public Location getLocation (String template_name, String name) {
 * @param location the name of the location to remove
 */
 public void removeLocation (String template, String name) {
-	try {
-		Location location = this.getLocation(template, name);
+	Location location = this.getLocation(template, "name", name);
+	if (location==null) this.throwMissingElementException(ObjectCode.LOCATION, name);
 		RemoveElementCommand command = new RemoveElementCommand(location);
 		command.execute();
 		this.commands.addFirst(command);
-	} catch (MissingElementException e) {
-	}
 }
 
 /**
@@ -613,9 +795,71 @@ private String describeLocation (Location location) {
 * @return a string containing the description of the location
 * @exception a missing element exception if either the template or the location does not exist
 */
-public String getLocationDescription (String template, String name) {
-	Location location = this.getLocation (template, name);
+public String showLocation (String template, String name) {
+	Location location = this.getLocation (template, "name", name);
+	if (location==null) this.throwMissingElementException(ObjectCode.LOCATION, name);
 	return this.describeLocation(location);
+}
+
+/**
+* set a property of a location described by the name of its template, of its source and its target
+* @param template the template to update
+* @param name the name of the location to update
+* @param property the name of the property to update
+* @param value the new value for the property
+* @exception an exception if the template, the source or the target does not exist
+*/
+public void setLocationProperty (String template, String name, String property, Object value) {
+
+// first of all check that such a location does not already exist in the template
+
+	Location location = this.getLocation(template, property, value);
+
+	if (location!=null) {
+		switch (property) {
+			case "name":
+			this.throwExistingElementException(ObjectCode.LOCATION, template);
+			break;
+			case "init":
+			this.throwExistingElementException(ObjectCode.INIT, template);
+			break;
+			case "committed":
+			this.throwExistingElementException(ObjectCode.COMMITTED, template);
+			break;
+		}
+	}
+
+// get the given location and update it
+
+	location = this.getLocation(template, "name", name);
+	if (location==null) this.throwMissingElementException(ObjectCode.LOCATION, name);
+	SetPropertyCommand command = new SetPropertyCommand(location, property, value);
+	command.execute();
+	this.commands.addFirst(command);
+}
+
+/**
+* add a new edge described by its template, its source and its destination
+* @param template_name the name of the template to inspect
+* @param source_name the source of the new edge
+* @param target_name the target of the new edge
+* @exception an exception is thrown if either the template, the source or the think does not exist
+*/
+public void addEdge(String template_name, String source_name, String target_name) {
+	Template template = (Template)this.document.getTemplate(template_name);
+	if (template==null) 
+		this.throwMissingElementException(ObjectCode.TEMPLATE, template_name);
+
+	Location source = this.getLocation(template_name, "name", source_name);
+	Location target = this.getLocation(template_name, "name", target_name);
+
+        Edge edge = template.createEdge();
+	edge.setSource(source);
+	edge.setTarget(target);
+
+	InsertElementCommand command = new InsertElementCommand(edge.getCommandManager(), template, null, edge);
+	command.execute();
+	this.commands.addFirst(command);
 }
 
 /**
@@ -626,13 +870,13 @@ public String getLocationDescription (String template, String name) {
 * @return the corresponding edge if found
 * @exception a missing element exception if either the template or the edge was not found
 */
-public Edge getEdge (String template_name, String source, String target) {
+private Edge getEdge (String template_name, String source, String target) {
 
 // get the given template if it exists
 
 	AbstractTemplate template = this.document.getTemplate(template_name);
 	if (template==null) 
-		this.throwMissingElementException(Command.ObjectCode.TEMPLATE, template_name);
+		this.throwMissingElementException(ObjectCode.TEMPLATE, template_name);
 
 // get the given edge and return it if it exists
 
@@ -650,7 +894,7 @@ public Edge getEdge (String template_name, String source, String target) {
 	}
 
 	if (res==null) 
-		this.throwMissingElementException(Command.ObjectCode.EDGE, source+" -> "+target);
+		this.throwMissingElementException(ObjectCode.EDGE, source+" -> "+target);
 	return res;
 }
 
@@ -720,8 +964,44 @@ private String describeEdge (Edge edge) {
 * @return a string containing the description of the edge
 * @exception a missing element exception if either the template or the edge does not exist
 */
-public String getEdgeDescription (String template, String source, String target) {
+public String showEdge (String template, String source, String target) {
 	Edge edge = this.getEdge(template, source, target);
 	return this.describeEdge(edge);
+}
+
+/**
+* set a property of an edge described by the name of its template, of its source and its target
+* @param template the template to update
+* @param source the name of the source of the edge
+* @param target the name of the target of the edge
+* @param name the name of the property to update
+* @param value the new value for the property
+* @exception an exception if the template, the source or the target does not exist
+*/
+public void setEdgeProperty (String template, String source, String target, String name, String value) {
+	Edge edge = this.getEdge(template, source, target);
+	SetPropertyCommand command = new SetPropertyCommand(edge, name, value);
+	command.execute();
+	this.commands.addFirst(command);
+}
+
+/**
+* undo the first command of the list
+*/
+public void undo () {
+	if (this.commands.size()==0) return;
+	AbstractCommand command = this.commands.removeFirst();
+	command.undo();
+	this.undone_commands.addFirst(command);
+}
+
+/**
+* redo the first command of the list
+*/
+public void redo () {
+	if (this.undone_commands.size()==0) return;
+	AbstractCommand command = this.undone_commands.removeFirst();
+	command.execute();
+	this.commands.addFirst(command);
 }
 }

@@ -30,7 +30,9 @@ src/org/uppaal/cli/exceptions/WrongArgumentException.java \
 src/org/uppaal/cli/exceptions/UnknownModeException.java \
 src/org/uppaal/cli/exceptions/ExtraArgumentException.java \
 src/org/uppaal/cli/exceptions/WrongExtensionException.java \
-/Users/schnepfnicolas/Travail/accessibility/CLI/src/org/uppaal/cli/exceptions/WrongFormatException.java
+src/org/uppaal/cli/exceptions/WrongFormatException.java \
+src/org/uppaal/cli/exceptions/ExistingElementException.java \
+src/org/uppaal/cli/exceptions/MissingElementException.java
 
 TEST = \
 src/org/uppaal/cli/test/EditorHandlerTest.java \
