@@ -1,6 +1,6 @@
 package org.uppaal.cli.exceptions;
 
-import org.uppaal.cli.Command;
+import org.uppaal.cli.commands.Command;
 
 /**
 * exception class for an unknown command

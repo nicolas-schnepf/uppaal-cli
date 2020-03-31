@@ -1,5 +1,9 @@
 package org.uppaal.cli;
 
+import org.uppaal.cli.commands.CommandResult;
+import org.uppaal.cli.commands.Command;
+import org.uppaal.cli.commands.Context;
+
 import com.uppaal.engine.EngineException;
 import org.uppaal.cli.exceptions.UnknownCommandException;
 import org.uppaal.cli.exceptions.UnknownModeException;
@@ -111,6 +115,8 @@ public ConsoleManager (Context context) throws IOException, IOException {
 	this.accepted_commands.put("add", Command.CommandCode.ADD);
 	this.accepted_commands.put("set", Command.CommandCode.SET);
 	this.accepted_commands.put("unset", Command.CommandCode.UNSET);
+	this.accepted_commands.put("undo", Command.CommandCode.UNDO);
+	this.accepted_commands.put("redo", Command.CommandCode.REDO);
 	this.accepted_commands.put("show", Command.CommandCode.SHOW);
 	this.accepted_commands.put("remove", Command.CommandCode.REMOVE);
 	this.accepted_commands.put("rename", Command.CommandCode.RENAME);
@@ -155,6 +161,8 @@ public ConsoleManager (Context context) throws IOException, IOException {
 	this.accepted_objects.put("edges", Command.ObjectCode.EDGES);
 	this.accepted_objects.put("location", Command.ObjectCode.LOCATION);
 	this.accepted_objects.put("invariant", Command.ObjectCode.INVARIANT);
+	this.accepted_objects.put("init", Command.ObjectCode.INIT);
+	this.accepted_objects.put("committed", Command.ObjectCode.COMMITTED);
 	this.accepted_objects.put("edge", Command.ObjectCode.EDGE);
 	this.accepted_objects.put("source", Command.ObjectCode.SOURCE);
 	this.accepted_objects.put("target", Command.ObjectCode.TARGET);
@@ -267,6 +275,10 @@ public void run () throws EngineException, IOException {
 
 	while (this.running) {
 		line = reader.readLine();
+		this.out. print("\033[H\033[2J");
+this. out. flush();
+		reader.clearScreen();
+		this.out.flush();
 		if (line==null) break;
 
 // parse the provided command line, execute it and process the corresponding result

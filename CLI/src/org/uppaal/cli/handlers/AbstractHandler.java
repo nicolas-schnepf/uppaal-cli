@@ -9,9 +9,9 @@ import org.uppaal.cli.exceptions.MissingArgumentException;
 import org.uppaal.cli.exceptions.WrongExtensionException;
 import org.uppaal.cli.exceptions.WrongArgumentException;
 import org.uppaal.cli.exceptions.WrongObjectException;
-import org.uppaal.cli.CommandResult;
-import org.uppaal.cli.Command;
-import org.uppaal.cli.Context;
+import org.uppaal.cli.commands.CommandResult;
+import org.uppaal.cli.commands.Command;
+import org.uppaal.cli.commands.Context;
 
 public abstract class AbstractHandler implements Handler {
 protected CommandResult command_result;

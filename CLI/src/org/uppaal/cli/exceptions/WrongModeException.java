@@ -1,7 +1,7 @@
 package org.uppaal.cli.exceptions;
 
 import org.uppaal.cli.handlers.Handler;
-import org.uppaal.cli.Command;
+import org.uppaal.cli.commands.Command;
 
 /**
 * wrong mode exception, raised when the current mode does not exist

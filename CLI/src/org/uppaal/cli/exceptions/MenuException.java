@@ -1,7 +1,7 @@
 package org.uppaal.cli.exceptions;
 
 import org.uppaal.cli.handlers.Handler;
-import org.uppaal.cli.Command;
+import org.uppaal.cli.commands.Command;
 import java.util.LinkedList;
 import java.util.Iterator;
 

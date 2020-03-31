@@ -1,4 +1,4 @@
-package org.uppaal.cli;
+package org.uppaal.cli.commands;
 
 /**
 * class handling the result of a command

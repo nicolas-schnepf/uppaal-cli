@@ -1,7 +1,7 @@
 package org.uppaal.cli.handlers;
 
-import org.uppaal.cli.CommandResult;
-import org.uppaal.cli.Command;
+import org.uppaal.cli.commands.CommandResult;
+import org.uppaal.cli.commands.Command;
 import java.util.List;
 import java.io.IOException;
 import java.net.MalformedURLException;

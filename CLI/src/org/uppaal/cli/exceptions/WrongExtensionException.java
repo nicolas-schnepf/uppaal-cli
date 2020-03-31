@@ -4,7 +4,7 @@ package org.uppaal.cli.exceptions;
 * class handling wrong file extension for protected operations such as import or export
 */
 
-import org.uppaal.cli.Command;
+import org.uppaal.cli.commands.Command;
 
 public class WrongExtensionException extends ConsoleException {
 // the object code of this exception

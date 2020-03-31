@@ -3,9 +3,9 @@ package org.uppaal.cli.test;
 import com.uppaal.model.core2.Document;
 import org.uppaal.cli.handlers.Handler;
 import org.uppaal.cli.handlers.CommandHandler;
-import org.uppaal.cli.CommandResult;
-import org.uppaal.cli.Context;
-import org.uppaal.cli.Command;
+import org.uppaal.cli.commands.CommandResult;
+import org.uppaal.cli.commands.Context;
+import org.uppaal.cli.commands.Command;
 import org.uppaal.cli.exceptions.*;
 
 import static org.junit.Assert.assertNotEquals;

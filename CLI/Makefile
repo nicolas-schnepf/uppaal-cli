@@ -3,11 +3,20 @@ CLASSPATH = src:../uppaal-4.1.24/lib/model.jar:../uppaal-4.1.24/uppaal.jar:../jl
 JUNITPATH=../junit/hamcrest-core-1.3.jar:../junit/junit-4.13.jar
 
 CLI = \
-src/org/uppaal/cli/Command.java \
-src/org/uppaal/cli/CommandResult.java \
-src/org/uppaal/cli/Context.java \
 src/org/uppaal/cli/ConsoleManager.java \
 src/org/uppaal/cli/Main.java
+
+COMMANDS = \
+src/org/uppaal/cli/commands/Command.java \
+src/org/uppaal/cli/commands/CommandResult.java \
+src/org/uppaal/cli/commands/Context.java \
+src/org/uppaal/cli/commands/Expert.java \
+src/org/uppaal/cli/commands/AbstractExpert.java \
+src/org/uppaal/cli/commands/DocumentExpert.java \
+src/org/uppaal/cli/commands/QueryExpert.java \
+src/org/uppaal/cli/commands/TemplateExpert.java \
+src/org/uppaal/cli/commands/LocationExpert.java \
+src/org/uppaal/cli/commands/EdgeExpert.java
 
 HANDLERS = \
 src/org/uppaal/cli/handlers/Handler.java \
@@ -49,8 +58,11 @@ runtest:
 clean: $(CLI:.java=.class) $(HANDLERS:.java=.class) $(EXCEPTIONS:.java=.class)
 	find . -name \*.class -exec rm {} \;
 
-cli: $(CLI) exceptions handlers test
+cli: $(CLI) commands exceptions handlers test
 	javac -Xlint:unchecked -cp $(CLASSPATH) $(CLI)
+
+commands : $(COMMANDS)
+	javac -Xlint:unchecked -cp $(CLASSPATH) $(COMMANDS)
 
 handlers : $(HANDLERS)
 	javac -Xlint:unchecked -cp $(CLASSPATH) $(HANDLERS)
