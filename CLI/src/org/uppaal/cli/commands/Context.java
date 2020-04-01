@@ -6,6 +6,7 @@ package org.uppaal.cli.commands;
 * also support different experts for each type of uppaal objects to manage
 */
 
+import org.uppaal.cli.handlers.Handler.HandlerCode;
 import com.uppaal.model.core2.PrototypeDocument;
 import com.uppaal.model.core2.QueryList;
 import com.uppaal.model.core2.Query;
@@ -23,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class Context {
+private HandlerCode mode;
 private Document document;
 private Engine engine;
 private LinkedList<AbstractCommand> commands;
@@ -51,7 +53,22 @@ public Context () {
 }
 
 /**
-* @ create a new empty document
+* @return the current mode of this context
+*/
+public HandlerCode getMode() {
+	return this.mode;
+}
+
+/**
+* set the current mode of this context
+* @param mode the new mode for this context
+*/
+public void setMode(HandlerCode mode) {
+	this.mode = mode;
+}
+
+/**
+* create a new empty document
 */
 
 public void newDocument () {

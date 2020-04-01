@@ -1,46 +1,26 @@
 package org.uppaal.cli.handlers;
 
-/***
-* abstract class providing the method interfaces and protected fields for any command handler
+/**
+* base abstract class for all handlers
+* providing access to a protected context and to the current mode
 */
 
-import org.uppaal.cli.exceptions.ExtraArgumentException;
-import org.uppaal.cli.exceptions.MissingArgumentException;
-import org.uppaal.cli.exceptions.WrongExtensionException;
-import org.uppaal.cli.exceptions.WrongArgumentException;
-import org.uppaal.cli.exceptions.WrongObjectException;
-import org.uppaal.cli.commands.CommandResult;
-import org.uppaal.cli.commands.Command;
 import org.uppaal.cli.commands.Context;
 
 public abstract class AbstractHandler implements Handler {
-protected CommandResult command_result;
+
+// protected context of this handler
+
 protected Context context;
-protected Command.CommandCode[] accepted_commands;
-protected Command.ObjectCode[] accepted_objects;
-private WrongObjectException wrong_object_exception;
-private WrongArgumentException wrong_argument_exception;
-private WrongExtensionException wrong_extension_exception;
-private MissingArgumentException missing_argument_exception;
-private ExtraArgumentException extra_argument_exception;
 
 /**
 * protected constructor of an abstract handler
-* initialize it from a context and an array of accepted commands
-* @param context the context that will be used by this handler
-* @param accepted_commands the array of command codes accepted by this handler
+* @param context the context of this handler
 */
-
 protected AbstractHandler (Context context) {
 	this.context = context;
-	this.accepted_commands = accepted_commands;
-	this.command_result = new CommandResult();
-	this.extra_argument_exception = new ExtraArgumentException();
-	this.missing_argument_exception = new MissingArgumentException();
-	this.wrong_argument_exception = new WrongArgumentException();
-	this.wrong_extension_exception = new WrongExtensionException();
-	this.wrong_object_exception = new WrongObjectException();
 }
+
 
 /***
 * set the uppaal context of this command handler
@@ -51,101 +31,8 @@ public void setContext (Context context) {
 	this.context = context;
 }
 
-/***
-* throw a missing argument exception
-* @param command_code the code of the command
-* @param object_code the object code for which throwing the exception
-* @param expected the expected number of arguments
-* @param received the received number of arguments
-* @exception a missing argument exception
-*/
-protected void throwMissingArgumentException (Command.CommandCode command_code, Command.ObjectCode object_code, int expected, int received) {
-	this.missing_argument_exception.setCommandCode(command_code);
-	this.missing_argument_exception.setObjectCode(object_code);
-	this.missing_argument_exception.setExpectedArgumentNumber(expected);
-	this.missing_argument_exception.setReceivedArgumentNumber(received);
-	throw (this.missing_argument_exception);
-}
-
-/***
-* throw a extra argument exception
-* @param command_code the code of the command
-* @param object_code the code of the object
-* @param expected the expected number of arguments
-* @param received the received number of arguments
-* @exception a extra argument exception
-*/
-protected void throwExtraArgumentException (Command.CommandCode command_code, Command.ObjectCode object_code, int expected, int received) {
-	this.extra_argument_exception.setCommandCode(command_code);
-	this.extra_argument_exception.setObjectCode(object_code);
-	this.extra_argument_exception.setExpectedArgumentNumber(expected);
-	this.extra_argument_exception.setReceivedArgumentNumber(received);
-	throw (this.extra_argument_exception);
-}
-
-/**
-* throw a wrong object exception
-* @param command_code the name of the command throwing a wrong object exception
-* @param object_code the code of the wrong object
-* @exception an exception describing the kind of wrong object which were received
-*/
-public void throwWrongObjectException (Command.CommandCode command_code, Command.ObjectCode object_code) {
-	this.wrong_object_exception.setCommandCode(command_code);
-	this.wrong_object_exception.setObjectCode(object_code);
-	throw this.wrong_object_exception;
-}
-
-/***
-* throw a wrong argument exception
-* @param command_code the code of the command that received the wrong argument
-* @param argument the wrong argument received by the handler
-* @exception a wrong argument exception
-*/
-
-protected void throwWrongArgumentException (Command.CommandCode command_code, String argument) {
-	this .wrong_argument_exception.setCommandCode(command_code);
-	this.wrong_argument_exception.setMessage(argument);
-	throw this.wrong_argument_exception;
-}
-
-
-
-/**
-* throw a wrong extension exception
-* @param command_code the code of the command that requires a wrong extension exception
-* @param object_code the code of the object for which the wrong extension exception is thrown
-* @param extension the extension of the file
-* @exception a wrong extension exception
-*/
-protected void throwWrongExtensionException(Command.CommandCode command_code, Command.ObjectCode object_code, String extension) {
-	this.wrong_extension_exception.setCommandCode(command_code);
-	this.wrong_extension_exception.setObjectCode(object_code);
-	this.wrong_extension_exception.setWrongExtension(extension);
-	throw this.wrong_extension_exception;
-}
-
 @Override
-public Command.CommandCode[] getAcceptedCommands() {
-	return this.accepted_commands;
-}
-
-@Override
-public Command.ObjectCode[] getAcceptedObjects() {
-	return this.accepted_objects;
-}
-
-@Override
-public boolean acceptCommand (Command command) {
-	Command.CommandCode command_code= command.getCommandCode();
-boolean 	found = false;
-
-	for (Command.CommandCode code:this.accepted_commands) {
-		if (code == command_code) {
-			found = true;
-			break;
-		}
-	}
-
-	return found;
+public HandlerCode getMode () {
+	return this.context.getMode();
 }
 }

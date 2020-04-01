@@ -1,10 +1,13 @@
 package org.uppaal.cli.handlers;
 
+import org.uppaal.cli.commands.Command.OperationCode;
+import org.uppaal.cli.commands.Command.ObjectCode;
 import org.uppaal.cli.commands.CommandResult;
 import org.uppaal.cli.commands.Command;
 import java.util.List;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashSet;
 
 /**
 * interface providing the declaration of all public methods for a handler
@@ -30,13 +33,13 @@ public CommandResult handle (Command command) throws MalformedURLException, IOEx
 * return the list of commands handled by this handler
 * @return the list of commands used by this handler
 */
-public Command.CommandCode[] getAcceptedCommands();
+public HashSet<OperationCode> getAcceptedOperations();
 
 /**
 * return the list of objects handled by this handler
 * @return the list of objects used by this handler
 */
-public Command.ObjectCode[] getAcceptedObjects();
+public HashSet<ObjectCode> getAcceptedObjects();
 
 /**
 * check if a command is accepted by a handler

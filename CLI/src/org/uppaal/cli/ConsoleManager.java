@@ -1,5 +1,7 @@
 package org.uppaal.cli;
 
+import org.uppaal.cli.commands.Command.OperationCode;
+import org.uppaal.cli.commands.Command.ObjectCode;
 import org.uppaal.cli.commands.CommandResult;
 import org.uppaal.cli.commands.Command;
 import org.uppaal.cli.commands.Context;
@@ -21,6 +23,7 @@ import jline.console.completer.ArgumentCompleter;
 
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,10 +50,10 @@ private Command command;
 private UnknownCommandException unknown_command_exception;
 
 // hash map of accepted commands
-private HashMap<String, Command.CommandCode> accepted_commands;
+private HashMap<String, Command.OperationCode> accepted_commands;
 
 // reverse hash map from command codes to command names
-private HashMap<Command.CommandCode, String> command_names;
+private HashMap<Command.OperationCode, String> command_names;
 
 // hash map of accepted modes for this command manager
 private HashMap <String, Handler.HandlerCode> accepted_modes;
@@ -96,8 +99,8 @@ public ConsoleManager (Context context) throws IOException, IOException {
             	this.out = new PrintWriter(reader.getOutput());
 	this.err = new PrintWriter(System.err);
 	this.command_handler = new CommandHandler(context);
-	this.accepted_commands = new HashMap<String, Command.CommandCode>();
-	this.command_names = new HashMap<Command.CommandCode, String>();
+	this.accepted_commands = new HashMap<String, Command.OperationCode>();
+	this.command_names = new HashMap<Command.OperationCode, String>();
 	this.accepted_modes = new HashMap<String, Handler.HandlerCode>();
 	this.mode_names = new HashMap<Handler.HandlerCode, String>();
 	this.accepted_objects = new HashMap<String, Command.ObjectCode>();
@@ -106,31 +109,31 @@ public ConsoleManager (Context context) throws IOException, IOException {
 
 // initialize the map of accepted commands
 
-	this.accepted_commands.put ("start", Command.CommandCode.START);
-	this.accepted_commands.put("exit", Command.CommandCode.EXIT);
-	this.accepted_commands.put("export", Command.CommandCode.EXPORT);
-	this.accepted_commands.put("import", Command.CommandCode.IMPORT);
-	this.accepted_commands.put("check", Command.CommandCode.CHECK);
-	this.accepted_commands.put("clear", Command.CommandCode.CLEAR);
-	this.accepted_commands.put("add", Command.CommandCode.ADD);
-	this.accepted_commands.put("set", Command.CommandCode.SET);
-	this.accepted_commands.put("unset", Command.CommandCode.UNSET);
-	this.accepted_commands.put("undo", Command.CommandCode.UNDO);
-	this.accepted_commands.put("redo", Command.CommandCode.REDO);
-	this.accepted_commands.put("show", Command.CommandCode.SHOW);
-	this.accepted_commands.put("remove", Command.CommandCode.REMOVE);
-	this.accepted_commands.put("rename", Command.CommandCode.RENAME);
-	this.accepted_commands.put("select", Command.CommandCode.SELECT);
-	this.accepted_commands.put("preview", Command.CommandCode.PREVIEW);
-	this.accepted_commands.put("next", Command.CommandCode.NEXT);
-	this.accepted_commands.put("finish", Command.CommandCode.FINISH);
-	this.accepted_commands.put("unselect", Command.CommandCode.UNSELECT);
-	this.accepted_commands.put("help", Command.CommandCode.HELP);
+	this.accepted_commands.put ("start", Command.OperationCode.START);
+	this.accepted_commands.put("exit", Command.OperationCode.EXIT);
+	this.accepted_commands.put("export", Command.OperationCode.EXPORT);
+	this.accepted_commands.put("import", Command.OperationCode.IMPORT);
+	this.accepted_commands.put("check", Command.OperationCode.CHECK);
+	this.accepted_commands.put("clear", Command.OperationCode.CLEAR);
+	this.accepted_commands.put("add", Command.OperationCode.ADD);
+	this.accepted_commands.put("set", Command.OperationCode.SET);
+	this.accepted_commands.put("unset", Command.OperationCode.UNSET);
+	this.accepted_commands.put("undo", Command.OperationCode.UNDO);
+	this.accepted_commands.put("redo", Command.OperationCode.REDO);
+	this.accepted_commands.put("show", Command.OperationCode.SHOW);
+	this.accepted_commands.put("remove", Command.OperationCode.REMOVE);
+	this.accepted_commands.put("rename", Command.OperationCode.RENAME);
+	this.accepted_commands.put("select", Command.OperationCode.SELECT);
+	this.accepted_commands.put("preview", Command.OperationCode.PREVIEW);
+	this.accepted_commands.put("next", Command.OperationCode.NEXT);
+	this.accepted_commands.put("finish", Command.OperationCode.FINISH);
+	this.accepted_commands.put("unselect", Command.OperationCode.UNSELECT);
+	this.accepted_commands.put("help", Command.OperationCode.HELP);
 
 // initialize the map of command names from the previous one
 
 	for (String command_name: this.accepted_commands.keySet()) {
-		Command.CommandCode code = this.accepted_commands.get(command_name);
+		Command.OperationCode code = this.accepted_commands.get(command_name);
 		this.command_names.put(code, command_name);
 	}
 
@@ -211,17 +214,17 @@ private Completer getCommandCompleter () {
 
 // create a list of commands for the current active mode
 
-	Command.CommandCode[] active_commands = this.command_handler.getActiveCommands();
+	HashSet<OperationCode> active_commands = this.command_handler.getActiveCommands();
 	LinkedList<String> commands = new LinkedList<String>();
 
-	for (Command.CommandCode command_code:active_commands) {
-		String command_name = this.command_names.get(command_code);
+	for (Command.OperationCode operation_code:active_commands) {
+		String command_name = this.command_names.get(operation_code);
 		commands.add(command_name);
 	}
 
 // create a list of objects for the current active mode
 
-	Command.ObjectCode[] accepted_objects = this.command_handler.getAcceptedObjects();
+	HashSet<ObjectCode> accepted_objects = this.command_handler.getAcceptedObjects();
 	LinkedList<String> objects = new LinkedList<String>();
 
 	for (Command.ObjectCode object_code:accepted_objects) {
@@ -332,7 +335,7 @@ private Command parseCommandLine (String line) {
 	token = line.substring(begin,pos);
 
 	if (this.accepted_commands.containsKey(token))
-		this.command.setCommandCode(this.accepted_commands.get(token));
+		this.command.setOperationCode(this.accepted_commands.get(token));
 	else {
 		this.unknown_command_exception.setCommand(token);
 		throw this.unknown_command_exception;

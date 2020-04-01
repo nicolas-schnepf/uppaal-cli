@@ -11,15 +11,15 @@ import java.net.MalformedURLException;
 * supporting all commands for the simulator mode
 */
 
-public class SimulatorHandler extends AbstractHandler {
+public class SimulatorHandler extends ModeHandler {
 // array of accepted command codes
 
-private static Command.CommandCode[] simulator_commands = {
-Command.CommandCode.SHOW,
-Command.CommandCode.SELECT,
-Command.CommandCode.PREVIEW,
-Command.CommandCode.NEXT,
-Command.CommandCode.FINISH
+private static Command.OperationCode[] simulator_commands = {
+Command.OperationCode.SHOW,
+Command.OperationCode.SELECT,
+Command.OperationCode.PREVIEW,
+Command.OperationCode.NEXT,
+Command.OperationCode.FINISH
 };
 
 // private array of accepted object codes
@@ -45,13 +45,6 @@ Command.ObjectCode.TRANSITIONS
 
 public SimulatorHandler (Context context) {
 	super(context);
-	this.accepted_commands = simulator_commands;
-	this.accepted_objects = simulator_objects;
-}
-
-@Override
-public CommandResult handle (Command command) throws MalformedURLException, IOException {
-	return this.command_result;
 }
 
 @Override

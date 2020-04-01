@@ -18,7 +18,7 @@ import java.lang.Iterable;
  */
 public class Command implements Iterable<String>
 {
-public static enum CommandCode {
+public static enum OperationCode {
 ADD, 
 IMPORT, 
 EXPORT, 
@@ -85,7 +85,7 @@ MODE
 }
 
     private String command = null;
-    private CommandCode command_code;
+    private OperationCode operation_code;
     private ObjectCode object_code;
     private Handler.HandlerCode mode;
     private LinkedList<String> arguments;
@@ -96,17 +96,17 @@ MODE
 
 /**
 * set the command code of this command
-* @param command_code the new command code for this command
+* @param operation_code the new command code for this command
 */
-public void setCommandCode(CommandCode command_code) {
-	this.command_code = command_code;
+public void setOperationCode(OperationCode operation_code) {
+	this.operation_code = operation_code;
 }
 
 /**
 * @return the command code of this command
 */
-public CommandCode getCommandCode () {
-	return this.command_code;
+public OperationCode getOperationCode () {
+	return this.operation_code;
 }
 
 /**
@@ -165,7 +165,7 @@ public Iterator<String> iterator() {
 * clear the list of arguments of this command
 */
 public void clear() {
-	this.command_code = CommandCode.UNKNOWN;
+	this.operation_code = OperationCode.UNKNOWN;
 	this.object_code = ObjectCode.UNKNOWN;
 	this.mode = Handler.HandlerCode.UNKNOWN;
 	this.arguments.clear();

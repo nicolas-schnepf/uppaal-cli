@@ -32,7 +32,7 @@ public void setup () throws Exception {
 // connect the engine and setup the command handler
 
 	this.context.connectEngine();
-	this.command.setCommandCode(Command.CommandCode.START);
+	this.command.setOperationCode(Command.OperationCode.START);
 	this.command.setMode(Handler.HandlerCode.EDITOR);
 	this.command_handler.handle(command);
 	assertEquals(this.command_handler.getMode(), Handler.HandlerCode.EDITOR);
@@ -47,7 +47,7 @@ public void teardown () {
 
 @Test
 public void testImportValidDocument () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 
@@ -60,7 +60,7 @@ public void testImportValidDocument () throws Exception {
 
 @Test (expected = WrongExtensionException.class)
 public void testImportWrongExtension () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.doc");
 
@@ -73,7 +73,7 @@ public void testImportWrongExtension () throws Exception {
 
 @Test (expected = MissingArgumentException.class)
 public void testImportWithoutFilename () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 //	this.command.addArgument("train-gate.doc");
 
@@ -86,7 +86,7 @@ public void testImportWithoutFilename () throws Exception {
 
 @Test (expected = ExtraArgumentException.class)
 public void testImportWithTwoFilenames () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.doc");
 	this.command.addArgument("train-gate.doc");
@@ -100,7 +100,7 @@ public void testImportWithTwoFilenames () throws Exception {
 
 @Test
 public void testImportValidQueryList () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.QUERIES);
 	this.command.addArgument("train-gate.q");
 
@@ -112,7 +112,7 @@ public void testImportValidQueryList () throws Exception {
 
 @Test (expected = WrongExtensionException.class)
 public void testImportWrongQueryExtension () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.QUERIES);
 	this.command.addArgument("train-gate.xta");
 
@@ -124,7 +124,7 @@ public void testImportWrongQueryExtension () throws Exception {
 
 @Test
 public void testExportValidDocument () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 
@@ -133,13 +133,13 @@ public void testExportValidDocument () throws Exception {
 	assertNotEquals(this.context.getDocument(), document);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setOperationCode(Command.OperationCode.EXPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("output.xta");
 	this.command_handler.handle(this.command);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("output.xta");
 
@@ -152,7 +152,7 @@ public void testExportValidDocument () throws Exception {
 
 @Test (expected = WrongExtensionException.class)
 public void testExportWrongExtension () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setOperationCode(Command.OperationCode.EXPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.doc");
 
@@ -165,7 +165,7 @@ public void testExportWrongExtension () throws Exception {
 
 @Test (expected = MissingArgumentException.class)
 public void testExportWithoutFilename () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setOperationCode(Command.OperationCode.EXPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 //	this.command.addArgument("train-gate.doc");
 
@@ -178,7 +178,7 @@ public void testExportWithoutFilename () throws Exception {
 
 @Test (expected = ExtraArgumentException.class)
 public void testExportWithTwoFilenames () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setOperationCode(Command.OperationCode.EXPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.doc");
 	this.command.addArgument("train-gate.doc");
@@ -193,7 +193,7 @@ public void testExportWithTwoFilenames () throws Exception {
 
 @Test
 public void testExportValidQueryList () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.QUERIES);
 	this.command.addArgument("train-gate.q");
 
@@ -201,13 +201,13 @@ public void testExportValidQueryList () throws Exception {
 	assertNotEquals(this.context.getQueryNumber(), 0);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setOperationCode(Command.OperationCode.EXPORT);
 	this.command.setObjectCode(Command.ObjectCode.QUERIES);
 	this.command.addArgument("output.q");
 	this.command_handler.handle(this.command);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.QUERIES);
 	this.command.addArgument("output.q");
 
@@ -219,7 +219,7 @@ public void testExportValidQueryList () throws Exception {
 
 @Test (expected = WrongExtensionException.class)
 public void testExportWrongQueryExtension () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.EXPORT);
+	this.command.setOperationCode(Command.OperationCode.EXPORT);
 	this.command.setObjectCode(Command.ObjectCode.QUERIES);
 	this.command.addArgument("output.xta");
 
@@ -231,7 +231,7 @@ public void testExportWrongQueryExtension () throws Exception {
 
 @Test 
 public void testClearValidDocument () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 
@@ -240,7 +240,7 @@ public void testClearValidDocument () throws Exception {
 	assertNotEquals(this.context.getDocument(), document);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.CLEAR);
+	this.command.setOperationCode(Command.OperationCode.CLEAR);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 
 	document = this.context.getDocument();
@@ -252,7 +252,7 @@ public void testClearValidDocument () throws Exception {
 
 @Test (expected = ExtraArgumentException.class)
 public void testClearExtraArgument () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.CLEAR);
+	this.command.setOperationCode(Command.OperationCode.CLEAR);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.doc");
 
@@ -265,14 +265,14 @@ public void testClearExtraArgument () throws Exception {
 
 @Test 
 public void testClearValidQueries () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.QUERIES);
 	this.command.addArgument("train-gate.q");
 	this.command_handler.handle(this.command);
 	assertNotEquals(this.context.getQueryNumber(), 0);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.CLEAR);
+	this.command.setOperationCode(Command.OperationCode.CLEAR);
 	this.command.setObjectCode(Command.ObjectCode.QUERIES);
 	this.command_handler.handle(this.command);
 	assertEquals(this.context.getQueryNumber(), 0);
@@ -282,14 +282,14 @@ public void testClearValidQueries () throws Exception {
 
 @Test
 public void testshowTemplates () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 	Document document = this.context.getDocument();
 	this.command_handler.handle(this.command);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setOperationCode(Command.OperationCode.SHOW);
 	this.command.setObjectCode(Command.ObjectCode.TEMPLATES);
 	CommandResult result = this.command_handler.handle(command);
 	assertEquals(result.getArgumentNumber(), 2);
@@ -299,14 +299,14 @@ public void testshowTemplates () throws Exception {
 
 @Test (expected = ExtraArgumentException.class)
 public void testshowTemplatesWithExtraArgument () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 	Document document = this.context.getDocument();
 	this.command_handler.handle(this.command);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setOperationCode(Command.OperationCode.SHOW);
 	this.command.setObjectCode(Command.ObjectCode.TEMPLATES);
 	this.command.addArgument("document");
 	CommandResult result = this.command_handler.handle(command);
@@ -317,14 +317,14 @@ public void testshowTemplatesWithExtraArgument () throws Exception {
 
 @Test
 public void testshowDeclaration () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 	Document document = this.context.getDocument();
 	this.command_handler.handle(this.command);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setOperationCode(Command.OperationCode.SHOW);
 	this.command.setObjectCode(Command.ObjectCode.DECLARATION);
 	CommandResult result = this.command_handler.handle(command);
 	assertEquals(result.getArgumentNumber(), 1);
@@ -335,14 +335,14 @@ public void testshowDeclaration () throws Exception {
 
 @Test
 public void testshowTemplateDeclaration () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 	Document document = this.context.getDocument();
 	this.command_handler.handle(this.command);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setOperationCode(Command.OperationCode.SHOW);
 	this.command.setObjectCode(Command.ObjectCode.DECLARATION);
 	this.command.addArgument("Train");
 	CommandResult result = this.command_handler.handle(command);
@@ -354,14 +354,14 @@ public void testshowTemplateDeclaration () throws Exception {
 
 @Test (expected = MissingElementException.class)
 public void testshowUnexistingTemplateDeclaration () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 	Document document = this.context.getDocument();
 	this.command_handler.handle(this.command);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setOperationCode(Command.OperationCode.SHOW);
 	this.command.setObjectCode(Command.ObjectCode.DECLARATION);
 	this.command.addArgument("Unexisting");
 	CommandResult result = this.command_handler.handle(command);
@@ -373,14 +373,14 @@ public void testshowUnexistingTemplateDeclaration () throws Exception {
 
 @Test (expected = ExtraArgumentException.class)
 public void testShowDeclarationWithExtraArgument () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 	Document document = this.context.getDocument();
 	this.command_handler.handle(this.command);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setOperationCode(Command.OperationCode.SHOW);
 	this.command.setObjectCode(Command.ObjectCode.DECLARATION);
 	this.command.addArgument("Unexisting");
 	this.command.addArgument("Unexisting");
@@ -393,14 +393,14 @@ public void testShowDeclarationWithExtraArgument () throws Exception {
 
 @Test
 public void testshowTemplate () throws Exception {
-	this.command.setCommandCode(Command.CommandCode.IMPORT);
+	this.command.setOperationCode(Command.OperationCode.IMPORT);
 	this.command.setObjectCode(Command.ObjectCode.DOCUMENT);
 	this.command.addArgument("train-gate.xta");
 	Document document = this.context.getDocument();
 	this.command_handler.handle(this.command);
 
 	this.command.clear();
-	this.command.setCommandCode(Command.CommandCode.SHOW);
+	this.command.setOperationCode(Command.OperationCode.SHOW);
 	this.command.setObjectCode(Command.ObjectCode.TEMPLATE);
 	this.command.addArgument("Train");
 	CommandResult result = this.command_handler.handle(command);

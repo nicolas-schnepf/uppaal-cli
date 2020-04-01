@@ -20,7 +20,7 @@ OK, FILE_NOT_FOUND, OBJECT_NOT_FOUND, EDIT, MENU, EXIT, MODE_CHANGED
 
 // code of the executed command
 
-private Command.CommandCode command_code;
+private Command.OperationCode operation_code;
 
 // return code of this command result
 
@@ -45,8 +45,8 @@ public CommandResult() {
 * @return the command code of this result
 */
 
-public Command.CommandCode getCommandCode() {
-	return this.command_code;
+public Command.OperationCode getOperationCode() {
+	return this.operation_code;
 }
 
 /**
@@ -54,8 +54,8 @@ public Command.CommandCode getCommandCode() {
 * @param the new command code of this result
 */
 
-public void setCommandCode(Command.CommandCode command_code) {
-	this.command_code = command_code;
+public void setOperationCode(Command.OperationCode operation_code) {
+	this.operation_code = operation_code;
 }
 
 /**

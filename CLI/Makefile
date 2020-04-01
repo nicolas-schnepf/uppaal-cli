@@ -24,7 +24,18 @@ src/org/uppaal/cli/handlers/AbstractHandler.java \
 src/org/uppaal/cli/handlers/CommandHandler.java \
 src/org/uppaal/cli/handlers/EditorHandler.java \
 src/org/uppaal/cli/handlers/SimulatorHandler.java \
-src/org/uppaal/cli/handlers/VerifierHandler.java
+src/org/uppaal/cli/handlers/VerifierHandler.java \
+src/org/uppaal/cli/handlers/AddHandler.java \
+src/org/uppaal/cli/handlers/ClearHandler.java \
+src/org/uppaal/cli/handlers/ExportHandler.java \
+src/org/uppaal/cli/handlers/ImportHandler.java \
+src/org/uppaal/cli/handlers/ModeHandler.java \
+src/org/uppaal/cli/handlers/OperationHandler.java \
+src/org/uppaal/cli/handlers/RemoveHandler.java \
+src/org/uppaal/cli/handlers/RenameHandler.java \
+src/org/uppaal/cli/handlers/SetHandler.java \
+src/org/uppaal/cli/handlers/ShowHandler.java \
+src/org/uppaal/cli/handlers/UnsetHandler.java
 
 EXCEPTIONS = \
 src/org/uppaal/cli/exceptions/ConsoleException.java \

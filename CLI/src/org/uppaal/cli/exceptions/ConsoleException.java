@@ -29,7 +29,7 @@ EXISTING_ELEMENT
 
 // command code
 
-protected Command.CommandCode command_code;
+protected Command.OperationCode operation_code;
 
 // object code
 
@@ -56,16 +56,16 @@ protected ConsoleException (ExceptionCode code) {
 * @return the command code of this exception
 */
 
-public Command.CommandCode getCommandCode() {
-	return this.command_code;
+public Command.OperationCode getOperationCode() {
+	return this.operation_code;
 }
 
 /**
 * set the command code of this exception
-* @param command_code: the new command code of this exception
+* @param operation_code: the new command code of this exception
 */
-public void setCommandCode (Command.CommandCode command_code) {
-	this.command_code = command_code;
+public void setOperationCode (Command.OperationCode operation_code) {
+	this.operation_code = operation_code;
 }
 
 /**

@@ -11,18 +11,18 @@ import java.net.MalformedURLException;
 * supporting all commands for the verifier mode
 */
 
-public class VerifierHandler extends AbstractHandler {
+public class VerifierHandler extends ModeHandler {
 // array of accepted command codes
 
-private static Command.CommandCode[] verifier_commands = {
-Command.CommandCode.CHECK,
-Command.CommandCode.IMPORT,
-Command.CommandCode.ADD,
-Command.CommandCode.SET,
-Command.CommandCode.SHOW,
-Command.CommandCode.REMOVE,
-Command.CommandCode.SELECT,
-Command.CommandCode.UNSELECT
+private static Command.OperationCode[] verifier_commands = {
+Command.OperationCode.CHECK,
+Command.OperationCode.IMPORT,
+Command.OperationCode.ADD,
+Command.OperationCode.SET,
+Command.OperationCode.SHOW,
+Command.OperationCode.REMOVE,
+Command.OperationCode.SELECT,
+Command.OperationCode.UNSELECT
 };
 
 // array of accepted objects for a verifier handler
@@ -42,13 +42,6 @@ Command.ObjectCode.OPTIONS
 
 public VerifierHandler (Context context) {
 	super(context);
-	this.accepted_commands = verifier_commands;
-	this.accepted_objects = verifier_objects;
-}
-
-@Override
-public CommandResult handle (Command command) throws MalformedURLException, IOException {
-	return this.command_result;
 }
 
 @Override
