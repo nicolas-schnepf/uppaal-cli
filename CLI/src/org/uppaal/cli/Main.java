@@ -2,7 +2,7 @@ package org.uppaal.cli;
 
 import org.uppaal.cli.commands.CommandResult;
 import org.uppaal.cli.commands.Command;
-import org.uppaal.cli.commands.Context;
+import org.uppaal.cli.context.Context;
 
 /**
  * The main/entry class implementing the command line interface.

@@ -1,10 +1,10 @@
-The command line interface supports three kinds of screen:
+The command line support several kinds of screens:
 
-- normal screen:
-simply display the prompt with the active mode, accept commands from user and display errors if any;
+- command screen: accepts commands, display their result and error messages;
+- edition screen: display a text area with the current text and several key bindings;
+- vertical scrolling menu: display a list of items that can be vertically scrolled;
+- horizontal scrolling menu: same thing than the vertical one but horizontally.
 
-- edition screen:
-Show an edition text area, accept text from the user and display compilation errors (if any);
+Scrolling menus should support browsing with up and down arrows for the vertical one and left and right arrow for the horizontal one. In addition it should be possible to select an element by simply typing entry or to get more information about it by typing space, in this last case a new screen with the content of the current element should be started. In any of these horizontal or vertical scrolling menus or in the detail screen it should be forward to come back to the command line screen by typing escape or backspace, the meaning of these keys could be discussed but for instance escape could be a total leaving of the scrolling menu and backspace would simply be to come back to the upper level.
 
-- menu screen:
-display a list of possible choices and accepts user selection commands.
+Anyway 

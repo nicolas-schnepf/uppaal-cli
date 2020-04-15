@@ -1,10 +1,10 @@
-package org.uppaal.cli.commands;
+package org.uppaal.cli.context;
 
 /**
 * query handler, responsible for all operations on queries
 */
 
-import org.uppaal.cli.commands.Command.ObjectCode;
+import org.uppaal.cli.enumerations.ObjectCode;
 import org.uppaal.cli.exceptions.WrongFormatException;
 import com.uppaal.model.core2.QueryList;
 import com.uppaal.model.core2.Query;
@@ -330,4 +330,12 @@ public void setQueryProperty(String name, String property, String value) {
 	command.execute();
 	this.context.addCommand(command);
 }
+
+/**
+* @return the number of queries of this context
+*/
+public int getQueryNumber () {
+	return this.context.getDocument().getQueryList().size();
+}
+
 }

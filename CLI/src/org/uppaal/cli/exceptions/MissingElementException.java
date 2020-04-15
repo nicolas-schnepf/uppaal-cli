@@ -1,5 +1,10 @@
 package org.uppaal.cli.exceptions;
 
+import org.uppaal.cli.enumerations.ExceptionCode;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
+import org.uppaal.cli.enumerations.ModeCode;
+
 /**
 * missing element exception, thrown when an uppaal is missing in the current document
 */
@@ -12,7 +17,7 @@ private String name;
 * public constructor of a missing element exception
 */
 public MissingElementException () {
-	super(ConsoleException.ExceptionCode.MISSING_ELEMENT);
+	super(ExceptionCode.MISSING_ELEMENT);
 }
 
 /**

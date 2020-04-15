@@ -4,7 +4,11 @@ package org.uppaal.cli.exceptions;
 * class handling wrong format exceptions for editing and importing commands
 */
 
-import org.uppaal.cli.commands.Command;
+
+import org.uppaal.cli.enumerations.ExceptionCode;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
+
 
 public class WrongFormatException extends ConsoleException {
 // the filename associated with this exception

@@ -1,4 +1,4 @@
-package org.uppaal.cli.handlers;
+package org.uppaal.cli.commands;
 
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
@@ -6,11 +6,17 @@ import com.uppaal.model.core2.Location;
 import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.QueryList;
 import com.uppaal.model.core2.Query;
-import org.uppaal.cli.commands.Command.OperationCode;
-import org.uppaal.cli.commands.Command.ObjectCode;
+
+import org.uppaal.cli.commands.AbstractHandler;
+import org.uppaal.cli.commands.ModeHandler;
+import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.commands.Handler;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
+import org.uppaal.cli.enumerations.ResultCode;
 import org.uppaal.cli.commands.CommandResult;
 import org.uppaal.cli.commands.Command;
-import org.uppaal.cli.commands.Context;
+import org.uppaal.cli.context.Context;
 
 import java.net.MalformedURLException;
 import java.util.LinkedList;
@@ -20,17 +26,13 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
 /**
-* concrete class implementing a rename handler
-* supporting all possible rename commands under mode control
+* concrete class implementing a reset handler
+* supporting all possible reset commands under mode control
 */
 
-public class RenameHandler extends OperationHandler {
-public RenameHandler (Context context) {
-	super(context, OperationCode.RENAME);
-	this.accepted_objects = new HashSet<ObjectCode>();
-	this.accepted_objects.add(ObjectCode.QUERY);
-	this.accepted_objects.add(ObjectCode.TEMPLATE);
-	this.accepted_objects.add(ObjectCode.LOCATION);
+public class ResetHandler extends AbstractHandler {
+public ResetHandler (Context context) {
+	super(context, OperationCode.RESET);
 }
 /**
 * handle rename commands
@@ -42,8 +44,8 @@ public CommandResult handle(Command command) {
 
 // process the command depending on its object code
 
-	Command.OperationCode operation_code = command.getOperationCode();
-	Command.ObjectCode object_code = command.getObjectCode();
+	OperationCode operation_code = command.getOperationCode();
+	ObjectCode object_code = command.getObjectCode();
 	int argument_number = command.getArgumentNumber();
 	this.command_result.clear();
 	this.command_result.setOperationCode(operation_code);
@@ -58,14 +60,11 @@ public CommandResult handle(Command command) {
 // for a query check that we have its name, its formula and its comment
 
 		case QUERY:
-			if (argument_number<2) 
-				this.throwMissingArgumentException(operation_code, object_code, 2, argument_number);
-			else if (argument_number>2)
-				this.throwExtraArgumentException(operation_code, object_code, 2, argument_number);
-
+			this.checkMode(command, ModeCode.EDITOR);
+		this.checkArgumentNumber(command, 2, 2);
 		name = command.getArgumentAt(0);
 		new_name = command.getArgumentAt(1);
-			this.context.setQueryProperty(name, "name", new_name);
+			this.context.getQueryExpert().setQueryProperty(name, "name", new_name);
 			command_result.addArgument(name);
 			command_result.addArgument(new_name);
 		break;
@@ -73,14 +72,11 @@ public CommandResult handle(Command command) {
 // for a template check that we have its name
 
 		case TEMPLATE:
-			if (argument_number<2) 
-				this.throwMissingArgumentException(operation_code, object_code, 2, argument_number);
-			else if (argument_number>2)
-				this.throwExtraArgumentException(operation_code, object_code, 2, argument_number);
-
+			this.checkMode(command, ModeCode.EDITOR);
+		this.checkArgumentNumber(command, 2, 2);
 		name = command.getArgumentAt(0);
 		new_name = command.getArgumentAt(1);
-			this.context.setTemplateProperty(name, "name", new_name);
+			this.context.getTemplateExpert().setTemplateProperty(name, "name", new_name);
 			command_result.addArgument(name);
 			command_result.addArgument(new_name);
 		break;
@@ -88,15 +84,12 @@ public CommandResult handle(Command command) {
 // for a location check that we have its name and the name of its template
 
 		case LOCATION:
-		if (argument_number<3)
-		this.throwMissingArgumentException(operation_code, object_code, 2, argument_number);
-		else if (argument_number>3)
-			this.throwExtraArgumentException(operation_code, object_code, 2, argument_number);
-
+		this.checkMode(command, ModeCode.EDITOR);
+		this.checkArgumentNumber(command, 3, 3);
 		template = command.getArgumentAt(0);
 		name = command.getArgumentAt(1);
 		new_name = command.getArgumentAt(2);
-		this.context.setLocationProperty(template, name, "name", new_name);
+		this.context.getLocationExpert().setLocationProperty(template, name, "name", new_name);
 		command_result.addArgument(template);
 			command_result.addArgument(name);
 			command_result.addArgument(new_name);
@@ -105,10 +98,21 @@ public CommandResult handle(Command command) {
 // for any other object code throw a wrong object exception
 
 		default:
-			this.throwWrongObjectException (Command.OperationCode.SET, object_code);
+			this.throwWrongObjectException (OperationCode.SET, object_code);
 	}
 
-	this.command_result.setResultCode(CommandResult.ResultCode.OK);
+	this.command_result.setResultCode(ResultCode.OK);
 	return this.command_result;
+}
+
+@Override
+public boolean acceptMode (ModeCode mode) {
+	switch(mode) {
+		case EDITOR:
+		return true;
+
+		default:
+		return false;
+	}
 }
 }

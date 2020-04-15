@@ -1,10 +1,10 @@
-package org.uppaal.cli.commands;
+package org.uppaal.cli.context;
 
 /**
 * edge expert, responsible for all edge operations
 */
 
-import org.uppaal.cli.commands.Command.ObjectCode;
+import org.uppaal.cli.enumerations.ObjectCode;
 import org.uppaal.cli.exceptions.MissingElementException;
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;

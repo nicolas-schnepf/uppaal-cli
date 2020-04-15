@@ -1,10 +1,10 @@
-package org.uppaal.cli.commands;
+package org.uppaal.cli.context;
 
 /**
 * location expert, responsible for all operations on locations
 */
 
-import org.uppaal.cli.commands.Command.ObjectCode;
+import org.uppaal.cli.enumerations.ObjectCode;
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
 import com.uppaal.model.core2.QueryList;

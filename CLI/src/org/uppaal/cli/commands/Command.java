@@ -7,7 +7,9 @@ package org.uppaal.cli.commands;
  */
 
 
-import org.uppaal.cli.handlers.Handler;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
+import org.uppaal.cli.enumerations.ModeCode;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.lang.Iterable;
@@ -16,78 +18,11 @@ import java.lang.Iterable;
  * Command class parses an input line into a command and its arguments separated by white space.
  * @author Marius Mikucionis <marius@cs.aau.dk>
  */
-public class Command implements Iterable<String>
-{
-public static enum OperationCode {
-ADD, 
-IMPORT, 
-EXPORT, 
-START, 
-EXIT, 
-CHECK, 
-SHOW, 
-REMOVE, 
-CLEAR,
-SELECT,
-RENAME,
-SET,
-UNSET,
-UNDO,
-REDO,
-PREVIEW,
-NEXT,
-FINISH,
-UNSELECT,
-HELP,
-UNKNOWN
-}
+public class Command implements Iterable<String> {
 
-/*** enumeration of object codes */
-
-public static enum ObjectCode {
-DOCUMENT, 
-QUERIES, 
-TEMPLATES, 
-DECLARATION,
-LOCATIONS,
-EDGES,
-QUERY, 
-FORMULA,
-COMMENT,
-TEMPLATE, 
-NAME,
-PARAMETER,
-LOCATION,
-INVARIANT,
-INIT,
-COMMITTED,
-EDGE,
-SOURCE,
-TARGET,
-SELECT,
-GUARD,
-SYNC,
-ASSIGN,
-TRACE,
-SYSTEM,
-OPTION,
-OPTIONS,
-VARIABLES,
-VARIABLE,
-CLOCK,
-TRANSITION,
-TRANSITIONS,
-CONSTRAINT,
-CLOCKS,
-NONE, 
-UNKNOWN, 
-MODE
-}
-
-    private String command = null;
     private OperationCode operation_code;
     private ObjectCode object_code;
-    private Handler.HandlerCode mode;
+    private ModeCode mode;
     private LinkedList<String> arguments;
     public Command() {
 	this.arguments = new LinkedList<String>();
@@ -128,14 +63,14 @@ public ObjectCode getObjectCode() {
 * set the mode of this command
 * @param mode the new mode for this command
 */
-public void setMode (Handler.HandlerCode mode) {
+public void setMode (ModeCode mode) {
 	this.mode = mode;
 }
 
 /**
 * @return the mode of this command
 */
-public Handler.HandlerCode getMode() {
+public ModeCode getMode() {
 	return this.mode;
 }
 
@@ -167,7 +102,7 @@ public Iterator<String> iterator() {
 public void clear() {
 	this.operation_code = OperationCode.UNKNOWN;
 	this.object_code = ObjectCode.UNKNOWN;
-	this.mode = Handler.HandlerCode.UNKNOWN;
+	this.mode = ModeCode.UNKNOWN;
 	this.arguments.clear();
 }
 

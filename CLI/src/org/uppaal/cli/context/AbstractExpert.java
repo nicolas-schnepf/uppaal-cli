@@ -1,4 +1,4 @@
-package org.uppaal.cli.commands;
+package org.uppaal.cli.context;
 
 /**
 * abstract expert class, provide the common fields shared by all experts
@@ -13,15 +13,17 @@ import com.uppaal.model.core2.Element;
 import com.uppaal.model.core2.Node;
 import com.uppaal.model.core2.Location;
 import com.uppaal.model.core2.Edge;
-import org.uppaal.cli.commands.Command.ObjectCode;
+import org.uppaal.cli.enumerations.ObjectCode;
 import org.uppaal.cli.exceptions.MissingElementException;
 import org.uppaal.cli.exceptions.ExistingElementException;
+import java.util.LinkedList;
 
 public abstract class AbstractExpert implements Expert {
 
 // protected context handled by this expert
 
 protected Context context;
+protected LinkedList<String> result;
 
 // missing element exception, thrown when an element is missing to a document
 
@@ -38,6 +40,7 @@ private ExistingElementException existing_element_exception;
 
 public AbstractExpert (Context context) {
 	this.context = context;
+	this.result = new LinkedList<String>();
 	this.missing_element_exception = new MissingElementException();
 	this.existing_element_exception = new ExistingElementException();
 }
@@ -45,7 +48,7 @@ public AbstractExpert (Context context) {
 /**
 * @exception a missing element exception containing the object code and the name of the missing element
 */
-public void throwMissingElementException (Command.ObjectCode object_code, String name) {
+public void throwMissingElementException (ObjectCode object_code, String name) {
 	this.missing_element_exception.setObjectCode(object_code);
 	this.missing_element_exception.setName(name);
 	throw this.missing_element_exception;
@@ -54,7 +57,7 @@ public void throwMissingElementException (Command.ObjectCode object_code, String
 /**
 * @exception a existing element exception containing the object code and the name of the existing element
 */
-public void throwExistingElementException (Command.ObjectCode object_code, String name) {
+public void throwExistingElementException (ObjectCode object_code, String name) {
 	this.existing_element_exception.setObjectCode(object_code);
 	this.existing_element_exception.setName(name);
 	throw this.existing_element_exception;

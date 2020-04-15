@@ -1,17 +1,18 @@
 package org.uppaal.cli;
 
-import org.uppaal.cli.commands.Command.OperationCode;
-import org.uppaal.cli.commands.Command.ObjectCode;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
 import org.uppaal.cli.commands.CommandResult;
 import org.uppaal.cli.commands.Command;
-import org.uppaal.cli.commands.Context;
+import org.uppaal.cli.context.Context;
 
 import com.uppaal.engine.EngineException;
 import org.uppaal.cli.exceptions.UnknownCommandException;
 import org.uppaal.cli.exceptions.UnknownModeException;
 import org.uppaal.cli.exceptions.ConsoleException;
-import org.uppaal.cli.handlers.CommandHandler;
-import org.uppaal.cli.handlers.Handler;
+import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.commands.CommandHandler;
+import org.uppaal.cli.commands.Handler;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -50,25 +51,25 @@ private Command command;
 private UnknownCommandException unknown_command_exception;
 
 // hash map of accepted commands
-private HashMap<String, Command.OperationCode> accepted_commands;
+private HashMap<String, OperationCode> accepted_commands;
 
 // reverse hash map from command codes to command names
-private HashMap<Command.OperationCode, String> command_names;
+private HashMap<OperationCode, String> command_names;
 
 // hash map of accepted modes for this command manager
-private HashMap <String, Handler.HandlerCode> accepted_modes;
+private HashMap <String, ModeCode> accepted_modes;
 
 // hashmap of mode names for this console manager
-private HashMap<Handler.HandlerCode, String> mode_names;
+private HashMap<ModeCode, String> mode_names;
 
 // hash map of accepted object codes for this console manager
-private HashMap<String, Command.ObjectCode> accepted_objects;
+private HashMap<String, ObjectCode> accepted_objects;
 
 // hash map of object names for this console manager
-private HashMap<Command.ObjectCode, String> object_names;
+private HashMap<ObjectCode, String> object_names;
 
 // hash map of accepted command completers for this console manager
-private HashMap <Handler.HandlerCode, Completer> command_completers;
+private HashMap <ModeCode, Completer> command_completers;
 
 // active command completer for this console manager
 private Completer command_completer;
@@ -99,96 +100,98 @@ public ConsoleManager (Context context) throws IOException, IOException {
             	this.out = new PrintWriter(reader.getOutput());
 	this.err = new PrintWriter(System.err);
 	this.command_handler = new CommandHandler(context);
-	this.accepted_commands = new HashMap<String, Command.OperationCode>();
-	this.command_names = new HashMap<Command.OperationCode, String>();
-	this.accepted_modes = new HashMap<String, Handler.HandlerCode>();
-	this.mode_names = new HashMap<Handler.HandlerCode, String>();
-	this.accepted_objects = new HashMap<String, Command.ObjectCode>();
-	this.object_names = new HashMap<Command.ObjectCode, String>();
-	this.command_completers = new HashMap<Handler.HandlerCode, Completer>();
+	this.accepted_commands = new HashMap<String, OperationCode>();
+	this.command_names = new HashMap<OperationCode, String>();
+	this.accepted_modes = new HashMap<String, ModeCode>();
+	this.mode_names = new HashMap<ModeCode, String>();
+	this.accepted_objects = new HashMap<String, ObjectCode>();
+	this.object_names = new HashMap<ObjectCode, String>();
+	this.command_completers = new HashMap<ModeCode, Completer>();
 
 // initialize the map of accepted commands
 
-	this.accepted_commands.put ("start", Command.OperationCode.START);
-	this.accepted_commands.put("exit", Command.OperationCode.EXIT);
-	this.accepted_commands.put("export", Command.OperationCode.EXPORT);
-	this.accepted_commands.put("import", Command.OperationCode.IMPORT);
-	this.accepted_commands.put("check", Command.OperationCode.CHECK);
-	this.accepted_commands.put("clear", Command.OperationCode.CLEAR);
-	this.accepted_commands.put("add", Command.OperationCode.ADD);
-	this.accepted_commands.put("set", Command.OperationCode.SET);
-	this.accepted_commands.put("unset", Command.OperationCode.UNSET);
-	this.accepted_commands.put("undo", Command.OperationCode.UNDO);
-	this.accepted_commands.put("redo", Command.OperationCode.REDO);
-	this.accepted_commands.put("show", Command.OperationCode.SHOW);
-	this.accepted_commands.put("remove", Command.OperationCode.REMOVE);
-	this.accepted_commands.put("rename", Command.OperationCode.RENAME);
-	this.accepted_commands.put("select", Command.OperationCode.SELECT);
-	this.accepted_commands.put("preview", Command.OperationCode.PREVIEW);
-	this.accepted_commands.put("next", Command.OperationCode.NEXT);
-	this.accepted_commands.put("finish", Command.OperationCode.FINISH);
-	this.accepted_commands.put("unselect", Command.OperationCode.UNSELECT);
-	this.accepted_commands.put("help", Command.OperationCode.HELP);
+	this.accepted_commands.put ("start", OperationCode.START);
+	this.accepted_commands.put("exit", OperationCode.EXIT);
+	this.accepted_commands.put("compile", OperationCode.COMPILE);
+	this.accepted_commands.put("connect", OperationCode.CONNECT);
+	this.accepted_commands.put("disconnect", OperationCode.DISCONNECT);
+	this.accepted_commands.put("export", OperationCode.EXPORT);
+	this.accepted_commands.put("import", OperationCode.IMPORT);
+	this.accepted_commands.put("check", OperationCode.CHECK);
+	this.accepted_commands.put("set", OperationCode.SET);
+	this.accepted_commands.put("unset", OperationCode.UNSET);
+	this.accepted_commands.put("undo", OperationCode.UNDO);
+	this.accepted_commands.put("redo", OperationCode.REDO);
+	this.accepted_commands.put("show", OperationCode.SHOW);
+	this.accepted_commands.put("reset", OperationCode.RESET);
+	this.accepted_commands.put("select", OperationCode.SELECT);
+	this.accepted_commands.put("finish", OperationCode.FINISH);
+	this.accepted_commands.put("unselect", OperationCode.UNSELECT);
+	this.accepted_commands.put("help", OperationCode.HELP);
 
 // initialize the map of command names from the previous one
 
 	for (String command_name: this.accepted_commands.keySet()) {
-		Command.OperationCode code = this.accepted_commands.get(command_name);
+		OperationCode code = this.accepted_commands.get(command_name);
 		this.command_names.put(code, command_name);
 	}
 
 // initialize the map of accepted modes
 
-	this.accepted_modes.put("editor", Handler.HandlerCode.EDITOR);
-	this.accepted_modes.put("simulator", Handler.HandlerCode.SIMULATOR);
-	this.accepted_modes.put("verifier", Handler.HandlerCode.VERIFIER);
+	this.accepted_modes.put("editor", ModeCode.EDITOR);
+	this.accepted_modes.put("symbolic_simulator", ModeCode.SYMBOLIC_SIMULATOR);
+	this.accepted_modes.put("concrete_simulator", ModeCode.CONCRETE_SIMULATOR);
+	this.accepted_modes.put("verifier", ModeCode.VERIFIER);
 
 // initialize the map of mode names from the previous one
 
 	for (String mode_name: this.accepted_modes.keySet()) {
-		Handler.HandlerCode mode_code = this.accepted_modes.get(mode_name);
+		ModeCode mode_code = this.accepted_modes.get(mode_name);
 		this.mode_names.put(mode_code, mode_name);
 	}
 
 // initialize the map of accepted objects
 
-	this.accepted_objects.put("document", Command.ObjectCode.DOCUMENT);
-	this.accepted_objects.put("queries", Command.ObjectCode.QUERIES);
-	this.accepted_objects.put("templates", Command.ObjectCode.TEMPLATES);
-	this.accepted_objects.put("query", Command.ObjectCode.QUERY);
-	this.accepted_objects.put("formula", Command.ObjectCode.FORMULA);
-	this.accepted_objects.put("comment", Command.ObjectCode.COMMENT);
-	this.accepted_objects.put("template", Command.ObjectCode.TEMPLATE);
-	this.accepted_objects.put("trace", Command.ObjectCode.TRACE);
-	this.accepted_objects.put("locations", Command.ObjectCode.LOCATIONS);
-	this.accepted_objects.put("edges", Command.ObjectCode.EDGES);
-	this.accepted_objects.put("location", Command.ObjectCode.LOCATION);
-	this.accepted_objects.put("invariant", Command.ObjectCode.INVARIANT);
-	this.accepted_objects.put("init", Command.ObjectCode.INIT);
-	this.accepted_objects.put("committed", Command.ObjectCode.COMMITTED);
-	this.accepted_objects.put("edge", Command.ObjectCode.EDGE);
-	this.accepted_objects.put("source", Command.ObjectCode.SOURCE);
-	this.accepted_objects.put("target", Command.ObjectCode.TARGET);
-	this.accepted_objects.put("select", Command.ObjectCode.SELECT);
-	this.accepted_objects.put("guard", Command.ObjectCode.GUARD);
-	this.accepted_objects.put("sync", Command.ObjectCode.SYNC);
-	this.accepted_objects.put("assign", Command.ObjectCode.ASSIGN);
-	this.accepted_objects.put("variable", Command.ObjectCode.VARIABLE);
-	this.accepted_objects.put("variables", Command.ObjectCode.VARIABLES);
-	this.accepted_objects.put("declaration", Command.ObjectCode.DECLARATION);
-	this.accepted_objects.put("system", Command.ObjectCode.SYSTEM);
-	this.accepted_objects.put("option", Command.ObjectCode.OPTION);
-	this.accepted_objects.put("options", Command.ObjectCode.OPTIONS);
-	this.accepted_objects.put("clock", Command.ObjectCode.CLOCK);
-	this.accepted_objects.put("transition", Command.ObjectCode.TRANSITION);
-	this.accepted_objects.put("transitions", Command.ObjectCode.TRANSITIONS);
-	this.accepted_objects.put("constraint", Command.ObjectCode.CONSTRAINT);
-	this.accepted_objects.put("clocks", Command.ObjectCode.CLOCKS);
+	this.accepted_objects.put("document", ObjectCode.DOCUMENT);
+	this.accepted_objects.put("queries", ObjectCode.QUERIES);
+	this.accepted_objects.put("templates", ObjectCode.TEMPLATES);
+	this.accepted_objects.put("query", ObjectCode.QUERY);
+	this.accepted_objects.put("formula", ObjectCode.FORMULA);
+	this.accepted_objects.put("comment", ObjectCode.COMMENT);
+	this.accepted_objects.put("template", ObjectCode.TEMPLATE);
+	this.accepted_objects.put("trace", ObjectCode.TRACE);
+	this.accepted_objects.put("state", ObjectCode.STATE);
+	this.accepted_objects.put("preview", ObjectCode.PREVIEW);
+	this.accepted_objects.put("next", ObjectCode.NEXT);
+	this.accepted_objects.put("locations", ObjectCode.LOCATIONS);
+	this.accepted_objects.put("edges", ObjectCode.EDGES);
+	this.accepted_objects.put("location", ObjectCode.LOCATION);
+	this.accepted_objects.put("invariant", ObjectCode.INVARIANT);
+	this.accepted_objects.put("init", ObjectCode.INIT);
+	this.accepted_objects.put("committed", ObjectCode.COMMITTED);
+	this.accepted_objects.put("edge", ObjectCode.EDGE);
+	this.accepted_objects.put("source", ObjectCode.SOURCE);
+	this.accepted_objects.put("target", ObjectCode.TARGET);
+	this.accepted_objects.put("select", ObjectCode.SELECT);
+	this.accepted_objects.put("guard", ObjectCode.GUARD);
+	this.accepted_objects.put("sync", ObjectCode.SYNC);
+	this.accepted_objects.put("assign", ObjectCode.ASSIGN);
+	this.accepted_objects.put("variable", ObjectCode.VARIABLE);
+	this.accepted_objects.put("variables", ObjectCode.VARIABLES);
+	this.accepted_objects.put("declaration", ObjectCode.DECLARATION);
+	this.accepted_objects.put("system", ObjectCode.SYSTEM);
+	this.accepted_objects.put("option", ObjectCode.OPTION);
+	this.accepted_objects.put("options", ObjectCode.OPTIONS);
+	this.accepted_objects.put("clock", ObjectCode.CLOCK);
+	this.accepted_objects.put("transition", ObjectCode.TRANSITION);
+	this.accepted_objects.put("transitions", ObjectCode.TRANSITIONS);
+	this.accepted_objects.put("constraint", ObjectCode.CONSTRAINT);
+	this.accepted_objects.put("clocks", ObjectCode.CLOCKS);
 
 // initialize the map of object names from the previous one
 
 	for (String object_name: this.accepted_objects.keySet()) {
-		Command.ObjectCode object_code = this.accepted_objects.get(object_name);
+		ObjectCode object_code = this.accepted_objects.get(object_name);
 		this.object_names.put(object_code, object_name);
 	}
 }
@@ -199,59 +202,6 @@ public ConsoleManager (Context context) throws IOException, IOException {
 private void setPrompt () {
 	String mode = this.mode_names.get(this.command_handler.getMode());
 	this.reader.setPrompt("uppaal "+mode+"$");
-}
-
-/**
-* @return the command completer for the current mode
-*/
-private Completer getCommandCompleter () {
-
-// if there is already a completer for the current mode in the corresponding hash map simply return it
-
-	Handler.HandlerCode active_mode= this.command_handler.getMode();
-	if (this.command_completers.containsKey(active_mode))
-		return this.command_completers.get(active_mode);
-
-// create a list of commands for the current active mode
-
-	HashSet<OperationCode> active_commands = this.command_handler.getActiveCommands();
-	LinkedList<String> commands = new LinkedList<String>();
-
-	for (Command.OperationCode operation_code:active_commands) {
-		String command_name = this.command_names.get(operation_code);
-		commands.add(command_name);
-	}
-
-// create a list of objects for the current active mode
-
-	HashSet<ObjectCode> accepted_objects = this.command_handler.getAcceptedObjects();
-	LinkedList<String> objects = new LinkedList<String>();
-
-	for (Command.ObjectCode object_code:accepted_objects) {
-		String object_name = this.object_names.get(object_code);
-		objects.add(object_name);
-	}
-
-// create the new completer, add it to the hash map and return it
-
-	LinkedList<Completer> completers = new LinkedList<Completer>();
-	completers.add(new StringsCompleter(commands));
-	completers.add(new StringsCompleter(objects));
-	completers.add(new FileNameCompleter());
-	completers.add(new NullCompleter());
-
-	ArgumentCompleter completer = new ArgumentCompleter(completers);
-	this.command_completers.put(active_mode, completer);
-	return completer;
-}
-
-/**
-* set the completers for the current mode
-*/
-private void setCompleters() {
-	this.reader.removeCompleter(this.command_completer);
-	this.command_completer = this.getCommandCompleter();
-	this.reader.addCompleter(this.command_completer);
 }
 
 /**
@@ -266,10 +216,8 @@ public void run () throws EngineException, IOException {
 
 // first initialize the console reader
 
-	this.context.connectEngine();
+	this.context.getEngineExpert().connectEngine();
 	this.setPrompt();
-	this.command_completer = this.getCommandCompleter();
-	this.reader.addCompleter(this.command_completer);
 
 	this.running = true;
 	String line = null;
@@ -294,17 +242,11 @@ this. out. flush();
 
 // if an exception is thrown manage it 
 
-		catch (MalformedURLException e) {
-			this.err.println(e.getMessage());
-			this.err.flush();
-		} catch (IOException e) {
-				this.err.println(e.getMessage());
-				this.err.flush();
-		} catch (ConsoleException e) {
+		catch (ConsoleException e) {
 			this.processException(e);
 		}
 	}
-	this.context.disconnectEngine();
+	this.context.getEngineExpert().disconnectEngine();
 }
 
 /**
@@ -359,7 +301,7 @@ private Command parseCommandLine (String line) {
 	if (this.accepted_objects.containsKey(token))
 		command.setObjectCode(this.accepted_objects.get(token));
 	else if (this.accepted_modes.containsKey(token)) {
-		command.setObjectCode(Command.ObjectCode.MODE);
+		command.setObjectCode(ObjectCode.MODE);
 		command.setMode(this.accepted_modes.get(token));
 	} else
 		this.command.addArgument(token);
@@ -403,7 +345,6 @@ private void processResult (CommandResult result) {
 
 	case MODE_CHANGED:
 	this.setPrompt();
-	this.setCompleters();
 	break;
 
 // if return code is exit set the running condition to false
@@ -439,9 +380,9 @@ private void processException (ConsoleException exception) {
 // for an unknown mode exception print a corresponding error message and exit
 
 	case UNKNOWN_MODE:
-		String unknown_mode = ((UnknownModeException)exception).getMode();
-		this.err.println("Unknown mode: "+unknown_mode);
-		this.err.flush();
+//		String unknown_mode = ((UnknownModeException)exception).getMode();
+//		this.err.println("Unknown mode: "+unknown_mode);
+//		this.err.flush();
 	break;
 
 	default:

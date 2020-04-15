@@ -1,141 +1,47 @@
-start editor | simulator | verifier
+start MODE
 
-Start the specified mode.
-Trying to start simulation or verification without a valid document will cause an error.
+Start a mode, verifier, symbolic and concrete simulator require a valid document.
 
-import ( document | trace | templates | queries ) FILENAME
+import ( document | templates | queries ) FILENAME
 
-Import a document, a trace, a list of templates or queries from a specific file.
-FILENAME is the path to the input file.
-A selection menu will be started for importing templates.
+Import a document or only some of its queries or templates.
 
-export ( document | trace | templates | queries ) FILENAME
+export ( document | trace  | queries ) FILENAME
 
-Export a document, a trace, a list of templates or of queries to a specific file.
-FILENAME is the path to the output file.
+export a document, a trace or a query list to the specified file.
 
-clear [ document | queries | functions | vars | consts | urgent? chan ]
+unset [ document | queries | REF ]
 
-Clear the current document or specified list of statements.
-If no argument is specified then everything will be cleared.
+Clear the current document, list of queries or members of a reference.
 
-declare type TYPEDEC NAME
-	| var TYPE NAME VALUE? 
-	| const TYPE NAME VALUE 
-	| function TYPE NAME (PARAMETERS?)
-	| urgent? chan ( NAME \[ CONST \] , )* NAME \[ CONST ]
-	| template NAME (PARAMETERS?)
-	| system ( NAME , )* NAME
-	| query CONST
-	| option NAME VALUE
+set (template name (parameter) | query formula ("comment")? | ref = value
+Set the value of a property, either on the command line or through a dedicated screen.
+ 
+show REF
 
-Declare a statement.
-TYPEDEC can be either int, array or struct.
-NAME can be any string of alphanumeric characters extended with _.
-TYPE can be any declared or preexisting type.
-VALUE must be a value belonging to TYPE.
-PARAMETERS is a list of parameters (TYPE NAME) separated by comas.
-CONST can be a numeric value or the name of a declared constant.
+Show the statement attached to a reference.
 
-A command line editor will be started for long declarations (struct, function, template, query).
-This declaration can either be saved with ^S or canceled with ^X.
-Saving a wrong declaration will restart the editor with its text and an error summary.
+select REF | STATE | TRANSITION
 
-replace type TYPEDEC NAME
-	| var TYPE NAME VALUE? 
-	| const TYPE NAME VALUE 
-	| function TYPE NAME (PARAMETERS?)
-	| urgent? chan ( NAME \[ CONST \] , )* NAME \[ CONST ]
-	| template NAME (PARAMETERS?)
-	| system ( NAME , )* NAME
-	| query CONST [ formula | comment ]
-	| option NAME VALUE
+Select either the statement attached to a reference, a state or a transition.
 
-replace a statement.
-TYPEDEC can be either int, array or struct.
-NAME can be any string of alphanumeric characters extended with _.
-TYPE can be any declared or preexisting type.
-VALUE must be a value belonging to TYPE.
-PARAMETERS is a list of parameters (TYPE NAME) separated by comas.
-CONST can be a numeric value or the name of a declared constant.
+unselect [ REF ]
 
-A command line editor will be started for long declarations (struct, function, template, query).
-This declaration can either be saved with ^S or canceled with ^X.
-Saving a wrong declaration will restart the editor with its text and an error summary.
+unselect the statement attached to a reference.
 
-remove type NAME
-	| var NAME
-	| const NAME
-	| function NAME
-	| urgent? chan NAME
-	| template NAME
-	| system
-	| query CONST
-	| option NAME
 
-Remove a statement and every statement that depends on it.
-NAME can be any alphanumerical string extended with _.
+check QUERRYREF
 
-show templates 
-	| variables 
-	| clocks 
-	| transitions
-	| queries
-	| options
-	| trace
-	| template NAME 
-	| variable NAME 
-	| clock NAME 
-	| constraints NAME - NAME
-	| transition NAME
-	| query CONST
-	| option CONST
-	| NAME
-	| NAME - NAME
+Check a query, all selected ones if no reference is given.
 
-Show the current state of any entity or list of entities.
-NAME is any alphanumeric string extended with _.
+help ( MODE | OPERATION )
 
-Show trace will start the exploration of the trace and display its current state.
-It is possible to navigate between states and transitions and to select them.
+Show the help about a mode or an operation.
 
-select state NAME | transition NAME | query NAME
-
-Select a state, a transition or a query.
-NAME is any alphanumeric string extended with _.
-
-previous CONST?
-
-In trace exploration mode backtrack of CONST states.
-CONST is any numeric string, 1 if omitted.
-
-next CONST?
-
-In trace exploration mode jump forward of CONST states.
-CONST is any numeric string, 1 if omitted.
-
-finish
-
-finish the exploration of the trace (^D will also work).
-
-unselect query CONST
-
-Unselect a certain query.
-CONST can be any numerical string.
-
-check CONST?
-
-Check the provided query against the model.
-If no query number is provided then the list of all selected queries will be checked.
-CONST can be any numerical string.
-
-help [ MODE | COMMAND ]
-
-Display the help for a specific mode or command.
-If no argument is provided then a list of all available commands will be displayed.
-MODE can be either edition, simulation or verification.
-COMMAND can be every available command, type help for a complete list.
 
 exit
 
 Terminate the uppaal command line.
+
+ref : name ([name (,name)?])? (. name)? | query[number]
+reference of a node, of a property or of a query

@@ -1,16 +1,23 @@
-package org.uppaal.cli.handlers;
+package org.uppaal.cli.commands;
 
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
 import com.uppaal.model.core2.Location;
 import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.QueryList;
-import org.uppaal.cli.commands.Command.OperationCode;
-import org.uppaal.cli.commands.Command.ObjectCode;
+
+import org.uppaal.cli.commands.AbstractHandler;
+import org.uppaal.cli.commands.ModeHandler;
+import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.commands.Handler;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
+import org.uppaal.cli.enumerations.ResultCode;
 import com.uppaal.model.core2.Query;
+import org.uppaal.cli.enumerations.ResultCode;
 import org.uppaal.cli.commands.CommandResult;
 import org.uppaal.cli.commands.Command;
-import org.uppaal.cli.commands.Context;
+import org.uppaal.cli.context.Context;
 
 import java.net.MalformedURLException;
 import java.util.LinkedList;
@@ -24,12 +31,9 @@ import java.io.PipedOutputStream;
 * supporting all possible import commands under mode control
 */
 
-public class ImportHandler extends OperationHandler {
+public class ImportHandler extends AbstractHandler {
 public ImportHandler (Context context) {
 	super(context, OperationCode.IMPORT);
-	this.accepted_objects = new HashSet<ObjectCode>();
-	this.accepted_objects.add(ObjectCode.DOCUMENT);
-	this.accepted_objects.add(ObjectCode.QUERIES);
 }
 
 /**
@@ -38,18 +42,14 @@ public ImportHandler (Context context) {
 * @return the command result corresponding to this command
 * @exception an exception describing the type of error which was encountered
 */
-public CommandResult handle(Command command) throws MalformedURLException, IOException {
+public CommandResult handle(Command command)  {
 
 // check that the command contains exactly one argument
 
-	Command.OperationCode operation_code= command.getOperationCode();
-	Command.ObjectCode object_code = command.getObjectCode();
+	OperationCode operation_code= command.getOperationCode();
+	ObjectCode object_code = command.getObjectCode();
 	int argument_number = command.getArgumentNumber();
-
-	if (argument_number<1)
-		this.throwMissingArgumentException(operation_code, object_code, 1, argument_number);
-	else if (argument_number>1)
-		this.throwExtraArgumentException (operation_code, object_code, 1, argument_number);
+	this.checkArgumentNumber(command, 1, 1);
 
 // process the command depending on its object code
 
@@ -58,20 +58,42 @@ public CommandResult handle(Command command) throws MalformedURLException, IOExc
 	while (filename.charAt(index)!='.' && index>0) index --;
 	String extension = filename.substring(index+1);
 
+	try {
 	switch (command.getObjectCode()) {
 		case DOCUMENT:
+		this.checkMode(command, ModeCode.EDITOR);
 		if (!extension.equals("xta") && !extension.equals("xml")) 
 			this.throwWrongExtensionException (operation_code, object_code, extension);
-		this.context.loadDocument(filename);
+		this.context.getModelExpert().loadDocument(filename);
 		break;
 
 		case QUERIES:
+		this.checkMode(command, ModeCode.EDITOR, ModeCode.VERIFIER);
 		if (!extension.equals("q")) 
 			this.throwWrongExtensionException (operation_code, object_code, extension);
-		this.context.loadQueries(filename);
+		this.context.getQueryExpert().loadQueries(filename);
 		break;
 	}
 
+	this.command_result.setResultCode(ResultCode.OK);
 	return this.command_result;
+	} catch (IOException e) {
+		this.command_result.setResultCode(ResultCode.IO_ERROR);
+		this.command_result.addArgument(filename);
+		return this.command_result;
+	}
+}
+
+@Override
+public boolean acceptMode (ModeCode mode) {
+	switch(mode) {
+		case EDITOR:
+		case SYMBOLIC_SIMULATOR:
+		case CONCRETE_SIMULATOR:
+		return true;
+
+		default:
+		return false;
+	}
 }
 }

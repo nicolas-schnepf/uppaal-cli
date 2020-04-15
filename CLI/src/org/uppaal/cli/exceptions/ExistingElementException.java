@@ -1,5 +1,10 @@
 package org.uppaal.cli.exceptions;
 
+import org.uppaal.cli.enumerations.ExceptionCode;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
+import org.uppaal.cli.enumerations.ModeCode;
+
 /**
 * existing element exception, thrown when an uppaal is existing in the current document
 */
@@ -12,7 +17,7 @@ private String name;
 * public constructor of a existing element exception
 */
 public ExistingElementException () {
-	super(ConsoleException.ExceptionCode.EXISTING_ELEMENT);
+	super(ExceptionCode.EXISTING_ELEMENT);
 }
 
 /**

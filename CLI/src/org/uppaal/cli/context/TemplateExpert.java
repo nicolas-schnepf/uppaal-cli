@@ -1,10 +1,10 @@
-package org.uppaal.cli.commands;
+package org.uppaal.cli.context;
 
 /**
 * template expert, responsible for all operations on templates
 */
 
-import org.uppaal.cli.commands.Command.ObjectCode;
+import org.uppaal.cli.enumerations.ObjectCode;
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
 import com.uppaal.model.core2.QueryList;
@@ -25,30 +25,20 @@ public TemplateExpert (Context context) {
 }
 
 /**
-* @return a list containing all template headers in this document
+* @return a list containing all template names in this document
 */
-public LinkedList<String> getTemplateHeaders () {
-	LinkedList<String> headers = new LinkedList<String>();
+public LinkedList<String> showTemplates () {
+	LinkedList<String> names = new LinkedList<String>();
 	AbstractTemplate template = (AbstractTemplate) this.context.getDocument().getFirst();
-	StringBuffer header = new StringBuffer();
 
 // fetch the name and optionally the parameters of each template in the current document
 
 	while (template!=null) {
-		header.append((String)template.getPropertyValue("name"));
-		header.append(" ");
-
-		if (template.isPropertyLocal("parameter")) 
-			header.append ("("+template.getPropertyValue("parameter")+")");
-		else
-			header.append("()");
-
-		headers.add(header.toString());
-		header.delete(0, header.length());
+		names.addLast((String)template.getPropertyValue("name"));
 		template = (AbstractTemplate) template.getNext();
 	}
 
-	return headers;
+	return names;
 }
 
 /**
@@ -168,6 +158,13 @@ public void setTemplateProperty (String name, String property, String value) {
 		command.execute();
 		this.context.addCommand(command);
 	}
+}
+
+/**
+* clear the templates of this context
+*/
+public void clearTemplates() {
+	this.context.getModelExpert().clearDocument();
 }
 
 /**

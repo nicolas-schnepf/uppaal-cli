@@ -1,7 +1,11 @@
 package org.uppaal.cli.exceptions;
 
-import org.uppaal.cli.handlers.Handler;
-import org.uppaal.cli.commands.Command;
+
+import org.uppaal.cli.enumerations.ExceptionCode;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
+import org.uppaal.cli.enumerations.ModeCode;
+
 
 /**
 * wrong mode exception, raised when the current mode does not exist
@@ -10,7 +14,7 @@ import org.uppaal.cli.commands.Command;
 public class WrongModeException extends ConsoleException {
 
 // code of the wrong handler
-private Handler.HandlerCode handler_code;
+private ModeCode handler_code;
 
 /**
 * public constructor of a wrong mode exception
@@ -22,7 +26,7 @@ public WrongModeException () {
 /**
 * @return the current mode of the uppaal command line interface
 */
-public Handler.HandlerCode getHandlerCode() {
+public ModeCode getModeCode() {
 	return this.handler_code;
 }
 
@@ -30,7 +34,7 @@ public Handler.HandlerCode getHandlerCode() {
 * set the handler code of this exception
 * @param handler_code the new handler code for this exception
 */
-public void setHandlerCode (Handler.HandlerCode handler_code) {
+public void setModeCode (ModeCode handler_code) {
 	this.handler_code = handler_code;
 }
 }

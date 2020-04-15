@@ -1,6 +1,9 @@
 package org.uppaal.cli.exceptions;
 
-import org.uppaal.cli.commands.Command;
+import org.uppaal.cli.enumerations.ExceptionCode;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
+import org.uppaal.cli.enumerations.ModeCode;
 
 /**
 * exception class for an unknown command
@@ -15,7 +18,7 @@ private String command;
 * public constructor of an unknown command exception
 */
 public UnknownCommandException () {
-super(ConsoleException.ExceptionCode.UNKNOWN_COMMAND);
+super(ExceptionCode.UNKNOWN_COMMAND);
 }
 
 /**

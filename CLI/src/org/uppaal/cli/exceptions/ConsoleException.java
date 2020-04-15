@@ -1,6 +1,8 @@
 package org.uppaal.cli.exceptions;
 
-import org.uppaal.cli.commands.Command;
+import org.uppaal.cli.enumerations.ExceptionCode;
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
 
 /**
 * parent class of every uppaal console exception
@@ -8,32 +10,16 @@ import org.uppaal.cli.commands.Command;
 */
 
 public abstract class ConsoleException extends RuntimeException {
-/** exception codes */
 
-public static enum ExceptionCode {
-UNKNOWN_MODE,
-WRONG_MODE,
-UNKNOWN_COMMAND,
-WRONG_COMMAND,
-WRONG_OBJECT,
-MISSING_ARGUMENT,
-EXTRA_ARGUMENT,
-EDITOR,
-MENU,
-WRONG_ARGUMENT,
-WRONG_EXTENSION,
-WRONG_FORMAT,
-MISSING_ELEMENT,
-EXISTING_ELEMENT
-}
+
 
 // command code
 
-protected Command.OperationCode operation_code;
+protected OperationCode operation_code;
 
 // object code
 
-	protected Command.ObjectCode object_code;
+	protected ObjectCode object_code;
 
 // exception message
 
@@ -56,7 +42,7 @@ protected ConsoleException (ExceptionCode code) {
 * @return the command code of this exception
 */
 
-public Command.OperationCode getOperationCode() {
+public OperationCode getOperationCode() {
 	return this.operation_code;
 }
 
@@ -64,7 +50,7 @@ public Command.OperationCode getOperationCode() {
 * set the command code of this exception
 * @param operation_code: the new command code of this exception
 */
-public void setOperationCode (Command.OperationCode operation_code) {
+public void setOperationCode (OperationCode operation_code) {
 	this.operation_code = operation_code;
 }
 
@@ -72,7 +58,7 @@ public void setOperationCode (Command.OperationCode operation_code) {
 * @return the object code of this exception
 */
 
-public Command.ObjectCode getObjectCode() {
+public ObjectCode getObjectCode() {
 	return this.object_code;
 }
 
@@ -80,7 +66,7 @@ public Command.ObjectCode getObjectCode() {
 * set the object code of this exception
 * @param object_code: the new object code of this exception
 */
-public void setObjectCode (Command.ObjectCode object_code) {
+public void setObjectCode (ObjectCode object_code) {
 	this.object_code = object_code;
 }
 

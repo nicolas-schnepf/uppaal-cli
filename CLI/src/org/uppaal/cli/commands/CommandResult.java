@@ -5,22 +5,18 @@ package org.uppaal.cli.commands;
 * and possibly asking to start another screen
 */
 
+import org.uppaal.cli.enumerations.OperationCode;
+import org.uppaal.cli.enumerations.ObjectCode;
+import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.enumerations.ResultCode;
 import java.util.LinkedList;
 import java.util.Iterator;
 
 public class CommandResult implements Iterable {
 
-/**
-* enumeration of all possible return codes
-*/
-
-public static enum ResultCode {
-OK, FILE_NOT_FOUND, OBJECT_NOT_FOUND, EDIT, MENU, EXIT, MODE_CHANGED
-}
-
 // code of the executed command
 
-private Command.OperationCode operation_code;
+private OperationCode operation_code;
 
 // return code of this command result
 
@@ -28,7 +24,7 @@ private ResultCode result_code;
 
 // object code of the called command
 
-private Command.ObjectCode object_code;
+private ObjectCode object_code;
 
 // arguments of this return code
 private LinkedList<String> arguments;
@@ -45,7 +41,7 @@ public CommandResult() {
 * @return the command code of this result
 */
 
-public Command.OperationCode getOperationCode() {
+public OperationCode getOperationCode() {
 	return this.operation_code;
 }
 
@@ -54,7 +50,7 @@ public Command.OperationCode getOperationCode() {
 * @param the new command code of this result
 */
 
-public void setOperationCode(Command.OperationCode operation_code) {
+public void setOperationCode(OperationCode operation_code) {
 	this.operation_code = operation_code;
 }
 
@@ -79,7 +75,7 @@ public void setResultCode (ResultCode result_code) {
 /**
 * @return the object code of this command result
 */
-public Command.ObjectCode getObjectCode() {
+public ObjectCode getObjectCode() {
 	return this.object_code;
 }
 
@@ -88,7 +84,7 @@ public Command.ObjectCode getObjectCode() {
 * @param object_code the new object code for this result
 */
 
-public void setObjectCode(Command.ObjectCode object_code) {
+public void setObjectCode(ObjectCode object_code) {
 	this.object_code = object_code;
 }
 
