@@ -4,7 +4,7 @@ package org.uppaal.cli.context;
 * template expert, responsible for all operations on templates
 */
 
-import org.uppaal.cli.enumerations.ObjectCode;
+
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
 import com.uppaal.model.core2.QueryList;
@@ -70,7 +70,7 @@ public String showTemplate (String name) {
 	Location committed = null;
 
 	if (template==null) 
-		this.throwMissingElementException(ObjectCode.TEMPLATE, name);
+		this.throwMissingElementException("template", name);
 
 // loop over the children of the template
 
@@ -138,7 +138,7 @@ public String showTemplate (String name) {
 public String getTemplateProperty (String name, String property) {
 	AbstractTemplate template = this.context.getDocument().getTemplate(name);
 	if (template==null) 
-		this.throwMissingElementException(ObjectCode.TEMPLATE, name);
+		this.throwMissingElementException("template", name);
 	return (String)template.getPropertyValue(property);
 }
 
@@ -152,7 +152,7 @@ public String getTemplateProperty (String name, String property) {
 public void setTemplateProperty (String name, String property, String value) {
 	AbstractTemplate template = this.context.getDocument().getTemplate(name);
 	if (template==null) 
-		this.throwMissingElementException(ObjectCode.TEMPLATE, name);
+		this.throwMissingElementException("template", name);
 	else {
 		SetPropertyCommand command = new SetPropertyCommand(template, property, value);
 		command.execute();

@@ -1,8 +1,8 @@
 package org.uppaal.cli.exceptions;
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 import org.uppaal.cli.enumerations.ModeCode;
 
 /**
@@ -14,6 +14,6 @@ public class EditorException extends ConsoleException {
 */
 
 public EditorException () {
-	super(ExceptionCode.EDITOR);
+	super();
 }
 }

@@ -7,16 +7,16 @@ import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.QueryList;
 
 import org.uppaal.cli.commands.AbstractHandler;
-import org.uppaal.cli.commands.ModeHandler;
+
 import org.uppaal.cli.enumerations.ModeCode;
 import org.uppaal.cli.commands.Handler;
-import org.uppaal.cli.enumerations.OperationCode;
+
 import com.uppaal.model.core2.Query;
 import org.uppaal.cli.enumerations.ResultCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
 import org.uppaal.cli.enumerations.ResultCode;
 import org.uppaal.cli.commands.CommandResult;
-import org.uppaal.cli.commands.Command;
+
 import org.uppaal.cli.context.Context;
 
 import java.net.MalformedURLException;
@@ -33,63 +33,72 @@ import java.io.PipedOutputStream;
 
 public class ExportHandler extends AbstractHandler {
 public ExportHandler (Context context) {
-	super(context, OperationCode.EXPORT);
+	super(context, "export");
+	try {
+	this.operation_map.put("document", this.getClass().getMethod("exportDocument"));
+	this.operation_map.put("queries", this.getClass().getMethod("exportQueries"));
+	this.operation_map.put("trace", this.getClass().getMethod("exportTrace"));
+	} catch (Exception e) {
+	System.out.println(e.getMessage());
+	e.printStackTrace();
+	System.exit(1);
+	}
 }
 
-/**
-* handle export commands
-* @param command the command to handle
-* @return the command result corresponding to this command
-* @exception an exception describing the type of error which was encountered
-*/
-public CommandResult handle(Command command)  {
-
-// check that the command contains exactly one argument
-
-	OperationCode operation_code= command.getOperationCode();
-	ObjectCode object_code = command.getObjectCode();
-	int argument_number = command.getArgumentNumber();
-	this.checkArgumentNumber(command, 1, 1);
-
-// process the command depending on its object code
-
-	String filename = command.getArgumentAt(0);
+public void exportDocument () {
+	String filename = this.getArgumentAt(0);
 	int index = filename.length()-1;
 	while (filename.charAt(index)!='.' && index>0) index --;
 	String extension = filename.substring(index+1);
 
 	try {
-	switch (command.getObjectCode()) {
-		case DOCUMENT:
-		this.checkMode(command, ModeCode.EDITOR);
+		this.checkMode("export", "document", ModeCode.EDITOR);
 		if (!extension.equals("xta") && !extension.equals("xml")) 
-			this.throwWrongExtensionException (operation_code, object_code, extension);
+			this.throwWrongExtensionException ("export", "document", extension);
 		this.context.getModelExpert().saveDocument(filename);
-		break;
-
-		case QUERIES:
-		this.checkMode(command, ModeCode.EDITOR, ModeCode.VERIFIER);
-		if (!extension.equals("q")) 
-			this.throwWrongExtensionException (operation_code, object_code, extension);
-		this.context.getQueryExpert().saveQueries(filename);
-		break;
-
-		case TRACE:
-		this.checkMode(command, ModeCode.SYMBOLIC_SIMULATOR, ModeCode.CONCRETE_SIMULATOR);
-		if (!extension.equals("xtr")) 
-			this.throwWrongExtensionException (operation_code, object_code, extension);
-		this.context.getTraceExpert().saveTrace(filename);
-		break;
-	}
-
-	this.command_result.setResultCode(ResultCode.OK);
-	return this.command_result;
 	} catch (IOException e) {
 		this.command_result.setResultCode(ResultCode.IO_ERROR);
 		this.command_result.addArgument(filename);
-		return this.command_result;
+
 	} 
 }
+
+public void exportQueries () {
+	String filename = this.getArgumentAt(0);
+	int index = filename.length()-1;
+	while (filename.charAt(index)!='.' && index>0) index --;
+	String extension = filename.substring(index+1);
+
+	try {
+		this.checkMode("export", "queries", ModeCode.EDITOR, ModeCode.VERIFIER);
+		if (!extension.equals("q")) 
+			this.throwWrongExtensionException ("export", "queries", extension);
+		this.context.getQueryExpert().saveQueries(filename);
+	} catch (IOException e) {
+		this.command_result.setResultCode(ResultCode.IO_ERROR);
+		this.command_result.addArgument(filename);
+
+	} 
+}
+
+public void exportTrace () {
+	String filename = this.getArgumentAt(0);
+	int index = filename.length()-1;
+	while (filename.charAt(index)!='.' && index>0) index --;
+	String extension = filename.substring(index+1);
+
+	try {
+this.checkMode("export", "trace", ModeCode.SYMBOLIC_SIMULATOR, ModeCode.CONCRETE_SIMULATOR);
+		if (!extension.equals("xtr")) 
+			this.throwWrongExtensionException ("export", "trace", extension);
+		this.context.getTraceExpert().saveTrace(filename);
+	} catch (IOException e) {
+		this.command_result.setResultCode(ResultCode.IO_ERROR);
+		this.command_result.addArgument(filename);
+
+	} 
+}
+
 
 @Override
 public boolean acceptMode (ModeCode mode) {

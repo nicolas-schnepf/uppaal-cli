@@ -6,7 +6,7 @@ package org.uppaal.cli.context;
 
 import com.uppaal.model.core2.QueryList;
 import com.uppaal.model.core2.PrototypeDocument;
-import org.uppaal.cli.enumerations.ObjectCode;
+
 import com.uppaal.model.core2.QueryList;
 import com.uppaal.model.core2.Document;
 import com.uppaal.model.core2.SetPropertyCommand;
@@ -50,11 +50,11 @@ public String getDocumentProperty (String property) {
 	if (!this.document.isPropertyLocal(property)) {
 		switch (property) {
 			case "declaration":
-			this.throwMissingElementException(ObjectCode.DECLARATION, null);
+			this.throwMissingElementException("declaration", null);
 			break;
 
 			case "system":
-			this.throwMissingElementException (ObjectCode.SYSTEM, null);
+			this.throwMissingElementException ("system", null);
 		break;
 		}
 	}

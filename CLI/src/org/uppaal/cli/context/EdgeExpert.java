@@ -4,7 +4,7 @@ package org.uppaal.cli.context;
 * edge expert, responsible for all edge operations
 */
 
-import org.uppaal.cli.enumerations.ObjectCode;
+
 import org.uppaal.cli.exceptions.MissingElementException;
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
@@ -34,7 +34,7 @@ public EdgeExpert (Context context) {
 public void addEdge(String template_name, String source_name, String target_name) {
 	Template template = (Template)this.context.getDocument().getTemplate(template_name);
 	if (template==null) 
-		this.throwMissingElementException(ObjectCode.TEMPLATE, template_name);
+		this.throwMissingElementException("template", template_name);
 
 	Location source = this.getLocation(template_name, "name", source_name);
 	Location target = this.getLocation(template_name, "name", target_name);
@@ -62,7 +62,7 @@ private Edge getEdge (String template_name, String source, String target) {
 
 	AbstractTemplate template = this.context.getDocument().getTemplate(template_name);
 	if (template==null) 
-		this.throwMissingElementException(ObjectCode.TEMPLATE, template_name);
+		this.throwMissingElementException("template", template_name);
 
 // get the given edge and return it if it exists
 
@@ -80,7 +80,7 @@ private Edge getEdge (String template_name, String source, String target) {
 	}
 
 	if (res==null) 
-		this.throwMissingElementException(ObjectCode.EDGE, source+" -> "+target);
+		this.throwMissingElementException("edge", source+" -> "+target);
 	return res;
 }
 

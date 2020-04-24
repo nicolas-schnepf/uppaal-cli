@@ -5,14 +5,14 @@ package org.uppaal.cli.exceptions;
 */
 
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 
 
 public class WrongExtensionException extends ConsoleException {
 // the object code of this exception
-private ObjectCode object_code;
+private String object_code;
 
 // the wrong extension of this exception
 private String wrong_extension;
@@ -21,13 +21,13 @@ private String wrong_extension;
 * public constructor of a wrong extension extension
 */
 public WrongExtensionException () {
-	super(ExceptionCode.WRONG_EXTENSION);
+	super();
 }
 
 /**
 * @return the object code of this exception
 */
-public ObjectCode getObjectCode() {
+public String getString() {
 	return this.object_code;
 }
 
@@ -35,7 +35,7 @@ public ObjectCode getObjectCode() {
 * set the object code of this exception
 * @param object_code the new object code for this exception
 */
-public void setObjectCode(ObjectCode object_code) {
+public void setString(String object_code) {
 	this.object_code = object_code;
 }
 

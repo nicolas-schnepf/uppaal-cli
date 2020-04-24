@@ -12,8 +12,8 @@ import com.uppaal.model.system.concrete
 .ConcreteState;
 import com.uppaal.model.system.concrete.ConcreteTransition;
 
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
 import org.uppaal.cli.exceptions.TraceFormatException;
 import java.util.LinkedList;
 import java.util.ArrayList;
@@ -114,7 +114,7 @@ public LinkedList<String> showLocations () {
 */
 public LinkedList<String> showVariables () {
 	if (this.state instanceof ConcreteState) 
-		this.throwTraceFormatException(OperationCode.SHOW, ObjectCode.VARIABLES);
+		this.throwTraceFormatException("show", "variables");
 
 	SystemState watched_state = this.state;
 	if (this.hasTransitions()) watched_state = this.transitions.get(this.transition_index).getTarget();
@@ -135,7 +135,7 @@ public LinkedList<String> showVariables () {
 
 public LinkedList<String> showConstraints () {
 	if (this.state instanceof ConcreteState) 
-		this.throwTraceFormatException(OperationCode.SHOW, ObjectCode.CONSTRAINTS);
+		this.throwTraceFormatException("show", "constraints");
 
 	this.result.clear();
 	SystemState watched_state = this.state;

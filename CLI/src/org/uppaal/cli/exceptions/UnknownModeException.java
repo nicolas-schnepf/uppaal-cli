@@ -1,9 +1,9 @@
 package org.uppaal.cli.exceptions;
 
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 import org.uppaal.cli.enumerations.ModeCode;
 
 /**
@@ -19,7 +19,7 @@ private ModeCode mode;
 * public constructor of an unknown mode exception
 */
 public UnknownModeException () {
-super(ExceptionCode.UNKNOWN_MODE);
+super();
 }
 
 /**

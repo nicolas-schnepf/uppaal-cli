@@ -1,7 +1,7 @@
 package org.uppaal.cli.context;
 
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
 import org.uppaal.cli.exceptions.TraceFormatException;
 
 /**
@@ -20,13 +20,13 @@ public SimulatorExpert (Context context) {
 
 /**
 * throw a trace format exception
-* @param operation_code the code of the operation for which the trace format exception is thrown
+* @param command the code of the operation for which the trace format exception is thrown
 * @param object_code the code of the object for which the exception is thrown
 * @exception a trace format exception with all the necessary information
 */
-public void throwTraceFormatException (OperationCode operation_code, ObjectCode object_code) {
-	this.trace_format_exception.setOperationCode(operation_code);
-	this.trace_format_exception.setObjectCode(object_code);
+public void throwTraceFormatException (String command, String object_code) {
+	this.trace_format_exception.setCommand(command);
+	this.trace_format_exception.setObjectType(object_code);
 	throw this.trace_format_exception;
 }
 }

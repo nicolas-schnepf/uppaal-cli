@@ -1,9 +1,9 @@
 package org.uppaal.cli.exceptions;
 
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 import org.uppaal.cli.enumerations.ModeCode;
 
 
@@ -20,7 +20,7 @@ private ModeCode handler_code;
 * public constructor of a wrong mode exception
 */
 public WrongModeException () {
-	super(ExceptionCode.WRONG_MODE);
+	super();
 }
 
 /**

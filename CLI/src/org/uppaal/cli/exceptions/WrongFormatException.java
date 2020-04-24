@@ -5,9 +5,9 @@ package org.uppaal.cli.exceptions;
 */
 
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 
 
 public class WrongFormatException extends ConsoleException {
@@ -20,7 +20,7 @@ private int line_number;
 * public constructor of a wrong format exception
 */
 public WrongFormatException () {
-	super(ExceptionCode.WRONG_FORMAT);
+	super();
 }
 
 /**

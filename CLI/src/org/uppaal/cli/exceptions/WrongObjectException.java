@@ -1,9 +1,9 @@
 package org.uppaal.cli.exceptions;
 
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -15,27 +15,27 @@ import java.util.Iterator;
 public class WrongObjectException extends ConsoleException {
 
 // code of the wrong command
-private ObjectCode object_code;
+private String object_type;
 
 /**
 * public constructor of a wrong mode exception
 */
 public WrongObjectException () {
-	super(ExceptionCode.WRONG_OBJECT);
+	super();
 }
 
 /**
 * @return the current mode of the uppaal command line interface
 */
-public ObjectCode getObjectCode () {
-	return this.object_code;
+public String getObjectType () {
+	return this.object_type;
 }
 
 /**
 * set the object code of this exception
-* @param object_code the new object code for this exception
+* @param object_type the new object code for this exception
 */
-public void setObjectCode (ObjectCode object_code) {
-	this.object_code = object_code;
+public void setObjectType (String object_type) {
+	this.object_type = object_type;
 }
 }

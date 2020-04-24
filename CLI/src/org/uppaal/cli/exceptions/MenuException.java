@@ -1,8 +1,8 @@
 package org.uppaal.cli.exceptions;
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 import org.uppaal.cli.enumerations.ModeCode;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -20,7 +20,7 @@ private LinkedList<String> menu_items;
 * public constructor of a wrong mode exception
 */
 public MenuException () {
-	super(ExceptionCode.MENU);
+	super();
 	this.menu_items = new LinkedList<String>();
 }
 

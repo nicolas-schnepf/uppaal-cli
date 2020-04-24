@@ -1,9 +1,9 @@
 package org.uppaal.cli.exceptions;
 
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 
 
 /**
@@ -15,6 +15,6 @@ public class WrongArgumentException extends ConsoleException {
 */
 
 public WrongArgumentException () {
-	super(ExceptionCode.WRONG_ARGUMENT);
+	super();
 }
 }

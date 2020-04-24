@@ -4,7 +4,7 @@ package org.uppaal.cli.context;
 * query handler, responsible for all operations on queries
 */
 
-import org.uppaal.cli.enumerations.ObjectCode;
+
 import org.uppaal.cli.exceptions.WrongFormatException;
 import com.uppaal.model.core2.QueryList;
 import com.uppaal.model.core2.Query;
@@ -245,7 +245,7 @@ public String showQuery (String name) {
 
 	Query query = this.getQuery("name", name);
 		if (query==null)
-		this.throwMissingElementException(ObjectCode.QUERY, name);
+		this.throwMissingElementException("query", name);
 
 // otherwise return the name, the formula and the comment of the query
 
@@ -268,7 +268,7 @@ public void addQuery (String name, String formula, String comment) {
 
 	if (name!=null) {
 		if (this.getQuery("name", name)!=null)
-			this.throwExistingElementException(ObjectCode.QUERY, name);
+			this.throwExistingElementException("query", name);
 	}
 
 // otherwise insert the query at the end of the list
@@ -322,7 +322,7 @@ public void setQueryProperty(String name, String property, String value) {
 
 	Query query = this.getQuery("name", name);
 		if (query==null)
-		this.throwMissingElementException(ObjectCode.QUERY, name);
+		this.throwMissingElementException("query", name);
 
 // otherwise update the provided query
 

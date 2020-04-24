@@ -1,10 +1,10 @@
 package org.uppaal.cli.commands;
 
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
 import org.uppaal.cli.enumerations.ModeCode;
 import org.uppaal.cli.commands.CommandResult;
-import org.uppaal.cli.commands.Command;
+
 import java.util.List;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -17,18 +17,23 @@ import java.util.HashSet;
 public interface Handler {
 
 /**
+* @return the current object type of this handler
+*/
+public String getObjectType() ;
+
+/**
+* set the object type of this handler
+* @param object_type the new object_type for this handler
+*/
+public void setObjectType(String object_type);
+
+/**
 * handle a command and return its result
 * @param command the command to execute
 * @return the result of the command
 */
 
-public CommandResult handle (Command command) ;
-
-/**
-* return the list of commands handled by this handler
-* @return the list of commands used by this handler
-*/
-public HashSet<OperationCode> getAcceptedOperations();
+public CommandResult handle () ;
 
 /**
 * @return current mode attached to this handler
@@ -42,4 +47,27 @@ public ModeCode getMode();
 * @param true if and only if the attached command supports this mode for at least one object
 */
 public boolean acceptMode (ModeCode mode);
+
+/**
+* add an argument to this command
+* @param argument the argument to add
+*/
+public void addArgument(String argument);
+
+/**
+* @return the number of arguments of this command
+*/
+public int getArgumentNumber();
+
+/**
+* clear the list of arguments of this command
+*/
+public void clear() ;
+
+/**
+* return an argument at a specified position
+* @param index the position of the argument
+* @return the intended argument
+*/
+public String getArgumentAt (int index) ;
 }

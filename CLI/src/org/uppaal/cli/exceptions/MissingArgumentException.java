@@ -1,8 +1,8 @@
 package org.uppaal.cli.exceptions;
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 import org.uppaal.cli.enumerations.ModeCode;
 
 /**
@@ -21,7 +21,7 @@ private int received_argument_number;
 */
 
 public MissingArgumentException () {
-	super(ExceptionCode.MISSING_ARGUMENT);
+	super();
 }
 
 /**

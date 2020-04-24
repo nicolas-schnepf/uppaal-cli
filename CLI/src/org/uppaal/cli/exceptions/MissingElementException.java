@@ -1,8 +1,8 @@
 package org.uppaal.cli.exceptions;
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 import org.uppaal.cli.enumerations.ModeCode;
 
 /**
@@ -17,7 +17,7 @@ private String name;
 * public constructor of a missing element exception
 */
 public MissingElementException () {
-	super(ExceptionCode.MISSING_ELEMENT);
+	super();
 }
 
 /**

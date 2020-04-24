@@ -4,24 +4,29 @@ package org.uppaal.cli.commands;
 * abstract class providing the method interfaces and protected fields for any operation handler
 */
 
+import org.uppaal.cli.enumerations.ResultCode;
 import org.uppaal.cli.exceptions.ExtraArgumentException;
 import org.uppaal.cli.exceptions.MissingArgumentException;
 import org.uppaal.cli.exceptions.WrongModeException;
 import org.uppaal.cli.exceptions.WrongExtensionException;
 import org.uppaal.cli.exceptions.WrongArgumentException;
 import org.uppaal.cli.exceptions.WrongObjectException;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
 import org.uppaal.cli.enumerations.ModeCode;
 import org.uppaal.cli.commands.CommandResult;
-import org.uppaal.cli.commands.Command;
+
 import org.uppaal.cli.context.Context;
+import java.util.LinkedList;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.lang.reflect.Method;
 
 public abstract class AbstractHandler implements Handler {
 protected Context context;
-protected OperationCode operation_code;
+protected String operation_code;
+protected String object_type;
 protected CommandResult command_result;
+protected LinkedList<String> arguments;
+protected HashMap<String, Method> operation_map;
 private WrongModeException wrong_mode_exception;
 private WrongObjectException wrong_object_exception;
 private WrongArgumentException wrong_argument_exception;
@@ -36,6 +41,9 @@ private ExtraArgumentException extra_argument_exception;
 protected AbstractHandler (Context context) {
 	this.context = context;
 	this.command_result = new CommandResult();
+	this.operation_map = new HashMap<String, Method>();
+
+	this.arguments = new LinkedList<String>();
 	this.extra_argument_exception = new ExtraArgumentException();
 	this.missing_argument_exception = new MissingArgumentException();
 	this.wrong_mode_exception = new WrongModeException();
@@ -51,11 +59,24 @@ protected AbstractHandler (Context context) {
 * @param accepted_operations the array of command codes accepted by this handler
 */
 
-protected AbstractHandler (Context context, OperationCode operation_code) {
+protected AbstractHandler (Context context, String operation_code) {
 	this(context);
 	this.operation_code = operation_code;
 }
 
+@Override
+public CommandResult handle () {
+	this.command_result.clear();
+	this.command_result.setObjectType(this.getObjectType());
+	this.command_result.setResultCode(ResultCode.OK);
+	try {
+		this.operation_map.get(this.getObjectType()).invoke(this);
+	} catch (Exception e) {
+		this.throwWrongObjectException(this.getObjectType());
+	}
+
+	return this.command_result;
+}
 
 /***
 * set the uppaal context of this command handler
@@ -66,29 +87,58 @@ public void setContext (Context context) {
 	this.context = context;
 }
 
+
+/**
+* set the object code of this command
+* @param object_type the new object code for this command
+*/
+public void setObjectType (String object_type) {
+	this.object_type = object_type;
+}
+
+/**
+* @return the current object code of this command
+*/
+public String getObjectType() {
+	return this.object_type;
+}
+
+@Override
+public void addArgument(String argument) {
+	this.arguments.add(argument);
+}
+
+@Override
+public int getArgumentNumber() {
+	return this.arguments.size();
+}
+
+@Override
+public void clear() {
+	this.arguments.clear();
+}
+
+@Override
+public String getArgumentAt (int index) {
+	return this.arguments.get(index);
+}
+
 @Override
 public ModeCode getMode () {
 	return this.context.getMode();
 }
 
-/**
-* @return the operation code of this handler
-*/
-public OperationCode getOperationCode () {
-	return this.operation_code;
-}
-
 /***
 * throw a missing argument exception
 * @param operation_code the code of the command
-* @param object_code the object code for which throwing the exception
+* @param object_type the object code for which throwing the exception
 * @param expected the expected number of arguments
 * @param received the received number of arguments
 * @exception a missing argument exception
 */
-protected void throwMissingArgumentException (OperationCode operation_code, ObjectCode object_code, int expected, int received) {
-	this.missing_argument_exception.setOperationCode(operation_code);
-	this.missing_argument_exception.setObjectCode(object_code);
+protected void throwMissingArgumentException (String operation_code, String object_type, int expected, int received) {
+	this.missing_argument_exception.setCommand(operation_code);
+	this.missing_argument_exception.setObjectType(object_type);
 	this.missing_argument_exception.setExpectedArgumentNumber(expected);
 	this.missing_argument_exception.setReceivedArgumentNumber(received);
 	throw (this.missing_argument_exception);
@@ -97,14 +147,14 @@ protected void throwMissingArgumentException (OperationCode operation_code, Obje
 /***
 * throw a extra argument exception
 * @param operation_code the code of the command
-* @param object_code the code of the object
+* @param object_type the code of the object
 * @param expected the expected number of arguments
 * @param received the received number of arguments
 * @exception a extra argument exception
 */
-protected void throwExtraArgumentException (OperationCode operation_code, ObjectCode object_code, int expected, int received) {
-	this.extra_argument_exception.setOperationCode(operation_code);
-	this.extra_argument_exception.setObjectCode(object_code);
+protected void throwExtraArgumentException (String operation_code, String object_type, int expected, int received) {
+	this.extra_argument_exception.setCommand(operation_code);
+	this.extra_argument_exception.setObjectType(object_type);
 	this.extra_argument_exception.setExpectedArgumentNumber(expected);
 	this.extra_argument_exception.setReceivedArgumentNumber(received);
 	throw (this.extra_argument_exception);
@@ -113,12 +163,12 @@ protected void throwExtraArgumentException (OperationCode operation_code, Object
 /**
 * throw a wrong object exception
 * @param operation_code the name of the command throwing a wrong object exception
-* @param object_code the code of the wrong object
+* @param object_type the code of the wrong object
 * @exception an exception describing the kind of wrong object which were received
 */
-public void throwWrongObjectException (OperationCode operation_code, ObjectCode object_code) {
-	this.wrong_object_exception.setOperationCode(operation_code);
-	this.wrong_object_exception.setObjectCode(object_code);
+public void throwWrongObjectException (String object_type) {
+	this.wrong_object_exception.setCommand(this.operation_code);
+	this.wrong_object_exception.setObjectType(object_type);
 	throw this.wrong_object_exception;
 }
 
@@ -129,8 +179,8 @@ public void throwWrongObjectException (OperationCode operation_code, ObjectCode 
 * @exception a wrong argument exception
 */
 
-protected void throwWrongArgumentException (OperationCode operation_code, String argument) {
-	this .wrong_argument_exception.setOperationCode(operation_code);
+protected void throwWrongArgumentException (String operation_code, String argument) {
+	this .wrong_argument_exception.setCommand(operation_code);
 	this.wrong_argument_exception.setMessage(argument);
 	throw this.wrong_argument_exception;
 }
@@ -138,13 +188,13 @@ protected void throwWrongArgumentException (OperationCode operation_code, String
 /**
 * throw a wrong extension exception
 * @param operation_code the code of the command that requires a wrong extension exception
-* @param object_code the code of the object for which the wrong extension exception is thrown
+* @param object_type the code of the object for which the wrong extension exception is thrown
 * @param extension the extension of the file
 * @exception a wrong extension exception
 */
-protected void throwWrongExtensionException(OperationCode operation_code, ObjectCode object_code, String extension) {
-	this.wrong_extension_exception.setOperationCode(operation_code);
-	this.wrong_extension_exception.setObjectCode(object_code);
+protected void throwWrongExtensionException(String operation_code, String object_type, String extension) {
+	this.wrong_extension_exception.setCommand(operation_code);
+	this.wrong_extension_exception.setObjectType(object_type);
 	this.wrong_extension_exception.setWrongExtension(extension);
 	throw this.wrong_extension_exception;
 }
@@ -156,63 +206,13 @@ protected void throwWrongExtensionException(OperationCode operation_code, Object
 * @exception a wrong mode exception if the command is not allowed in the current mode
 */
 
-public void checkMode (Command command, ModeCode ...modes) {
+public void checkMode (String command, String object_type, ModeCode ...modes) {
 	for (ModeCode mode:modes) {
 		if (this.context.getMode()==mode) return;
 	}
 	this.wrong_mode_exception.setModeCode(this.context.getMode());
-	this.wrong_mode_exception.setOperationCode(command.getOperationCode());
-	this.wrong_mode_exception.setObjectCode(command.getObjectCode());
+	this.wrong_mode_exception.setCommand(command);
+	this.wrong_mode_exception.setObjectType(object_type);
 	throw this.wrong_mode_exception;
-}
-
-/**
-* check the number of parameters for a given command
-* @param command the command to check
-* @param min the minimum argument number
-* @param max the maximum argument number
-* @exception either a missing or an extra argument exception if one of the provided bounds is violated
-*/
-public void checkArgumentNumber(Command command, int min, int max) {
-
-// retrieve the necessary information from the command
-
-	OperationCode operation_code = command.getOperationCode();
-	ObjectCode object_code = command.getObjectCode();
-	int argument_number = command.getArgumentNumber();
-
-// check that the bounds are well respected
-
-	if (argument_number<min)
-		this.throwMissingArgumentException(operation_code, object_code, min, argument_number);
-	else if (argument_number>max)
-		this.throwExtraArgumentException(operation_code, object_code, max, argument_number);
-}
-
-/**
-* check the number of parameters for a given command
-* @param command the command to check
-* @param max the maximum argument number
-* @exception an extra argument exception if the provided max bounds is violated
-*/
-public void checkArgumentNumber(Command command, int max) {
-
-// retrieve the necessary information from the command
-
-	OperationCode operation_code = command.getOperationCode();
-	ObjectCode object_code = command.getObjectCode();
-	int argument_number = command.getArgumentNumber();
-
-// check that the max bound is well respected
-
-	if (argument_number>max)
-		this.throwExtraArgumentException(operation_code, object_code, max, argument_number);
-}
-
-@Override
-public HashSet<OperationCode> getAcceptedOperations() {
-	HashSet<OperationCode> accepted_operation = new HashSet<OperationCode>();
-	accepted_operation.add(this.operation_code);
-	return accepted_operation;
 }
 }

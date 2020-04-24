@@ -4,7 +4,7 @@ package org.uppaal.cli.context;
 * location expert, responsible for all operations on locations
 */
 
-import org.uppaal.cli.enumerations.ObjectCode;
+
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
 import com.uppaal.model.core2.QueryList;
@@ -30,9 +30,9 @@ public LocationExpert (Context context) {
 */
 public void addLocation (String template_name, String location_name) {
 	Template template = (Template) this.context.getDocument().getTemplate(template_name);
-	if (template==null) this.throwMissingElementException(ObjectCode.TEMPLATE, template_name);
+	if (template==null) this.throwMissingElementException("template", template_name);
 	if (this.getLocation(template_name, "name", location_name)!=null)
-		this.throwExistingElementException(ObjectCode.LOCATION, location_name);
+		this.throwExistingElementException("location", location_name);
 
 	Location location = template.createLocation();
 	location.setProperty("name", location_name);
@@ -48,7 +48,7 @@ public void addLocation (String template_name, String location_name) {
 */
 public void removeLocation (String template, String name) {
 	Location location = this.getLocation(template, "name", name);
-	if (location==null) this.throwMissingElementException(ObjectCode.LOCATION, name);
+	if (location==null) return;
 		RemoveElementCommand command = new RemoveElementCommand(location);
 		command.execute();
 		this.context.addCommand(command);
@@ -64,7 +64,7 @@ public void removeLocation (String template, String name) {
 */
 public String showLocation (String template, String name) {
 	Location location = this.getLocation (template, "name", name);
-	if (location==null) this.throwMissingElementException(ObjectCode.LOCATION, name);
+	if (location==null) this.throwMissingElementException("location", name);
 	return this.describeLocation(location);
 }
 
@@ -85,13 +85,13 @@ public void setLocationProperty (String template, String name, String property, 
 	if (location!=null) {
 		switch (property) {
 			case "name":
-			this.throwExistingElementException(ObjectCode.LOCATION, template);
+			this.throwExistingElementException("location", template);
 			break;
 			case "init":
-			this.throwExistingElementException(ObjectCode.INIT, template);
+			this.throwExistingElementException("init", template);
 			break;
 			case "committed":
-			this.throwExistingElementException(ObjectCode.COMMITTED, template);
+			this.throwExistingElementException("committed", template);
 			break;
 		}
 	}
@@ -99,7 +99,7 @@ public void setLocationProperty (String template, String name, String property, 
 // get the given location and update it
 
 	location = this.getLocation(template, "name", name);
-	if (location==null) this.throwMissingElementException(ObjectCode.LOCATION, name);
+	if (location==null) this.throwMissingElementException("location", name);
 	SetPropertyCommand command = new SetPropertyCommand(location, property, value);
 	command.execute();
 	this.context.addCommand(command);

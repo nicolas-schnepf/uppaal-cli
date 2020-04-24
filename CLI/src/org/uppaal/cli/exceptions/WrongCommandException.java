@@ -1,9 +1,9 @@
 package org.uppaal.cli.exceptions;
 
 
-import org.uppaal.cli.enumerations.ExceptionCode;
-import org.uppaal.cli.enumerations.OperationCode;
-import org.uppaal.cli.enumerations.ObjectCode;
+
+
+
 import org.uppaal.cli.enumerations.ModeCode;
 
 import java.util.LinkedList;
@@ -22,7 +22,7 @@ private LinkedList<ModeCode> handler_codes;
 * public constructor of a wrong mode exception
 */
 public WrongCommandException () {
-	super(ExceptionCode.WRONG_COMMAND);
+	super();
 	this.handler_codes = new LinkedList<ModeCode>();
 }
 
