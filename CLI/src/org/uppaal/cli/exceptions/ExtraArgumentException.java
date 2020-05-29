@@ -3,7 +3,7 @@ package org.uppaal.cli.exceptions;
 
 
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 
 /**
 * extra argument exception, thrown when an extra argument is provided to a command

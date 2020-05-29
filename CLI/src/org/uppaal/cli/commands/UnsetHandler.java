@@ -9,7 +9,7 @@ import com.uppaal.model.core2.Query;
 
 import org.uppaal.cli.commands.AbstractHandler;
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.commands.Handler;
 
 
@@ -31,7 +31,7 @@ import java.io.PipedOutputStream;
 
 public class UnsetHandler extends AbstractHandler {
 public UnsetHandler (Context context) {
-	super(context);
+	super(context, "unset");
 	try {
 	this.operation_map.put("document", this.getClass().getMethod("unsetDocument"));
 	this.operation_map.put("queries", this.getClass().getMethod("unsetQueries"));
@@ -103,13 +103,15 @@ public void unsetParameter () {
 }
 
 public void unsetLocation () {
-		this.checkMode("unset", "location", ModeCode.EDITOR);
-		String template = this.getArgumentAt(0);
-		String name =  name = this.getArgumentAt(1);
+	this.checkMode("unset", "location", ModeCode.EDITOR);
+	String template = this.getArgumentAt(0);
+	String name =  name = this.getArgumentAt(1);
+	if (name.equals("*")) 
+		this.context.getLocationExpert().removeLocations(template);
+	else {
+		this.context.getEdgeExpert().removeEdges(template, name, name);
 		this.context.getLocationExpert().removeLocation(template, name);
-		this.command_result.addArgument(template);
-			this.command_result.addArgument(name);
-
+	}
 }
 
 public void unsetInvariant() {
@@ -148,11 +150,13 @@ public void unsetEdge() {
 		String template = this.getArgumentAt(0);
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
-		this.context.getEdgeExpert().removeEdge(template, source, target);
-		this.command_result.addArgument(template);
-			this.command_result.addArgument(source);
-			this.command_result.addArgument(target);
 
+	if (source.equals("*") && target.equals("*"))
+		this.context.getEdgeExpert().removeEdges(template);
+	else if (source.equals("*") || target.equals("*"))
+		this.context.getEdgeExpert().removeEdges(template, source, target);
+	else
+		this.context.getEdgeExpert().removeEdge(template, source, target);
 }
 
 public void unsetSelect() {

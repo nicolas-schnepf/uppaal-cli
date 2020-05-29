@@ -1,4 +1,4 @@
-DIRS = enumerations context exceptions commands
+DIRS = enumerations context exceptions commands frontend
 build :  subdirs *.java
 	javac -Xlint:unchecked -cp $(CLASSPATH) *.java
 

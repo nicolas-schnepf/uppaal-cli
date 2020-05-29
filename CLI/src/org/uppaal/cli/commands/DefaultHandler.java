@@ -2,14 +2,14 @@ package org.uppaal.cli.commands;
 
 import com.uppaal.engine.EngineException;
 import com.uppaal.engine.CannotEvaluateException;
-import org.uppaal.cli.exceptions.UnknownModeException;
+import org.uppaal.cli.exceptions.ConsoleException;
 import org.uppaal.cli.exceptions.UnknownCommandException;
 
 
 import org.uppaal.cli.enumerations.ResultCode;
-import org.uppaal.cli.enumerations.ModeCode;
 import org.uppaal.cli.commands.CommandResult;
 
+import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.context.Context;
 
 import java.io.IOException;
@@ -18,6 +18,7 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 /**
 * concrete class implementing a default handler
@@ -27,8 +28,6 @@ import java.lang.reflect.Method;
 
 public class DefaultHandler extends AbstractHandler {
 
-// private unknown mode exception to throw when receiving an unknown mode
-private UnknownModeException unknown_mode_exception;
 
 // private unknown command exception to throw when receiving an unknown command
 private UnknownCommandException unknown_command_exception;
@@ -47,6 +46,7 @@ private HashMap <String, Method> command_map;
 
 public DefaultHandler (Context context) {
 	super(context, null);
+	this.unknown_command_exception = new UnknownCommandException ();
 	try {
 	this.command_map = new HashMap<String, Method>();
 	this.command_map.put("start", this.getClass().getMethod("handleStart"));
@@ -79,24 +79,38 @@ public HashSet<String> getAcceptedCommands () {
 public CommandResult handle () {
 	this.command_result.clear();
 	this.command_result.setResultCode(ResultCode.OK);
-	try {
-		this.command_map.get(this.command).invoke(this);
-	} catch (Exception e) {
+
+	if (!this.command_map.keySet().contains(this.command)) {
 this.unknown_command_exception.setCommand(this.command);
 		throw this.unknown_command_exception;
+	}
+
+	try {
+		this.command_map.get(this.command).invoke(this);
+	} catch (IllegalAccessException e) {
+		System.out.println(e.getMessage());
+		e.printStackTrace();
+		System.exit(1);
+	} catch (InvocationTargetException e) {
+		if (e.getTargetException() instanceof ConsoleException)
+			throw (ConsoleException)e.getTargetException();
+
+		System.out.println(e.getMessage());
+		e.printStackTrace();
+		System.exit(1);
 	}
 
 	return this.command_result;
 }
 
 public void handleStart() {
-		ModeCode mode = this.getMode();
+		ModeCode mode = this.context.getMode(this.arguments.get(0));
 		switch (mode) {
 
 // start editor handler if requested
 
 			case EDITOR:
-			this.context.setMode(ModeCode.EDITOR);
+			this.context.setMode(this.getArgumentAt(0));
 			break;
 
 // start simulator handler if requested
@@ -114,7 +128,7 @@ public void handleStart() {
 			}
 
 			if (this.context.getTrace()==null) this.context.getTraceExpert().setTrace(mode);
-			this.context.setMode(mode);
+			this.context.setMode(this.getArgumentAt(0));
 		} catch (EngineException e) {
 		this.command_result.setResultCode(ResultCode.ENGINE_ERROR);
 		return;
@@ -150,7 +164,7 @@ public void handleStart() {
 		}
 		}
 
-		this.context.setMode(ModeCode.VERIFIER);
+		this.context.setMode(this.getArgumentAt(0));
 			break;
 
 // if the mode is not known throw an unknown mode exception

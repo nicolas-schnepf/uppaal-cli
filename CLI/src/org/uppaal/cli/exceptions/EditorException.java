@@ -3,7 +3,7 @@ package org.uppaal.cli.exceptions;
 
 
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 
 /**
 * missing argument exception, thrown when an argument is missing to a command

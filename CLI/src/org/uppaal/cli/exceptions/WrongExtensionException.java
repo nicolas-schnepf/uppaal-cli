@@ -53,4 +53,9 @@ public String getWrongExtension () {
 public void setWrongExtension(String wrong_extension) {
 	this.wrong_extension = wrong_extension;
 }
+
+@Override
+public String getMessage () {
+	return "Error: you cannot "+this.command+" "+this.object_type+" from a file with extension "+this.wrong_extension+".";
+	}
 }

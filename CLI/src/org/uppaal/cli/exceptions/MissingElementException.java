@@ -3,7 +3,7 @@ package org.uppaal.cli.exceptions;
 
 
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 
 /**
 * missing element exception, thrown when an uppaal is missing in the current document
@@ -33,5 +33,10 @@ public String getName () {
 */
 public void setName (String name) {
 	this.name = name;
+}
+
+@Override
+public String getMessage() {
+	return "Error: missing "+this.object_type+" "+this.name+".";
 }
 }

@@ -4,6 +4,7 @@ package org.uppaal.cli.commands;
 * abstract class providing the method interfaces and protected fields for any operation handler
 */
 
+import org.uppaal.cli.exceptions.ConsoleException;
 import org.uppaal.cli.enumerations.ResultCode;
 import org.uppaal.cli.exceptions.ExtraArgumentException;
 import org.uppaal.cli.exceptions.MissingArgumentException;
@@ -11,10 +12,11 @@ import org.uppaal.cli.exceptions.WrongModeException;
 import org.uppaal.cli.exceptions.WrongExtensionException;
 import org.uppaal.cli.exceptions.WrongArgumentException;
 import org.uppaal.cli.exceptions.WrongObjectException;
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.commands.CommandResult;
 
 import org.uppaal.cli.context.Context;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -69,10 +71,22 @@ public CommandResult handle () {
 	this.command_result.clear();
 	this.command_result.setObjectType(this.getObjectType());
 	this.command_result.setResultCode(ResultCode.OK);
+	if (!this.operation_map.keySet().contains(this.getObjectType()))
+				this.throwWrongObjectException(this.getObjectType());
+
 	try {
 		this.operation_map.get(this.getObjectType()).invoke(this);
-	} catch (Exception e) {
-		this.throwWrongObjectException(this.getObjectType());
+	} catch (IllegalAccessException e) {
+	System.out.println(e.getMessage());
+	e.printStackTrace();
+	System.exit(1);
+	} catch (InvocationTargetException e) {
+		if (e.getTargetException() instanceof ConsoleException)
+			throw (ConsoleException)e.getTargetException();
+
+	System.out.println(e.getMessage());
+	e.printStackTrace();
+	System.exit(1);
 	}
 
 	return this.command_result;

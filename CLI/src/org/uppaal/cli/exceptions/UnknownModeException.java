@@ -4,7 +4,6 @@ package org.uppaal.cli.exceptions;
 
 
 
-import org.uppaal.cli.enumerations.ModeCode;
 
 /**
 * exception class for an unknown mode
@@ -12,8 +11,7 @@ import org.uppaal.cli.enumerations.ModeCode;
 
 public class UnknownModeException extends ConsoleException {
 // the name of the unknown mode
-
-private ModeCode mode;
+private String mode;
 
 /**
 * public constructor of an unknown mode exception
@@ -26,7 +24,7 @@ super();
 * @return the name of the unknown mode
 */
 
-public ModeCode getMode() {
+public String getMode() {
 	return this.mode;
 }
 
@@ -35,7 +33,12 @@ public ModeCode getMode() {
 * @param mode the name of the unknown mode
 */
 
-public void setMode (ModeCode mode) {
+public void setMode (String mode) {
 	this.mode = mode;
+}
+
+@Override
+public String getMessage() {
+	return "Unknown mode: "+this.mode;
 }
 }

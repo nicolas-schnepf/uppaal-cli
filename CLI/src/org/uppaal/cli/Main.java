@@ -1,7 +1,7 @@
 package org.uppaal.cli;
 
+import org.uppaal.cli.frontend.ConsoleManager;
 import org.uppaal.cli.commands.CommandResult;
-
 import org.uppaal.cli.context.Context;
 
 /**

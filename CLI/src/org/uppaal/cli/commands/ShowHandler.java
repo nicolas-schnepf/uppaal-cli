@@ -9,7 +9,7 @@ import com.uppaal.model.core2.Query;
 
 import org.uppaal.cli.commands.AbstractHandler;
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.commands.Handler;
 
 
@@ -36,7 +36,7 @@ public ShowHandler (Context context) {
 	super(context, "show");
 	try {
 	this.operation_map.put("queries", this.getClass().getMethod("showQueries"));
-	this.operation_map.put("templates", this.getClass().getMethod("showTemplates"));
+	this.operation_map.put("parameter", this.getClass().getMethod("showParameter"));
 	this.operation_map.put("declaration", this.getClass().getMethod("showDeclaration"));
 	this.operation_map.put("query", this.getClass().getMethod("showQuery"));
 	this.operation_map.put("template", this.getClass().getMethod("showTemplate"));
@@ -55,11 +55,10 @@ public void showQueries () {
 		for (String arg: names) this.command_result.addArgument(arg);
 }
 
-		
-
-public void showTemplates () {
-			LinkedList<String> templates = this.context.getTemplateExpert().showTemplates();
-			for (String temp: templates) this.command_result.addArgument(temp);
+public void showParameter () {
+	String name = this.getArgumentAt(0);
+	String parameter = this.context.getTemplateExpert().getTemplateProperty(name, "parameter");
+				if (parameter!=null) this.command_result.addArgument(parameter);
 }
 
 public void showDeclaration() {
@@ -77,14 +76,22 @@ public void showQuery() {
 }
 
 public void showTemplate() {
-		String name = this.getArgumentAt(0);
-			this.command_result.addArgument(this.context.getTemplateExpert().showTemplate(name));
+	String name = this.getArgumentAt(0);
+	if (name.equals("*")) {
+		LinkedList<String> templates = this.context.getTemplateExpert().showTemplates();
+		for (String temp: templates) this.command_result.addArgument(temp);
+	} else
+		this.command_result.addArgument(this.context.getTemplateExpert().showTemplate(name));
 }
 
 public void showLocation () {
+	String template = this.getArgumentAt(0);
+	String name = this.getArgumentAt(1);
 
-		String template = this.getArgumentAt(0);
-		String name = this.getArgumentAt(1);
+	if (name.equals("*")) {
+		for (String location: this.context.getLocationExpert().showLocations(template))
+			this.command_result.addArgument(location);
+	} else
 		this.command_result.addArgument(this.context.getLocationExpert().showLocation(template, name));
 }
 

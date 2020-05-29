@@ -13,7 +13,7 @@ import com.uppaal.model.system.concrete.ConcreteTrace;
 import com.uppaal.model.system.concrete.ConcreteState;
 import com.uppaal.model.system.concrete.ConcreteTransitionRecord;
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.exceptions.TraceFormatException;
 import java.io.FileWriter;
 import java.io.IOException;

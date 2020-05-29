@@ -38,4 +38,9 @@ public String getObjectType () {
 public void setObjectType (String object_type) {
 	this.object_type = object_type;
 }
+
+@Override
+public String getMessage() {
+	return "Error: command "+this.command+" does not support object of type "+this.object_type+".";
+}
 }

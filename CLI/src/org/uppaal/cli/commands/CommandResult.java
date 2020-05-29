@@ -5,12 +5,12 @@ package org.uppaal.cli.commands;
 * and possibly asking to start another screen
 */
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.enumerations.ResultCode;
 import java.util.LinkedList;
 import java.util.Iterator;
 
-public class CommandResult implements Iterable {
+public class CommandResult implements Iterable<String> {
 
 // code of the executed command
 

@@ -18,6 +18,7 @@ import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.InsertElementCommand;
 import com.uppaal.model.core2.RemoveElementCommand;
 import com.uppaal.model.core2.SetPropertyCommand;
+import java.util.LinkedList;
 
 public class EdgeExpert extends AbstractExpert {
 public EdgeExpert (Context context) {
@@ -31,7 +32,8 @@ public EdgeExpert (Context context) {
 * @param target_name the target of the new edge
 * @exception an exception is thrown if either the template, the source or the think does not exist
 */
-public void addEdge(String template_name, String source_name, String target_name) {
+public void addEdge(String template_name, String source_name, String target_name, 
+String select, String guard, String sync, String assign) {
 	Template template = (Template)this.context.getDocument().getTemplate(template_name);
 	if (template==null) 
 		this.throwMissingElementException("template", template_name);
@@ -42,6 +44,10 @@ public void addEdge(String template_name, String source_name, String target_name
         Edge edge = template.createEdge();
 	edge.setSource(source);
 	edge.setTarget(target);
+	edge.setProperty("select", select);
+	edge.setProperty("guard", guard);
+	edge.setProperty("sync", sync);
+	edge.setProperty("assign", assign);
 
 	InsertElementCommand command = new InsertElementCommand(edge.getCommandManager(), template, null, edge);
 	command.execute();
@@ -70,18 +76,97 @@ private Edge getEdge (String template_name, String source, String target) {
 	Edge res = null;
 
 	while(node!=null && res==null) {
-		if (!(node instanceof Edge)) continue;
+		if ((node instanceof Edge)) {
 		Edge edge = (Edge) node;
 		Location src = (Location)edge.getSource();
 		Location tar = (Location) edge.getTarget();
-		if (src.getPropertyValue("name")==source && tar.getPropertyValue("name")==target) 
+		if (src.getPropertyValue("name").equals(source) && tar.getPropertyValue("name").equals(target)) 
 			res = edge;
+		}
+
 		node = node.getNext();
 	}
 
 	if (res==null) 
 		this.throwMissingElementException("edge", source+" -> "+target);
 	return res;
+}
+
+/**
+* remove all edges from a template
+* @param name the name of the template to clean
+* @exception a missing element exception if the template does not exist
+*/
+public void removeEdges (String name) {
+
+// get the given template if it exists
+
+	AbstractTemplate template = this.context.getDocument().getTemplate(name);
+	if (template==null) 
+		this.throwMissingElementException("template", name);
+
+// get the given edge and return it if it exists
+
+	Node node = template.getFirst();
+	LinkedList<Edge> edges = new LinkedList<Edge>();
+
+	while(node!=null) {
+		if ((node instanceof Edge)) {
+		Edge edge = (Edge) node;
+			edges.add(edge);
+		} 
+
+		node = node.getNext();
+	}
+
+// remove all edges from the list
+
+	for (Edge edge:edges) {
+		RemoveElementCommand command = new RemoveElementCommand(edge);
+		command.execute();
+		this.context.addCommand(command);
+	}
+}
+
+/**
+* remove edges based on the name of their source or of their target
+* @param name the name of the template to clean
+* @param source the name of the source to remove
+* @param target the name of the target to remove
+* @exception a missing element exception if the template does not exist
+*/
+public void removeEdges (String name, String source, String target) {
+
+// get the given template if it exists
+
+	AbstractTemplate template = this.context.getDocument().getTemplate(name);
+	if (template==null) 
+		this.throwMissingElementException("template", name);
+
+// get the given edge and return it if it exists
+
+	Node node = template.getFirst();
+	LinkedList<Edge> edges = new LinkedList<Edge>();
+
+	while(node!=null) {
+		if ((node instanceof Edge)) {
+		Edge edge = (Edge) node;
+		Location src = (Location)edge.getSource();
+		Location tar = (Location) edge.getTarget();
+		if (src.getPropertyValue("name").equals(source) || tar.getPropertyValue("name").equals(target)) 
+			edges.add(edge);
+		} 
+
+		node = node.getNext();
+	}
+
+// remove all edges from the list
+
+	for (Edge edge:edges) {
+		RemoveElementCommand command = new RemoveElementCommand(edge);
+		command.execute();
+		this.context.addCommand(command);
+	}
 }
 
 /**

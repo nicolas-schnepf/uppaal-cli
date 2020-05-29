@@ -16,6 +16,7 @@ import com.uppaal.model.core2.Location;
 import com.uppaal.model.core2.InsertElementCommand;
 import com.uppaal.model.core2.RemoveElementCommand;
 import com.uppaal.model.core2.SetPropertyCommand;
+import java.util.LinkedList;
 
 public class LocationExpert extends AbstractExpert {
 public LocationExpert (Context context) {
@@ -28,7 +29,7 @@ public LocationExpert (Context context) {
 * @param location_name the name of the new location
 * @exception an exception will be thrown if the template does not exist
 */
-public void addLocation (String template_name, String location_name) {
+public void addLocation (String template_name, String location_name, String invariant) {
 	Template template = (Template) this.context.getDocument().getTemplate(template_name);
 	if (template==null) this.throwMissingElementException("template", template_name);
 	if (this.getLocation(template_name, "name", location_name)!=null)
@@ -36,9 +37,45 @@ public void addLocation (String template_name, String location_name) {
 
 	Location location = template.createLocation();
 	location.setProperty("name", location_name);
+	location.setProperty("invariant", invariant);
+
 	InsertElementCommand command = new InsertElementCommand(location.getCommandManager(), template, null, location);
 	command.execute();
 	this.context.addCommand(command);
+}
+
+/**
+* remove all locations from a template
+* @param name the name of the template to clean
+* @exception a missing element exception if the template does not exist
+*/
+public void removeLocations (String name) {
+
+
+// get the given template if it exists
+
+	AbstractTemplate template = this.context.getDocument().getTemplate(name);
+	if (template==null) 
+		this.throwMissingElementException("template", name);
+
+// get the given location and return it if it exists
+
+	LinkedList<Node> nodes = new LinkedList<Node>();
+	Node node = template.getFirst();
+
+	while(node!=null) {
+		nodes.add(node);
+
+		node = node.getNext();
+	}
+
+// remove all locations from the list
+
+	for (Node n:nodes) {
+			RemoveElementCommand command = new RemoveElementCommand(n);
+			command.execute();
+			this.context.addCommand(command);
+	}
 }
 
 /**
@@ -54,6 +91,34 @@ public void removeLocation (String template, String name) {
 		this.context.addCommand(command);
 }
 
+/**
+* show all locations of a template
+* @param template the name of the template to describe
+* @return a linked list containing all locations to show
+*/
+public LinkedList<String> showLocations (String name) {
+
+
+// get the given template if it exists
+
+	AbstractTemplate template = this.context.getDocument().getTemplate(name);
+	if (template==null) 
+		this.throwMissingElementException("template", name);
+
+// get the given location and return it if it exists
+
+	LinkedList<String> locations = new LinkedList<String>();
+	Node node = template.getFirst();
+
+	while(node!=null) {
+		if (node instanceof Location) 
+			locations.add(this.describeLocation((Location)node));
+
+		node = node.getNext();
+	}
+
+	return locations;
+}
 
 /**
 * return the description of a location given by its name and the name of its template

@@ -1,4 +1,4 @@
-package org.uppaal.cli;
+package org.uppaal.cli.frontend;
 
 
 import org.uppaal.cli.commands.CommandResult;
@@ -41,20 +41,11 @@ private Context context;
 // console reader for this console manager
 private ConsoleReader reader;
 
-// hash map of accepted modes for this command manager
-private HashMap <String, ModeCode> accepted_modes;
+// private command parser of this console manager
+private CommandParser command_parser;
 
-// hashmap of mode names for this console manager
-private HashMap<ModeCode, String> mode_names;
-
-// hash map of accepted command completers for this console manager
-private HashMap <ModeCode, Completer> command_completers;
-
-// active command completer for this console manager
-private Completer command_completer;
-
-// private command handler for this console manager
-private CommandLauncher command_launcher;
+// current command handler of this console manager
+private Handler handler;
 
 // output writer for this console manager
 private PrintWriter out;
@@ -76,32 +67,7 @@ public ConsoleManager (Context context) throws IOException, IOException {
 	this.reader = new ConsoleReader();
             	this.out = new PrintWriter(reader.getOutput());
 	this.err = new PrintWriter(System.err);
-	this.command_launcher = new CommandLauncher(context);
-	this.accepted_modes = new HashMap<String, ModeCode>();
-	this.mode_names = new HashMap<ModeCode, String>();
-	this.command_completers = new HashMap<ModeCode, Completer>();
-
-// initialize the map of accepted modes
-
-	this.accepted_modes.put("editor", ModeCode.EDITOR);
-	this.accepted_modes.put("symbolic_simulator", ModeCode.SYMBOLIC_SIMULATOR);
-	this.accepted_modes.put("concrete_simulator", ModeCode.CONCRETE_SIMULATOR);
-	this.accepted_modes.put("verifier", ModeCode.VERIFIER);
-
-// initialize the map of mode names from the previous one
-
-	for (String mode_name: this.accepted_modes.keySet()) {
-		ModeCode mode_code = this.accepted_modes.get(mode_name);
-		this.mode_names.put(mode_code, mode_name);
-	}
-}
-
-/**
-* set the prompt of this console manager
-*/
-private void setPrompt () {
-	String mode = this.mode_names.get(this.context.getMode());
-	this.reader.setPrompt("uppaal "+mode+"$");
+	this.command_parser = new CommandParser(context);
 }
 
 /**
@@ -117,7 +83,7 @@ public void run () throws EngineException, IOException {
 // first initialize the console reader
 
 	this.context.getEngineExpert().connectEngine();
-	this.setPrompt();
+	this.reader.setPrompt("uppaal editor$");
 
 	this.running = true;
 	String line = null;
@@ -126,16 +92,14 @@ public void run () throws EngineException, IOException {
 
 	while (this.running) {
 		line = reader.readLine();
-		this.out. print("\033[H\033[2J");
-this. out. flush();
-		reader.clearScreen();
-		this.out.flush();
+
 		if (line==null) break;
+		else if (line.equals("")) continue;
 
 // parse the provided command line, execute it and process the corresponding result
 
 		try {
-			Handler handler = this.parseCommandLine(line);
+			this.handler = this.command_parser.parseCommand(line);
 			CommandResult result = handler.handle();
 			this.processResult(result);
 			handler.clear();
@@ -146,38 +110,11 @@ this. out. flush();
 
 		catch (ConsoleException e) {
 			this.err.println(e.getMessage());
+			e.printStackTrace();
+			this.err.flush();
 		}
 	}
 	this.context.getEngineExpert().disconnectEngine();
-}
-
-/**
-* private method to parse a command line
-* @param line the line to parse
-* @return the object representing the command with the codes used by the handlers
-* @exception an exception can be thrown if an unknown command or object was provided as input
-*/
-private Handler parseCommandLine (String line) {
-	String token = null;
-	int pos = 0;
-	int begin = pos;
-
-// skip white space:
-	while (pos < line.length() && Character.isWhitespace(line.charAt(pos)))
-		++pos;
-	begin = pos;
-
-// find white next space:
-	while (pos < line.length() && !Character.isWhitespace(line.charAt(pos)))
-		++pos;
-
-// parse the name of the command if possible
-
-	if (begin==pos) return null;
-	token = line.substring(begin,pos);
-	Handler handler = this.command_launcher.getCommandHandler(token);
-
-	return handler;
 }
 
 /**
@@ -190,25 +127,46 @@ private void processResult (CommandResult result) {
 
 	switch (result.getResultCode()) {
 
-// if result is ok do nothing
+// if result is ok print the result of the command
 
-	case OK:
-	break;
+		case OK:
+		for (String arg:result) {
+			this.out.println(arg);
+			this.out.flush();
+		}
+		break;
 
-// if return code is mode changed update the prompt
+		case MODE_CHANGED:
+		String mode = result.getArgumentAt(0);
+		this.reader.setPrompt("uppaal "+mode+"$");
+		break;
 
-	case MODE_CHANGED:
-	this.setPrompt();
-	break;
+// if exit command was entered simply leave the uppaal command line interface
 
-// if return code is exit set the running condition to false
-
-	case EXIT:
+		case EXIT:
 		this.running = false;
-	break;
+		break;
 
-	default:
-	break;
+// for an io error display the name of the file
+
+		 case IO_ERROR:
+		String filename = result.getArgumentAt(0);
+		this.err.println("IO error: file "+filename+" could not be loaded.");
+		 break;
+
+// for an engine advize the user to disconnect and reconnect the engine
+
+		 case ENGINE_ERROR:
+		this.err.println("Engine error: try to run disconnect followed by connect.");
+		this.err.flush();
+		 break;
+
+// for a compilation error display all the errors which were encountered 
+
+		 case COMPILATION_ERROR:
+		this.err.println ("There were "+result.getArgumentNumber()+" compilation errors:\n");
+		for (String error:result) this.out.println(error+"\n");
+		break;
 	}
 }
 }

@@ -9,7 +9,7 @@ import com.uppaal.model.core2.Query;
 
 import org.uppaal.cli.commands.AbstractHandler;
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.commands.Handler;
 
 
@@ -21,6 +21,7 @@ import org.uppaal.cli.context.Context;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -31,30 +32,58 @@ import java.io.PipedOutputStream;
 */
 
 public class SetHandler extends AbstractHandler {
+	private HashMap <String, String> properties = new HashMap<String, String>();
+
 public SetHandler (Context context) {
 	super(context, "set");
+	this.properties = new HashMap<String, String>();
+
 	try {
 	this.operation_map.put("query", this.getClass().getMethod("setQuery"));
 	this.operation_map.put("formula", this.getClass().getMethod("setFormula"));
-	this.operation_map.put("comment",this.getClass().getMethod("setComment "));
-	this.operation_map.put("template",this.getClass().getMethod("setTemplate "));
+	this.operation_map.put("comment",this.getClass().getMethod("setComment"));
+	this.operation_map.put("template",this.getClass().getMethod("setTemplate"));
 	this.operation_map.put("declaration",this.getClass().getMethod("setDeclaration"));
 	this.operation_map.put("parameter", this.getClass().getMethod("setParameter"));
 	this.operation_map.put("location", this.getClass().getMethod("setLocation"));
-	this.operation_map.put("invariant", this.getClass().getMethod("setInvariant "));
-	this.operation_map.put("init", this.getClass().getMethod("setInit "));
-	this.operation_map.put("committed", this.getClass().getMethod("setCommitted "));
-	this.operation_map.put("edge", this.getClass().getMethod("setEdge "));
+	this.operation_map.put("invariant", this.getClass().getMethod("setInvariant"));
+	this.operation_map.put("init", this.getClass().getMethod("setInit"));
+	this.operation_map.put("committed", this.getClass().getMethod("setCommitted"));
+	this.operation_map.put("edge", this.getClass().getMethod("setEdge"));
 	this.operation_map.put("select", this.getClass().getMethod("setSelect"));
 	this.operation_map.put("guard", this.getClass().getMethod("setGuard"));
-	this.operation_map.put("sync", this.getClass().getMethod("setSync "));
-	this.operation_map.put("assign", this.getClass().getMethod("setAssign "));
+	this.operation_map.put("sync", this.getClass().getMethod("setSync"));
+	this.operation_map.put("assign", this.getClass().getMethod("setAssign"));
 	this.operation_map.put("system", this.getClass().getMethod("setSystem"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
 	System.exit(1);
 	}
+}
+
+/**
+* add a new property to this set handler
+* @param property the name of the property to handle
+* @param value the value assigned to the property
+*/
+public void addProperty (String property, String value) {
+	this.properties.put(property, value);
+}
+
+/**
+* check if a property already exists in the map of this handler
+* @param property the name of the property to check
+* @return true if and only if the property already exists in the map of this handler
+*/
+public boolean containsProperty (String property) {
+	return this.properties.keySet().contains(property);
+}
+
+@Override
+public void clear () {
+	super.clear();
+	this.properties.clear();
 }
 
 public void setQuery () {QUERY:
@@ -87,9 +116,9 @@ public void setComment () {
 public void setTemplate () {
 		this.checkMode("set", "template", ModeCode.EDITOR);
 		String name = this.getArgumentAt(0);
-		String parameter = this.getArgumentAt(1);
-			this.context.getTemplateExpert().addTemplate(name, parameter);
-			this.command_result.addArgument(name);
+		String parameter = this.properties.get("parameter");
+		String declaration = this.properties.get("declaration");
+			this.context.getTemplateExpert().addTemplate(name, parameter, declaration);
 }
 
 public void setDeclaration() {
@@ -98,7 +127,6 @@ public void setDeclaration() {
 				String name = this.getArgumentAt(0);
 				String declaration = this.getArgumentAt(1);
 				this.context.getTemplateExpert().setTemplateProperty(name, "declaration",  declaration);
-				this.command_result.addArgument(name);
 			} else {
 				String declaration = this.getArgumentAt(0);
 				this.context.getModelExpert().setDocumentProperty("declaration", declaration);
@@ -110,8 +138,6 @@ public void setParameter() {
 				String name = this.getArgumentAt(0);
 				String parameter = this.getArgumentAt(1);
 				this.context.getTemplateExpert().setTemplateProperty(name, "parameter", parameter);
-				this.command_result.addArgument(name);
-				this.command_result.addArgument(parameter);
 }
 
 
@@ -119,9 +145,8 @@ public void setLocation() {
 		this.checkMode("set", "location", ModeCode.EDITOR);
 		String template = this.getArgumentAt(0);
 		String name = this.getArgumentAt(1);
-		this.context.getLocationExpert().addLocation(template, name);
-		this.command_result.addArgument(template);
-		this.command_result.addArgument(name);
+		String invariant = this.properties.get("invariant");
+		this.context.getLocationExpert().addLocation(template, name, invariant);
 }
 
 public void setInvariant () {
@@ -130,9 +155,6 @@ public void setInvariant () {
 		String name = this.getArgumentAt(1);
 		String value = this.getArgumentAt(2);
 		this.context.getLocationExpert().setLocationProperty(template, name, "invariant", value);
-this.command_result.addArgument(template);
-		this.command_result.addArgument(name);
-this.command_result.addArgument(value);
 }
 
 public void setInit () {
@@ -140,8 +162,6 @@ public void setInit () {
 		String template = this.getArgumentAt(0);
 		String name = this.getArgumentAt(1);
 		this.context.getLocationExpert().setLocationProperty(template, name, "init", true);
-this.command_result.addArgument(template);
-		this.command_result.addArgument(name);
 }
 		
 public void setCommitted () {
@@ -149,8 +169,6 @@ public void setCommitted () {
 		String template = this.getArgumentAt(0);
 		String name = this.getArgumentAt(1);
 		this.context.getLocationExpert().setLocationProperty(template, name, "committed", true);
-this.command_result.addArgument(template);
-		this.command_result.addArgument(name);
 }
 
 public void setEdge () {
@@ -158,10 +176,11 @@ public void setEdge () {
 		String template = this.getArgumentAt(0);
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
-		this.context.getEdgeExpert().addEdge(template, source, target);
-		this.command_result.addArgument(template);
-		this.command_result.addArgument(source);
-		this.command_result.addArgument(target);
+		String select = this.properties.get("select");
+		String guard = this.properties.get("guard");
+		String sync = this.properties.get("sync");
+		String assign = this.properties.get("assign");
+		this.context.getEdgeExpert().addEdge(template, source, target, select, guard, sync, assign);
 }
 
 public void setSelect() {
@@ -171,10 +190,6 @@ public void setSelect() {
 		String target = this.getArgumentAt(2);
 		String value = this.getArgumentAt(3);
 		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "select", value);
-this.command_result.addArgument(template);
-		this.command_result.addArgument(source);
-		this.command_result.addArgument(target);
-		this.command_result.addArgument(value);
 }
 		
 public void setGuard() {
@@ -184,10 +199,6 @@ public void setGuard() {
 		String target = this.getArgumentAt(2);
 		String value = this.getArgumentAt(3);
 		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "guard", value);
-this.command_result.addArgument(template);
-		this.command_result.addArgument(source);
-		this.command_result.addArgument(target);
-		this.command_result.addArgument(value);
 }
 
 public void setSync () {
@@ -197,10 +208,6 @@ public void setSync () {
 		String target = this.getArgumentAt(2);
 		String value = this.getArgumentAt(3);
 		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "sync", value);
-this.command_result.addArgument(template);
-		this.command_result.addArgument(source);
-		this.command_result.addArgument(target);
-		this.command_result.addArgument(value);
 }
 
 public void setAssign () {
@@ -210,18 +217,13 @@ public void setAssign () {
 		String target = this.getArgumentAt(2);
 		String value = this.getArgumentAt(3);
 		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "assign", value);
-this.command_result.addArgument(template);
-		this.command_result.addArgument(source);
-		this.command_result.addArgument(target);
-		this.command_result.addArgument(value);
 }
+
 public void setSystem() {
 		this.checkMode("set", "system", ModeCode.EDITOR);
 		String system = this.getArgumentAt(0);
 		this.context.getModelExpert().setDocumentProperty("system", system);
-		this.command_result.addArgument(system);
 }
-
 
 @Override
 public boolean acceptMode (ModeCode mode) {

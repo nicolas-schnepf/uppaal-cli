@@ -3,7 +3,7 @@ package org.uppaal.cli.exceptions;
 
 
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 
 /**
 * existing element exception, thrown when an uppaal is existing in the current document

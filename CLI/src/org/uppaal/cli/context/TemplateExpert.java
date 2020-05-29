@@ -46,10 +46,11 @@ public LinkedList<String> showTemplates () {
 * @param name the name of the template
 * @param parameter the parameter of the template
 */
-public void addTemplate(String name, String parameter) {
+public void addTemplate(String name, String parameter, String declaration) {
 	Template template = this.context.getDocument().createTemplate();
 	template.setProperty("name", name);
 	template.setProperty("parameter", parameter);
+	template.setProperty("declaration", declaration);
 
 	InsertTemplateCommand command = new InsertTemplateCommand(this.context.getDocument(), null, template);
 	command.execute();

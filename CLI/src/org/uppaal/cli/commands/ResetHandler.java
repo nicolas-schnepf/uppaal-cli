@@ -9,7 +9,7 @@ import com.uppaal.model.core2.Query;
 
 import org.uppaal.cli.commands.AbstractHandler;
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.commands.Handler;
 
 

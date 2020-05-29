@@ -143,8 +143,9 @@ protected Location getLocation (String template_name, String property, Object va
 	Location location = null;
 
 	while(node!=null && location==null) {
-		if (!(node instanceof Location)) continue;
-		else if (node.getPropertyValue(property)==value) location = (Location)node;
+		if (node instanceof Location) {
+			if (node.getPropertyValue(property).equals(value)) location = (Location)node;
+		}
 		node = node.getNext();
 	}
 

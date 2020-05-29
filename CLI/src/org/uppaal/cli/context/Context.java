@@ -5,17 +5,34 @@ package org.uppaal.cli.context;
 * supports different experts to handle the different entities of an uppaal model
 */
 
-import org.uppaal.cli.enumerations.ModeCode;
 import com.uppaal.model.core2.AbstractCommand;
 import com.uppaal.model.core2.Document;
 import com.uppaal.model.system.UppaalSystem;
 import com.uppaal.engine.Engine;
 import com.uppaal.model.system.AbstractTrace;
+import org.uppaal.cli.exceptions.UnknownModeException;
 import java.util.LinkedList;
+import java.util.HashMap;
 
 public class Context {
+
+// active mode of this context
 private ModeCode mode;
+
+// unknown mode exception of this context
+private UnknownModeException unknown_mode_exception;
+
+// hash map of accepted modes for this command manager
+private HashMap <String, ModeCode> accepted_modes;
+
+// hashmap of mode names for this console manager
+private HashMap<ModeCode, String> mode_names;
+
+// list of executed commands
 private LinkedList<AbstractCommand> commands;
+
+
+// list of undone commands
 private LinkedList<AbstractCommand> undone_commands;
 
 private ModelExpert model_expert;
@@ -35,6 +52,25 @@ public Context () {
 	this.commands = new LinkedList<AbstractCommand>();
 	this.undone_commands = new LinkedList<AbstractCommand>();
 
+	this.accepted_modes = new HashMap<String, ModeCode>();
+	this.mode_names = new HashMap<ModeCode, String>();
+	this.unknown_mode_exception = new UnknownModeException();
+
+// initialize the map of accepted modes
+
+	this.mode = ModeCode.EDITOR;
+	this.accepted_modes.put("editor", ModeCode.EDITOR);
+	this.accepted_modes.put("symbolic_simulator", ModeCode.SYMBOLIC_SIMULATOR);
+	this.accepted_modes.put("concrete_simulator", ModeCode.CONCRETE_SIMULATOR);
+	this.accepted_modes.put("verifier", ModeCode.VERIFIER);
+
+// initialize the map of mode names from the previous one
+
+	for (String mode_name: this.accepted_modes.keySet()) {
+		ModeCode mode_code = this.accepted_modes.get(mode_name);
+		this.mode_names.put(mode_code, mode_name);
+	}
+
 	this.model_expert = new ModelExpert(this);
 	this.engine_expert = new EngineExpert(this);
 	this.query_expert = new QueryExpert(this);
@@ -43,6 +79,16 @@ public Context () {
 	this.edge_expert = new EdgeExpert(this);
 	this.trace_expert = new TraceExpert(this);
 	this.state_expert = new StateExpert(this);
+}
+
+/**
+* throw an unknown mode exception
+* @param mode the mode for the unknown mode exception
+* @exception an unknown mode exception with all the required information
+*/
+private void throwUnknownModeException (String mode) {
+	this.unknown_mode_exception.setMode(mode);
+	throw this.unknown_mode_exception;
 }
 
 /**
@@ -81,11 +127,24 @@ public ModeCode getMode() {
 }
 
 /**
+* convert the string encoding the name of a mode into its enumeration code
+* @param mode the name of the mode to convert
+* @return the corresponding mode code
+*/
+public ModeCode getMode(String mode) {
+	if (!this.accepted_modes.keySet().contains(mode)) this.throwUnknownModeException(mode);
+	return this.accepted_modes.get(mode);
+}
+
+/**
 * set the current mode of this context
 * @param mode the new mode for this context
 */
-public void setMode(ModeCode mode) {
-	this.mode = mode;
+public void setMode(String mode) {
+	if (this.accepted_modes.keySet().contains(mode))
+		this.mode = this.accepted_modes.get(mode);
+	else
+		this.throwUnknownModeException(mode);
 }
 
 /**

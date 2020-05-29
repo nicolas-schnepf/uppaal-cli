@@ -2,7 +2,7 @@ package org.uppaal.cli.commands;
 
 
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.commands.CommandResult;
 
 import java.util.List;

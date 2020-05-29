@@ -3,7 +3,7 @@ package org.uppaal.cli.exceptions;
 
 
 
-import org.uppaal.cli.enumerations.ModeCode;
+import org.uppaal.cli.context.ModeCode;
 
 /**
 * exception class for an unknown command
@@ -36,5 +36,10 @@ public String getCommand() {
 
 public void setCommand (String command) {
 	this.command = command;
+}
+
+@Override
+public String getMessage () {
+	return "Unknown command: "+this.command;
 }
 }
