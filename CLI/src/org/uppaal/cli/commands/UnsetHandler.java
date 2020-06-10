@@ -76,7 +76,6 @@ public void unsetDeclaration() {
 			if (this.getArgumentNumber()==1) {
 				String name =  name = this.getArgumentAt(0);
 				this.context.getTemplateExpert().setTemplateProperty(name, "declaration",  null);
-				this.command_result.addArgument(name);
 			} else
 				this.context.getModelExpert().setDocumentProperty("declaration", null);
 }
@@ -85,21 +84,18 @@ public void unsetQuery () {
 		this.checkMode("unset", "query", ModeCode.EDITOR);
 		String name =  name = this.getArgumentAt(0);
 			this.context.getQueryExpert().removeQuery(name);
-			this.command_result.addArgument(name);
 }
 
 public void unsetTemplate() {
 		this.checkMode("unset", "template", ModeCode.EDITOR);
 		String name =  name = this.getArgumentAt(0);
 			this.context.getTemplateExpert().removeTemplate(name);
-			this.command_result.addArgument(name);
 }
 
 public void unsetParameter () {
 		this.checkMode("unset", "parameter", ModeCode.EDITOR);
 		String name =  name = this.getArgumentAt(0);
 			this.context.getTemplateExpert().setTemplateProperty(name, "parameter", null);
-			this.command_result.addArgument(name);
 }
 
 public void unsetLocation () {
@@ -119,8 +115,6 @@ public void unsetInvariant() {
 		String template = this.getArgumentAt(0);
 		String name = this.getArgumentAt(1);
 		this.context.getLocationExpert().setLocationProperty(template, name, "invariant", null);
-		this.command_result.addArgument(template);
-			this.command_result.addArgument(name);
 
 }
 
@@ -130,8 +124,6 @@ public void unsetInit() {
 		String template = this.getArgumentAt(0);
 		String name = this.getArgumentAt(1);
 		this.context.getLocationExpert().setLocationProperty(template, name, "init", null);
-		this.command_result.addArgument(template);
-		this.command_result.addArgument(name);
 
 }
 
@@ -140,8 +132,6 @@ public void unsetCommitted () {
 		String template = this.getArgumentAt(0);
 		String name = this.getArgumentAt(1);
 		this.context.getLocationExpert().setLocationProperty(template, name, "committed", null);
-		this.command_result.addArgument(template);
-		this.command_result.addArgument(name);
 
 }
 
@@ -165,9 +155,6 @@ public void unsetSelect() {
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
 		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "select", null);
-		this.command_result.addArgument(template);
-			this.command_result.addArgument(source);
-			this.command_result.addArgument(target);
 
 }
 		
@@ -177,9 +164,6 @@ public void unsetGuard () {
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
 		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "guard", null);
-		this.command_result.addArgument(template);
-			this.command_result.addArgument(source);
-			this.command_result.addArgument(target);
 
 }
 
@@ -189,9 +173,6 @@ public void unsetSync () {
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
 		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "sync", null);
-		this.command_result.addArgument(template);
-			this.command_result.addArgument(source);
-			this.command_result.addArgument(target);
 
 }
 
@@ -201,9 +182,6 @@ public void unsetAssign () {
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
 		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "assign", null);
-		this.command_result.addArgument(template);
-			this.command_result.addArgument(source);
-			this.command_result.addArgument(target);
 
 }
 

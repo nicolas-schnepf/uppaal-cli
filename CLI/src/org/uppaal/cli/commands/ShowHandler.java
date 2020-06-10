@@ -42,6 +42,10 @@ public ShowHandler (Context context) {
 	this.operation_map.put("template", this.getClass().getMethod("showTemplate"));
 	this.operation_map.put("location", this.getClass().getMethod("showLocation"));
 	this.operation_map.put("edge", this.getClass().getMethod("showEdge"));
+	this.operation_map.put("guard", this.getClass().getMethod("showEdgeProperty"));
+		this.operation_map.put("select", this.getClass().getMethod("showEdgeProperty"));
+		this.operation_map.put("assign", this.getClass().getMethod("showEdgeProperty"));
+		this.operation_map.put("sync", this.getClass().getMethod("showEdgeProperty"));
 	this.operation_map.put("system", this.getClass().getMethod("showSystem"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
@@ -101,6 +105,15 @@ public void showEdge () {
 		String target = this.getArgumentAt(2);
 		String description = this.context.getEdgeExpert().showEdge(template, source, target);
 		this.command_result.addArgument(description);
+}
+
+public void showEdgeProperty () {
+		String template = this.getArgumentAt(0);
+		String source = this.getArgumentAt(1);
+		String target = this.getArgumentAt(2);
+		String type = this.object_type;
+		String value = this.context.getEdgeExpert().getEdgeProperty(template, source, target, type);
+		this.command_result.addArgument(value);
 }
 
 public void showSystem() {

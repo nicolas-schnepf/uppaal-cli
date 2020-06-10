@@ -200,6 +200,19 @@ public String showEdge (String template, String source, String target) {
 }
 
 /**
+* get the value associated with an edge property
+* @param template the name of the template to inspect
+* @param source the source of the edge
+* @param target the target of the edge
+* @param property the property of the edge
+* @return the value associated with the given property name for the given edge
+*/
+public String getEdgeProperty (String template, String source, String target, String value) {
+	Edge edge = this.getEdge(template, source, target);
+	return (String) edge.getPropertyValue(value);
+}
+
+/**
 * set a property of an edge described by the name of its template, of its source and its target
 * @param template the template to update
 * @param source the name of the source of the edge

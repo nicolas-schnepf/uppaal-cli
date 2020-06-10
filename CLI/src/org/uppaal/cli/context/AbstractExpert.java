@@ -104,16 +104,16 @@ protected String describeEdge (Edge edge) {
 
 // append the synchronization of the edge if any
 
-	if (edge.isPropertyLocal("synchronisation")) {
+	if (edge.isPropertyLocal("sync")) {
 		if (properties.length()!=0) properties.append("; ");
-		properties.append("sync "+edge.getPropertyValue("synchronisation"));
+		properties.append("sync "+edge.getPropertyValue("sync"));
 	}
 
 // append the assignment of the edge if any
 
-	if (edge.isPropertyLocal("assignment")) {
+	if (edge.isPropertyLocal("assign")) {
 		if (properties.length()!=0) properties.append("; ");
-		properties.append("assign "+edge.getPropertyValue("assignment"));
+		properties.append("assign "+edge.getPropertyValue("assign"));
 	}
 
 			description.append(" { "+properties.toString()+" } ");

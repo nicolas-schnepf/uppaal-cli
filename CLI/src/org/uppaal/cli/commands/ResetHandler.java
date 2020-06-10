@@ -49,8 +49,6 @@ public void resetQuery() {
 		String name = this.getArgumentAt(0);
 		String new_name = this.getArgumentAt(1);
 			this.context.getQueryExpert().setQueryProperty(name, "name", new_name);
-			command_result.addArgument(name);
-			command_result.addArgument(new_name);
 }
 
 public void resetTemplate () {
@@ -58,8 +56,6 @@ public void resetTemplate () {
 		String name = this.getArgumentAt(0);
 		String new_name = this.getArgumentAt(1);
 			this.context.getTemplateExpert().setTemplateProperty(name, "name", new_name);
-			command_result.addArgument(name);
-			command_result.addArgument(new_name);
 }
 
 public void resetLocation () {
@@ -68,9 +64,6 @@ public void resetLocation () {
 		String name = this.getArgumentAt(1);
 		String new_name = this.getArgumentAt(2);
 		this.context.getLocationExpert().setLocationProperty(template, name, "name", new_name);
-		command_result.addArgument(template);
-			command_result.addArgument(name);
-			command_result.addArgument(new_name);
 }
 
 @Override

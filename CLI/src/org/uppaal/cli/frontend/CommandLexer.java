@@ -75,7 +75,10 @@ public String getNextToken() {
 	char c = this.line.charAt(this.index);
 
 switch (c) {
+		case ';':
 		case '.':
+		case ':':
+		case '=':
 		case '*':
 		case '(':
 		case ')':
@@ -147,6 +150,25 @@ public String parseFilename () {
 
 	this.token_type = TokenType.FILENAME;
 	return filename.toString();
+}
+
+/**
+* parse an string delimited by white spaces
+* @return the parsed string
+*/
+public String parsePropertyValue () {
+	this.skipWhiteSpaces();
+	this.starting_index = this.index;
+	this.token_type = TokenType.STRING;
+	boolean finished = false;
+
+	while (this.index<this.length && !finished)  {
+		char c = this.line.charAt(this.index);
+		finished = c==';' || c=='}';
+		if (!finished) this.index++;
+	}
+
+	return this.line.substring(this.starting_index, this.index);
 }
 
 /**

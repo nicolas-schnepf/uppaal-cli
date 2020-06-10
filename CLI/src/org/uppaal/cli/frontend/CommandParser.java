@@ -71,6 +71,7 @@ public CommandParser(Context context) {
 	this.command_map.put("export", this.getClass().getMethod("parseExport"));
 	this.command_map.put("unset", this.getClass().getMethod("parseUnset"));
 	this.command_map.put("set", this.getClass().getMethod("parseSet"));
+	this.command_map.put("reset", this.getClass().getMethod("parseReset"));
 	this.command_map.put("show", this.getClass().getMethod("parseShow"));
 	this.command_map.put("select", this.getClass().getMethod("parseSelect"));
 	this.command_map.put("check", this.getClass().getMethod("parseCheck"));
@@ -100,6 +101,15 @@ public void setLine (String line) {
 */
 private String getNextToken() {
 	this.token = this.lexer.getNextToken();
+	return this.token;
+}
+
+/**
+* parse a property value from the line
+* @return the property value extracted from the line
+*/
+private String parsePropertyValue() {
+	this.token = this.lexer.parsePropertyValue();
 	return this.token;
 }
 
@@ -291,14 +301,22 @@ public void parseUnset() {
 public void parseSet() {
 	this.getNextToken();
 	this.parseRef();
-	this.getNextToken();
-
 	if (this.token!=null && this.token.equals("=")) {
-		this.getNextToken();
 		this.parseValue();
 	}
 }
 
+/**
+* parse a reset command
+* reset REF as NAME
+*/
+public void parseReset() {
+	this.getNextToken();
+	this.parseRef();
+	this.checkToken ("as");
+	this.checkNextTokenType(TokenType.STRING);
+	this.handler.addArgument(this.token);
+}
 /**
 * parse a show command
 * show REF
@@ -409,6 +427,7 @@ public void parseProperty() {
 	this.type_checker.checkTypeProperty(this.type, this.token);
 	this.type = this.token;
 	if (this.handler instanceof SetHandler) this.require_value = true;
+	this.getNextToken();
 }
 
 /**
@@ -439,6 +458,7 @@ public void parseElementRef () {
 		}
 
 		this.checkToken("]");
+		this.getNextToken();
 	}
 }
 
@@ -502,9 +522,9 @@ public void parseValue () {
 
 // if the current token is an opening brass check that the reference is well an element
 
-	if (this.token.equals("{")) {
-		this.type_checker.checkElement(this.type);
-		boolean finished = true;
+	if (this.type_checker.isElementType(this.type)) {
+		this.checkNextToken("{");
+		boolean finished = false;
 
 		while (!finished) {
 
@@ -515,13 +535,12 @@ public void parseValue () {
 
 // check that a delimited string is assigned to this property
 
-			this.checkNextToken("=");
-			String value = this.checkNextTokenType(TokenType.DELIMITED_STRING);
+			this.checkNextToken(":");
+			String value = this.parsePropertyValue();
 
 // add the property and its value to the command handler
 
-			this.handler.addArgument(property);
-			this.handler.addArgument(value);
+		((SetHandler) this.handler).addProperty(property, value);
 
 // finally parse the argument delimiter and finish the loop if it is a closing brass
 
@@ -534,8 +553,8 @@ public void parseValue () {
 
 	else {
 		this.type_checker.checkProperty(this.type);
-		this.checkTokenType(TokenType.DELIMITED_STRING);
-		this.handler.addArgument(this.token);
+		String value = this.parsePropertyValue();
+		this.handler.addArgument(value);
 		this.require_value = false;
 	}
 }

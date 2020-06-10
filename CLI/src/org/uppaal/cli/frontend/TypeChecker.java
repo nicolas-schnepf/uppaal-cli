@@ -45,7 +45,7 @@ public TypeChecker () {
 
 	properties = new HashSet<String>();
 	Collections.addAll(properties, "select", "guard", "sync", "assign");
-	this.type_properties.put("transition", properties);
+	this.type_properties.put("edge", properties);
 
 // finally setup the set of query properties
 
@@ -78,6 +78,15 @@ public void checkTypeProperty (String type, String property) {
 	this.type_exception.setType(type);
 	this.type_exception.setProperty(property);
 	throw this.type_exception;
+}
+
+/**
+* test if a type is well an element type
+* @param type the type to test
+* @return true if and only if the type is well an element type
+*/
+public boolean isElementType(String type) {
+	return this.type_properties.keySet().contains(type);
 }
 
 /**
