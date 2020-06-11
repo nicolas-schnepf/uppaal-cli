@@ -1,6 +1,7 @@
 package org.uppaal.cli.frontend;
 
 
+import org.uppaal.cli.commands.SetHandler;
 import org.uppaal.cli.commands.CommandResult;
 import org.uppaal.cli.context.Context;
 
@@ -11,21 +12,22 @@ import org.uppaal.cli.enumerations.ModeCode;
 import org.uppaal.cli.commands.CommandLauncher;
 import org.uppaal.cli.commands.Handler;
 
-import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
-import jline.console.completer.FileNameCompleter;
-import jline.console.completer.StringsCompleter;
-import jline.console.completer.NullCompleter;
-import jline.console.completer.ArgumentCompleter;
-
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.LineReader;
+import org.jline.builtins.Nano;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.io.BufferedWriter;
 import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
+import java.util.Scanner;
 
 /**
 * console manager handling the interaction with the user input
@@ -39,7 +41,18 @@ public class ConsoleManager {
 private Context context;
 
 // console reader for this console manager
-private ConsoleReader reader;
+private LineReader reader;
+
+// nano text editor for this console manager
+private Nano nano;
+
+// temporary text buffer for this console manager
+private File buffer;
+
+
+
+// console prompt
+private String prompt;
 
 // private command parser of this console manager
 private CommandParser command_parser;
@@ -64,14 +77,13 @@ private boolean running;
 public ConsoleManager (Context context) throws IOException, IOException {
 
 	this.context = context;
-	this.reader = new ConsoleReader();
-            	this.out = new PrintWriter(reader.getOutput());
+	this.reader = LineReaderBuilder.builder().build();
+            	this.out = this.reader.getTerminal().writer();
+	this.buffer = File.createTempFile("Uppaal", "");
+	this.nano = new Nano(this.reader.getTerminal(), this.buffer);
 	this.err = new PrintWriter(System.err);
 	this.command_parser = new CommandParser(context);
 }
-
-/**
-* parse a command line and return the correspon
 
 /**
 * run this console manager until the end of the session
@@ -83,7 +95,7 @@ public void run () throws EngineException, IOException {
 // first initialize the console reader
 
 	this.context.getEngineExpert().connectEngine();
-	this.reader.setPrompt("uppaal editor$");
+	this.prompt = "uppaal editor$";
 
 	this.running = true;
 	String line = null;
@@ -91,15 +103,14 @@ public void run () throws EngineException, IOException {
 // read the next line while it is not null
 
 	while (this.running) {
-		line = reader.readLine();
-
-		if (line==null) break;
-		else if (line.equals("")) continue;
+		try {
+			line = reader.readLine(this.prompt);
+			if (line.equals("")) continue;
 
 // parse the provided command line, execute it and process the corresponding result
 
-		try {
 			this.handler = this.command_parser.parseCommand(line);
+			if (this.command_parser.getRequireValue()) this.editProperty();
 			CommandResult result = handler.handle();
 			this.processResult(result);
 			handler.clear();
@@ -108,6 +119,10 @@ public void run () throws EngineException, IOException {
 
 // if an exception is thrown manage it 
 
+catch (EndOfFileException e) {
+		this.running = false;
+	}
+
 		catch (ConsoleException e) {
 			this.err.println(e.getMessage());
 			e.printStackTrace();
@@ -115,6 +130,36 @@ public void run () throws EngineException, IOException {
 		}
 	}
 	this.context.getEngineExpert().disconnectEngine();
+}
+
+/**
+* edit a property and set it according to the value entered by the user
+*/
+private void editProperty () throws IOException, FileNotFoundException {
+
+// get the current value of the property to edit and write it to the text buffer of this console manager
+
+	String value = ((SetHandler) this.handler).getPropertyValue();
+	BufferedWriter writer= new BufferedWriter(new FileWriter(this.buffer));
+writer.write(value);
+writer.close();
+
+// run the nano editor with the content of the text buffer
+
+this.nano.open(this.buffer.getAbsolutePath());
+this.nano.run();
+
+// retrieve the new value from the text buffer
+
+Scanner scanner = new Scanner(this.buffer);
+scanner.useDelimiter("\\Z");
+	value = scanner.next();
+	scanner.close();
+
+// add the new value as parameter to the command handler
+
+	this.handler.addArgument(value);
+	this.command_parser.cancelRequireValue();
 }
 
 /**
@@ -138,7 +183,7 @@ private void processResult (CommandResult result) {
 
 		case MODE_CHANGED:
 		String mode = result.getArgumentAt(0);
-		this.reader.setPrompt("uppaal "+mode+"$");
+		this.prompt = "uppaal "+mode+"$";
 		break;
 
 // if exit command was entered simply leave the uppaal command line interface

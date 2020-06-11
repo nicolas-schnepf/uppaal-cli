@@ -169,4 +169,16 @@ public void setLocationProperty (String template, String name, String property, 
 	command.execute();
 	this.context.addCommand(command);
 }
+
+/**
+* get the value associated with a location property
+* @param template the name of the template to inspect
+* @param name the name of the edge
+* @param property the property of the location
+* @return the value associated with the given property name for the given location
+*/
+public String getPropertyValue (String template, String name, String property) {
+	Location location = this.getLocation(template, "name", name);
+	return (String) location.getPropertyValue(property);
+}
 }

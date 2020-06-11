@@ -112,7 +112,7 @@ public void showEdgeProperty () {
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
 		String type = this.object_type;
-		String value = this.context.getEdgeExpert().getEdgeProperty(template, source, target, type);
+		String value = this.context.getEdgeExpert().getPropertyValue(template, source, target, type);
 		this.command_result.addArgument(value);
 }
 

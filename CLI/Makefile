@@ -2,9 +2,7 @@ ROOT = $(CURDIR)
 SRC = $(ROOT)/src
 MODEL = $(ROOT)/uppaal/lib/model.jar
 UPPAAL = $(ROOT)/uppaal/uppaal.jar
-ANTLR = $(ROOT)/lib/antlr-4.7.1-complete.jar
-JLINE = $(ROOT)/lib/jline.jar
-JLEDIT = $(ROOT)/lib/core.jar
+JLINE = $(ROOT)/lib/jline-3.14.1-SNAPSHOT.jar
 JUNIT=$(ROOT)/lib/hamcrest-core-1.3.jar:$(ROOT)/lib/junit-4.13.jar
 export CLASSPATH = $(SRC):$(MODEL):$(UPPAAL):$(ANTLR):$(JLINE):$(JLEDIT):$(JUNIT)
 

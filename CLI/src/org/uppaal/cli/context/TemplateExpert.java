@@ -179,4 +179,19 @@ public void removeTemplate (String name) {
 	command.execute();
 	this.context.addCommand(command);
 }
+
+/**
+* get the value associated with a template property
+* @param name the name of the template to inspect
+* @param property the name of the property to retrieve
+* @return the value associated with the property for the given template
+*/
+public String getPropertyValue (String name, String property) {
+	AbstractTemplate template = this.context.getDocument().getTemplate(name);
+
+	if (template==null) 
+		this.throwMissingElementException("template", name);
+
+	return (String) template.getPropertyValue(property);
+}
 }

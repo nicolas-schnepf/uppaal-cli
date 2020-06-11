@@ -207,7 +207,7 @@ public String showEdge (String template, String source, String target) {
 * @param property the property of the edge
 * @return the value associated with the given property name for the given edge
 */
-public String getEdgeProperty (String template, String source, String target, String value) {
+public String getPropertyValue (String template, String source, String target, String value) {
 	Edge edge = this.getEdge(template, source, target);
 	return (String) edge.getPropertyValue(value);
 }

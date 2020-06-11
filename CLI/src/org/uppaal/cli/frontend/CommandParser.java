@@ -558,4 +558,18 @@ public void parseValue () {
 		this.require_value = false;
 	}
 }
+
+/**
+* @return true if and only if a value is required
+*/
+public boolean getRequireValue() {
+	return this.require_value;
+}
+
+/**
+* cancel the value requirement
+*/
+public void cancelRequireValue() {
+	this.require_value = false;
+}
 }

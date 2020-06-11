@@ -237,4 +237,42 @@ public boolean acceptMode (ModeCode mode) {
 		return false;
 	}
 }
+
+/**
+* @return the value associated with a property
+*/
+public String getPropertyValue() {
+	this.checkMode("set", this.object_type, ModeCode.EDITOR);
+	int arguments = this.arguments.size();
+	String template, location, source, target;
+	String result = null;
+	String type = this.object_type;
+
+	switch (arguments) {
+		case 0:
+		result = (String) this.context.getDocument().getPropertyValue(this.object_type);
+		break;
+
+		case 1:
+		template = this.arguments.get(0);
+		result = this.context.getTemplateExpert().getPropertyValue(template, this.object_type);
+		break;
+
+		case 2:
+		template = this.arguments.get(0);
+		location = this.arguments.get(1);
+		result = this.context.getLocationExpert().getPropertyValue(template, location, type);
+		break;
+
+		case 3:
+		template = this.arguments.get(0);
+		source = this.arguments.get(1);
+		target = this.arguments.get(2);
+		result = this.context.getEdgeExpert().getPropertyValue(template, source, target, type);
+		break;
+	}
+
+	if (result==null) result = "";
+	return result;
+	}
 }
