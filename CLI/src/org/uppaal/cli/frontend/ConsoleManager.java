@@ -15,7 +15,9 @@ import org.uppaal.cli.commands.Handler;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.LineReader;
+import org.jline.reader.Reference;
 import org.jline.builtins.Nano;
+import org.jline.keymap.KeyMap;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,8 +28,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.Scanner;
+
 
 /**
 * console manager handling the interaction with the user input
@@ -69,6 +73,10 @@ private PrintWriter err;
 // boolean telling if the console manager is running
 private boolean running;
 
+// list of command widgets
+private LinkedList<CommandWidgets> widgets;
+
+
 /**
 * public constructor of a console Manager
 * initializing its different attributes to default value
@@ -83,6 +91,27 @@ public ConsoleManager (Context context) throws IOException, IOException {
 	this.nano = new Nano(this.reader.getTerminal(), this.buffer);
 	this.err = new PrintWriter(System.err);
 	this.command_parser = new CommandParser(context);
+	this.widgets = new LinkedList<CommandWidgets>();
+
+// add the undo and redo widgets to this console manager
+
+	try {
+		Method undo = context.getClass().getMethod("undo");
+		CommandWidgets undo_widget = new CommandWidgets(this.reader, context, undo, "undo");
+		undo_widget.addWidget("undo-widget", undo_widget::onKey);
+		undo_widget.getKeyMap().bind(new Reference("undo-widget"), KeyMap.ctrl('U'));
+		this.widgets.add(undo_widget);
+
+		Method redo = context.getClass().getMethod("redo");
+		CommandWidgets redo_widget = new CommandWidgets(this.reader, context, redo, "redo");
+		redo_widget.addWidget("redo-widget", redo_widget::onKey);
+		redo_widget.getKeyMap().bind(new Reference("redo-widget"), KeyMap.ctrl('R'));
+		this.widgets.add(undo_widget);
+	} catch (Exception e) {
+		System.err.println(e);
+		e.printStackTrace();
+		System.exit(1);
+	}
 }
 
 /**

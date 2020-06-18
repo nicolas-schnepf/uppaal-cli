@@ -201,6 +201,7 @@ public  TraceExpert getTraceExpert () {
 * @param command the command to add
 */
 public void addCommand (AbstractCommand command) {
+	this.undone_commands.clear();
 	this.commands.addFirst(command);
 }
 
@@ -222,5 +223,13 @@ public void redo () {
 	AbstractCommand command = this.undone_commands.removeFirst();
 	command.execute();
 	this.commands.addFirst(command);
+}
+
+/**
+* clear the lists of commands of this context
+*/
+public void clearCommands() {
+	this.commands.clear();
+	this.undone_commands.clear();
 }
 }

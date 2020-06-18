@@ -89,6 +89,8 @@ public Document loadDocument (String filename) throws IOException, MalformedURLE
 	QueryList queries = this.document.getQueryList();
 	for (int i=0;i<queries.size();i++)
 		queries.get(i).setProperty("name", "q"+(i+1));
+
+	this.context.clearCommands();
 	return this.document;
 }
 
