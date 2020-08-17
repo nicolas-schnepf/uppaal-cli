@@ -43,6 +43,7 @@ private LocationExpert location_expert;
 private EdgeExpert edge_expert;
 private TraceExpert trace_expert;
 private StateExpert state_expert;
+private OptionExpert option_expert;
 
 /**
 * create an empty console without any argument
@@ -60,8 +61,7 @@ public Context () {
 
 	this.mode = ModeCode.EDITOR;
 	this.accepted_modes.put("editor", ModeCode.EDITOR);
-	this.accepted_modes.put("symbolic_simulator", ModeCode.SYMBOLIC_SIMULATOR);
-	this.accepted_modes.put("concrete_simulator", ModeCode.CONCRETE_SIMULATOR);
+	this.accepted_modes.put("simulator", ModeCode.SIMULATOR);
 	this.accepted_modes.put("verifier", ModeCode.VERIFIER);
 
 // initialize the map of mode names from the previous one
@@ -79,6 +79,7 @@ public Context () {
 	this.edge_expert = new EdgeExpert(this);
 	this.trace_expert = new TraceExpert(this);
 	this.state_expert = new StateExpert(this);
+	this.option_expert = new OptionExpert(this);
 }
 
 /**
@@ -194,6 +195,20 @@ public EdgeExpert getEdgeExpert() {
 */
 public  TraceExpert getTraceExpert () {
 	return this.trace_expert;
+}
+
+/**
+* @return the state expert of this context
+*/
+public  StateExpert getStateExpert () {
+	return this.state_expert;
+}
+
+/**
+* @return the option expert of this context
+*/
+public OptionExpert getOptionExpert() {
+	return this.option_expert;
 }
 
 /**

@@ -56,6 +56,7 @@ public void connectEngine() throws EngineException, IOException {
 	this.engine.setServerHost("localhost");
 	this.engine.setConnectionMode(EngineStub.BOTH);
 	this.engine.connect();
+	this.context.getOptionExpert().loadOptions();
 }
 
 /***

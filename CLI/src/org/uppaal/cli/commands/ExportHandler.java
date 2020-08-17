@@ -88,7 +88,7 @@ public void exportTrace () {
 	String extension = filename.substring(index+1);
 
 	try {
-this.checkMode("export", "trace", ModeCode.SYMBOLIC_SIMULATOR, ModeCode.CONCRETE_SIMULATOR);
+this.checkMode("export", "trace", ModeCode.SIMULATOR);
 		if (!extension.equals("xtr")) 
 			this.throwWrongExtensionException ("export", "trace", extension);
 		this.context.getTraceExpert().saveTrace(filename);
@@ -104,8 +104,7 @@ this.checkMode("export", "trace", ModeCode.SYMBOLIC_SIMULATOR, ModeCode.CONCRETE
 public boolean acceptMode (ModeCode mode) {
 	switch(mode) {
 		case EDITOR:
-		case SYMBOLIC_SIMULATOR:
-		case CONCRETE_SIMULATOR:
+		case SIMULATOR:
 		return true;
 
 		default:

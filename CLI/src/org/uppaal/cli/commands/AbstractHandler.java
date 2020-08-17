@@ -123,6 +123,11 @@ public void addArgument(String argument) {
 }
 
 @Override
+public void setArgument (int index, String argument) {
+	this.arguments.set(index, argument);
+}
+
+@Override
 public int getArgumentNumber() {
 	return this.arguments.size();
 }

@@ -112,4 +112,19 @@ public void checkProperty (String type) {
 	this.type_exception.setProperty(null);
 	throw this.type_exception;
 }
+
+/**
+* check that a reference is well an element
+* @param type the type of the reference to check
+* @exception a type exception if the provided type is not an element type
+*/
+public void checkType (String type, String ... types) {
+	for (String reftype: types) {
+		if (type.equals(reftype)) return;
+	}
+
+	this.type_exception.setType(type);
+	this.type_exception.setProperty(null);
+	throw this.type_exception;
+}
 }

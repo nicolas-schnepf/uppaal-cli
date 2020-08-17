@@ -37,6 +37,8 @@ public ResetHandler (Context context) {
 	this.operation_map.put("query", this.getClass().getMethod("resetQuery"));
 	this.operation_map.put("template", this.getClass().getMethod("resetTemplate"));
 	this.operation_map.put("location", this.getClass().getMethod("resetLocation"));
+	this.operation_map.put("option", this.getClass().getMethod("resetOption"));
+	this.operation_map.put("options", this.getClass().getMethod("resetOptions"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -56,6 +58,9 @@ public void resetTemplate () {
 		String name = this.getArgumentAt(0);
 		String new_name = this.getArgumentAt(1);
 			this.context.getTemplateExpert().setTemplateProperty(name, "name", new_name);
+			this.command_result.addArgument(name);
+			this.command_result.addArgument(new_name);
+			this.command_result.setResultCode(ResultCode.RENAME_TEMPLATE);
 }
 
 public void resetLocation () {
@@ -64,6 +69,16 @@ public void resetLocation () {
 		String name = this.getArgumentAt(1);
 		String new_name = this.getArgumentAt(2);
 		this.context.getLocationExpert().setLocationProperty(template, name, "name", new_name);
+}
+
+
+public void resetOption () {
+	String option = this.arguments.get(0);
+	this.context.getOptionExpert().resetOption(option);
+}
+
+public void resetOptions () {
+	this.context.getOptionExpert().resetOptions();
 }
 
 @Override

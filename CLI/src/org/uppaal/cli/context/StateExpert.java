@@ -6,6 +6,8 @@ import com.uppaal.engine.CannotEvaluateException;
 import com.uppaal.model.system.UppaalSystem;
 import com.uppaal.model.system.SystemState;
 import com.uppaal.model.system.SystemLocation;
+import com.uppaal.model.system.SystemEdge;
+import com.uppaal.model.system.AbstractTransition;
 import com.uppaal.model.system.symbolic.SymbolicState;
 import com.uppaal.model.system.symbolic.SymbolicTransition;
 import com.uppaal.model.system.concrete
@@ -31,10 +33,7 @@ private SystemState state;
 private int index;
 
 // list of transitions for the current state
-private ArrayList<SymbolicTransition> transitions;
-
-// index of the currently considered transition
-private int transition_index;
+private ArrayList<AbstractTransition> transitions;
 
 // system of this state expert
 private UppaalSystem system;
@@ -43,8 +42,7 @@ public StateExpert (Context context) {
 	super(context);
 	this.state = null;
 	this.index = -1;
-	this.transitions = null;
-	this.transition_index = -1;
+	this.transitions = new ArrayList<AbstractTransition>();
 	this.system = null;
 }
 
@@ -56,6 +54,15 @@ public SystemState getState () {
 }
 
 /**
+* set the current state of this state expert
+* @param state the new state for this state expert
+*/
+public void setState (SystemState state) {
+	this.state = state;
+}
+
+
+/**
 * @return the current index of this state handler
 */
 public int getIndex () {
@@ -63,14 +70,13 @@ public int getIndex () {
 }
 
 /**
-* set the current state of this state expert
-* @param state the new state for this state expert
-* @param index the new index for this state expert
+* set the index of this state expert
+* @param index the new index of this state expert
 */
-public void setState (SystemState state) {
-	this.state = state;
+public void setIndex (int index) {
 	this.index = index;
 }
+
 
 /**
 * @return the system of this state expert
@@ -95,29 +101,75 @@ public String showState () {
 }
 
 /**
-* @return the list of locations of this state
+* show the information about the processes in the current state
+* @return a string with all the intended information
 */
-public LinkedList<String> showLocations () {
-	this.result.clear();
-	SystemState watched_state = this.state;
-	if (this.hasTransitions()) watched_state = this.transitions.get(this.transition_index).getTarget();
+public LinkedList<String> showProcesses () {
+	return this.showProcesses(this.state);
+}
 
-	for (SystemLocation location: watched_state.getLocations()) {
-		this.result.addLast(location.getName());
+/**
+* show the information about the processes in a particular state
+* @param watched_state the state to watch
+* @return the list of processes with their current locations in this state
+*/
+public LinkedList<String> showProcesses (SystemState watched_state) {
+	this.result.clear();
+	SystemLocation[] locations = watched_state.getLocations();
+
+	for (int i=0;i<this.system.getNoOfProcesses();i++) {
+		String res = this.system.getProcess(i).getName()+": "+locations[i].getName();
+		res = res.replace('(', '[');
+		res = res.replace(')', ']');
+		this.result.addLast(res);
 	}
 
 	return this.result;
 }
 
 /**
-* @return a list containing the name and the value of each variable for the current state
+* show the current state of a specific process
+* @param id the id of the desired process
+* @return a string describing the required process and its current state
+*/
+public String showProcess (String id) {
+	this.result.clear();
+	SystemState watched_state = this.state;
+	int index = -1;
+
+	try {
+		index = Integer.parseInt(id);
+	} catch (NumberFormatException e) {
+		index = this.system.getProcessIndex(id);
+	}
+
+	if (index==-1)
+		this.throwMissingElementException("process", id);
+
+	SystemLocation[] locations = watched_state.getLocations();
+	String res = this.system.getProcess(index).getName()+": "+locations[index].getName();
+	res = res.replace('(', '[');
+	res = res.replace(')', ']');
+	return res;
+}
+
+/**
+* show the information about the variables in the current state
+* @return a list containing the intended information
 */
 public LinkedList<String> showVariables () {
+	return this.showVariables(this.state);
+}
+
+/**
+* show the information about the variables in a particular state
+* @param watched_state the state to watch
+* @return a list containing the name and the value of each variable for the current state
+*/
+public LinkedList<String> showVariables (SystemState watched_state) {
 	if (this.state instanceof ConcreteState) 
 		this.throwTraceFormatException("show", "variables");
 
-	SystemState watched_state = this.state;
-	if (this.hasTransitions()) watched_state = this.transitions.get(this.transition_index).getTarget();
 	int values[] = ((SymbolicState)watched_state).getVariableValues();
 	this.result.clear();
 
@@ -126,6 +178,20 @@ public LinkedList<String> showVariables () {
 	}
 
 	return this.result;
+}
+
+/**
+* show the current value of a specific variable
+* @param name the name of the intended variable
+* @return a string describing the required variable and its current value
+*/
+public String showVariable (String name) {
+	this.result.clear();
+	SystemState watched_state = this.state;
+
+	int index = this.system.getVariables().indexOf(name);
+		int values[] = ((SymbolicState)watched_state).getVariableValues();
+	return name+" = "+values[index];
 }
 
 /**
@@ -139,7 +205,6 @@ public LinkedList<String> showConstraints () {
 
 	this.result.clear();
 	SystemState watched_state = this.state;
-	if (this.hasTransitions()) watched_state = this.transitions.get(this.transition_index).getTarget();
 	((SymbolicState)watched_state).getPolyhedron().getAllConstraints(this.result);
 	return this.result;
 }
@@ -150,8 +215,17 @@ public LinkedList<String> showConstraints () {
 */
 public void computeTransitions () throws EngineException, CannotEvaluateException {
 	Engine engine = this.context.getEngine();
-	this.transitions = engine.getTransitions(this.system, (SymbolicState)this.state);
-	this.transition_index = 0;
+	if (this.state instanceof SymbolicState) 
+		this.transitions.addAll(engine.getTransitions(this.system, (SymbolicState)this.state));
+	else if (this.state instanceof ConcreteState) {
+	}
+}
+
+/**
+* @return the number of transitions currently supported by this state expert
+*/
+public int getTransitionNumber() {
+	return this.transitions.size();
 }
 
 /**
@@ -162,46 +236,84 @@ public boolean hasTransitions() {
 }
 
 /**
-* @return a string describing the currently indexed transition
+* show a text description of a transition from its index
+* @param index the index of the transition to show
+* @return a string describing a transition described by its index
 */
-public String showTransition () {
-	return this.transitions.get(this.transition_index).traceFormat();
+public String showTransition (int index) {
+
+	AbstractTransition transition = this.transitions.get(index);
+
+			// check the number of edges involved:
+	if (transition.getSize()==0) {
+// no edges, something special (like "deadlock"):
+		if (transition instanceof SymbolicTransition)
+			return ((SymbolicTransition)transition).getEdgeDescription();
+		else
+			return null;
+	} else {
+// one or more edges involved, print them:
+		StringBuffer buffer = new StringBuffer();
+		for (SystemEdge e: transition.getEdges()) {
+			if (buffer.length()>0) buffer.append("\n");
+			buffer.append(e.getProcessName()+": "
+			+ e.getEdge().getSource().getPropertyValue("name")
+									 + " -> " // " \u2192 "
+			+ e.getEdge().getTarget().getPropertyValue("name")+";");
+		}
+
+		return buffer.toString();
+	}
+}
+
+/**
+* show how variables are affected by a certain transition
+* @param index the index of the transition to detail
+* @return a string detailing the assignment of variables of a transition
+*/
+public String showVariableAssignment (int index) {
+
+// check that the trace is well symbolic
+
+	if (this.state instanceof ConcreteState) 
+		this.throwTraceFormatException("show", "variables");
+
+// get the source and the destination of the transition and prepare the output
+
+	AbstractTransition transition = this.transitions.get(index);
+	int[] source_values = ((SymbolicState) this.state).getVariableValues();
+	int[] target_values = ((SymbolicState)(transition.getTarget())).getVariableValues();
+	StringBuffer output = new StringBuffer();
+
+// iterate over all variables to find those that are affected by the transition
+
+	for (int i=0;i<this.system.getNoOfVariables();i++) {
+		int source = source_values[i];
+		int target = target_values[i];
+		if (source!=target)
+			output.append(this.system.getVariableName(i) + ": " + source + " -> " + target + ";\n");
+	}
+
+	return output.toString();
 }
 
 /**
 * clear the transitions of this state expert
 */
 public void clearTransitions () {
-	this.transitions = null;
-	this.transition_index = -1;
+	this.transitions.clear();
 }
 
 /**
 * select the current transition and set the current state accordingly
+* @param index the index of the transition to select
 * @return the newly selected transition
 */
-public SymbolicTransition selectTransition () {
-	SymbolicTransition transition = this.transitions.get(this.transition_index);
+public AbstractTransition selectTransition (int index) {
+	AbstractTransition transition = this.transitions.get(index);
 	this.state = transition.getTarget();
+	this.context.getTraceExpert().addTransition(transition);
 	this.clearTransitions();
 	return transition;
-}
-
-/**
-* set the transition index to the next available value, 0 if max is reached
-*/
-public void nextTransition () {
-	if (this.hasTransitions())
-		this.transition_index = (this.transition_index+1) % this.transitions.size();
-}
-
-/**
-* set the transition index to the previous available value, max-1 if -1 is reached
-*/
-public void previousTransition () {
-	if (this.hasTransitions()) {
-		if (this.transition_index == 0) this.transition_index = this.transitions.size()-1;
-		else this.transition_index = this.transition_index - 1;
-	}
 }
 }

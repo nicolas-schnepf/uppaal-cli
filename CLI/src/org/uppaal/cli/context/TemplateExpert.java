@@ -9,6 +9,7 @@ import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
 import com.uppaal.model.core2.QueryList;
 import com.uppaal.model.core2.Query;
+import com.uppaal.model.core2.PrototypeDocument;
 import com.uppaal.model.core2.Document;
 import com.uppaal.model.core2.Element;
 import com.uppaal.model.core2.Node;
@@ -17,11 +18,25 @@ import com.uppaal.model.core2.Edge;
 import com.uppaal.model.core2.InsertTemplateCommand;
 import com.uppaal.model.core2.RemoveTemplateCommand;
 import com.uppaal.model.core2.SetPropertyCommand;
+
 import java.util.LinkedList;
+import java.util.HashSet;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class TemplateExpert extends AbstractExpert {
+
+// list of loaded templates
+private LinkedList<AbstractTemplate> templates;
+
+// set of selected templates
+private HashSet<AbstractTemplate> selected_templates;
+
 public TemplateExpert (Context context) {
 	super(context);
+	this.templates = new LinkedList<AbstractTemplate>();
+	this.selected_templates = new HashSet<AbstractTemplate>();
 }
 
 /**
@@ -42,6 +57,56 @@ public LinkedList<String> showTemplates () {
 }
 
 /**
+* load the templates from a document described by its location
+* @param the location of the document
+* @return the number of loaded templates
+* @exception an exception if the location of the document is not well formated
+*/
+
+public int loadTemplates (String filename) throws IOException, MalformedURLException  {
+	PrototypeDocument doc_loader = new PrototypeDocument();
+	URL location = new URL("file://localhost"+System.getProperty("user.dir")+"/"+filename);
+	Document document = doc_loader.load(location);
+	AbstractTemplate template = (AbstractTemplate) document.getFirst();
+
+// fetch all templates from the loaded document
+
+	while (template!=null) {
+		this.templates.addLast(template);
+		template = (AbstractTemplate) template.getNext();
+	}
+
+	return this.templates.size();
+}
+
+/**
+* get the number of loaded templates contained in this template expert
+* @return the number of templates contained inside of this template expert
+*/
+public int getTemplateNumber() {
+	return this.templates.size();
+}
+
+
+/**
+* select an element from the list of loaded templates
+* @param index the index of the template to select
+*/
+public void selectTemplate (int index) {
+	AbstractTemplate template = this.templates.get(index);
+	this.selected_templates.add(template);
+}
+
+/**
+* unselect an element from the list of loaded templates
+* @param index the index of the template to unselect
+*/
+public void unselectTemplate (int index) {
+	AbstractTemplate template = this.templates.get(index);
+	this.selected_templates.remove(template);
+}
+
+/**
 * add a new template to the current document
 * @param name the name of the template
 * @param parameter the parameter of the template
@@ -58,26 +123,40 @@ public void addTemplate(String name, String parameter, String declaration) {
 }
 
 /**
-* get a textual description of a template in xta format
-* @param name the name of the template
-* @return the description of the specified
+* add the selected templates to the current document
 */
-public String showTemplate (String name) {
+public void addSelectedTemplates() {
+	for (AbstractTemplate template: this.selected_templates) {
+		InsertTemplateCommand command = new InsertTemplateCommand(this.context.getDocument(), null, template);
+		command.execute();
+		this.context.addCommand(command);
+	}
+}
 
-// get the template if it exists
+/**
+* show the selected templates of this template expert
+* @return a linked list containing the name of all the selected templates
+*/
+public LinkedList<String> showSelectedTemplates() {
+	this.result.clear();
+	for (AbstractTemplate template:this.selected_templates)
+		this.result.addLast((String)template.getPropertyValue("name"));
+	return this.result;
+}
 
-	AbstractTemplate template = this.context.getDocument().getTemplate(name);
-	Location init = null;
-	Location committed = null;
-
-	if (template==null) 
-		this.throwMissingElementException("template", name);
-
+/**
+* describe a template
+* @param template the template to describe
+* @return the textual description of the template
+*/
+private String describeTemplate (AbstractTemplate template) {
 // loop over the children of the template
 
 	Node node = template.getFirst();
 	StringBuffer locations = new StringBuffer();
 	StringBuffer edges = new StringBuffer();
+	Location init = null;
+	Location committed = null;
 
 	while (node!=null) {
 
@@ -131,6 +210,34 @@ public String showTemplate (String name) {
 }
 
 /**
+* get a textual description of a template in xta format
+* @param name the name of the template
+* @return the description of the specified
+*/
+public String showTemplate (String name) {
+
+// get the template if it exists
+
+	AbstractTemplate template = this.context.getDocument().getTemplate(name);
+
+	if (template==null) 
+		this.throwMissingElementException("template", name);
+
+
+	return this.describeTemplate(template);
+}
+
+/**
+* show a loaded template
+* @param index the index of the template to show
+* @return the textual description of the loaded template
+*/
+public String showLoadedTemplate (int index) {
+	AbstractTemplate template = this.templates.get(index);
+	return this.describeTemplate(template);
+}
+
+/**
 * return a certain property of a template
 * @param name the name of the template to return
 * @return the corresponding property of the template
@@ -167,6 +274,15 @@ public void setTemplateProperty (String name, String property, String value) {
 public void clearTemplates() {
 	this.context.getModelExpert().clearDocument();
 }
+
+/**
+* clear the loaded templates from this expert
+*/
+public void clearLoadedTemplates() {
+	this.templates.clear();
+	this.selected_templates.clear();
+}
+
 
 /**
 * remove a template described by its name

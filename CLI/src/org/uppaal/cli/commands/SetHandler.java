@@ -1,5 +1,7 @@
 package org.uppaal.cli.commands;
 
+import com.uppaal.engine.EngineException;
+import com.uppaal.engine.CannotEvaluateException;
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
 import com.uppaal.model.core2.Location;
@@ -55,6 +57,8 @@ public SetHandler (Context context) {
 	this.operation_map.put("sync", this.getClass().getMethod("setSync"));
 	this.operation_map.put("assign", this.getClass().getMethod("setAssign"));
 	this.operation_map.put("system", this.getClass().getMethod("setSystem"));
+	this.operation_map.put("state", this.getClass().getMethod("setState"));
+	this.operation_map.put("option", this.getClass().getMethod("setOption"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -225,12 +229,28 @@ public void setSystem() {
 		this.context.getModelExpert().setDocumentProperty("system", system);
 }
 
+public void setState () {
+	try {
+		this.context.getStateExpert().computeTransitions();
+	this.command_result.setResultCode(ResultCode.SELECT_TRANSITION);
+	} catch (EngineException e) {
+		this.command_result.setResultCode(ResultCode.ENGINE_ERROR);
+	} catch (CannotEvaluateException e) {
+		this.command_result.setResultCode(ResultCode.EVALUATION_ERROR);
+	}
+}
+
+public void setOption () {
+	String option = this.arguments.get(0);
+	String value = this.arguments.get(1);
+	this.context.getOptionExpert().setOption(option, value);
+}
+
 @Override
 public boolean acceptMode (ModeCode mode) {
 	switch(mode) {
 		case EDITOR:
-		case SYMBOLIC_SIMULATOR:
-		case CONCRETE_SIMULATOR:
+		case SIMULATOR:
 		return true;
 
 		default:

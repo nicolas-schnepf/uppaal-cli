@@ -38,6 +38,8 @@ public UnsetHandler (Context context) {
 	this.operation_map.put("templates", this.getClass().getMethod("unsetTemplates"));
 	this.operation_map.put("declaration", this.getClass().getMethod("unsetDeclaration"));
 	this.operation_map.put("query", this.getClass().getMethod("unsetQuery"));
+	this.operation_map.put("formula", this.getClass().getMethod("unsetFormula"));
+	this.operation_map.put("comment", this.getClass().getMethod("unsetComment"));
 	this.operation_map.put("template", this.getClass().getMethod("unsetTemplate"));
 	this.operation_map.put("parameter", this.getClass().getMethod("unsetParameter"));
 	this.operation_map.put("location", this.getClass().getMethod("unsetLocation"));
@@ -50,6 +52,8 @@ public UnsetHandler (Context context) {
 	this.operation_map.put("sync", this.getClass().getMethod("unsetSync"));
 	this.operation_map.put("assign", this.getClass().getMethod("unsetAssign"));
 	this.operation_map.put("system", this.getClass().getMethod("unsetSystem"));
+	this.operation_map.put("option", this.getClass().getMethod("unsetOption"));
+	this.operation_map.put("options", this.getClass().getMethod("unsetOptions"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -86,10 +90,27 @@ public void unsetQuery () {
 			this.context.getQueryExpert().removeQuery(name);
 }
 
+public void unsetFormula () {
+		this.checkMode("unset", "query", ModeCode.EDITOR);
+		String index = this.getArgumentAt(0);
+			this.context.getQueryExpert().setQueryProperty(index, "formula", null);
+}
+
+public void unsetComment () {
+		this.checkMode("unset", "query", ModeCode.EDITOR);
+		String index = this.getArgumentAt(0);
+			this.context.getQueryExpert().setQueryProperty(index, "comment", null);
+}
+
 public void unsetTemplate() {
-		this.checkMode("unset", "template", ModeCode.EDITOR);
-		String name =  name = this.getArgumentAt(0);
-			this.context.getTemplateExpert().removeTemplate(name);
+	this.checkMode("unset", "template", ModeCode.EDITOR);
+	String name =  this.getArgumentAt(0);
+	this.context.getTemplateExpert().removeTemplate(name);
+	if (name.equals("*")) this.command_result.setResultCode(ResultCode.CLEAR_TEMPLATES);
+	else {
+		this.command_result.setResultCode(ResultCode.REMOVE_TEMPLATE);
+		this.command_result.addArgument(name);
+	}
 }
 
 public void unsetParameter () {
@@ -188,9 +209,16 @@ public void unsetAssign () {
 public void unsetSystem () {
 		this.checkMode("unset", "system",  ModeCode.EDITOR);
 		this.context.getModelExpert().setDocumentProperty("system", null);
-
 }
 
+public void unsetOption () {
+	String option = this.arguments.get(0);
+	this.context.getOptionExpert().resetOption(option);
+}
+
+public void unsetOptions () {
+	this.context.getOptionExpert().resetOptions();
+}
 
 @Override
 public boolean acceptMode (ModeCode mode) {

@@ -6,8 +6,7 @@ package org.uppaal.cli.context;
 
 public enum ModeCode {
 EDITOR,
-SYMBOLIC_SIMULATOR,
-CONCRETE_SIMULATOR,
+SIMULATOR,
 VERIFIER,
 UNKNOWN
 }

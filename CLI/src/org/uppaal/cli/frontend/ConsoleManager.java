@@ -8,14 +8,18 @@ import org.uppaal.cli.context.Context;
 import com.uppaal.engine.EngineException;
 import org.uppaal.cli.exceptions.UnknownModeException;
 import org.uppaal.cli.exceptions.ConsoleException;
+import org.uppaal.cli.exceptions.SelectorException;
 import org.uppaal.cli.enumerations.ModeCode;
 import org.uppaal.cli.commands.CommandLauncher;
 import org.uppaal.cli.commands.Handler;
 
+import org.jline.utils.InfoCmp.Capability;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.LineReader;
 import org.jline.reader.Reference;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.terminal.Terminal;
 import org.jline.builtins.Nano;
 import org.jline.keymap.KeyMap;
 
@@ -53,10 +57,9 @@ private Nano nano;
 // temporary text buffer for this console manager
 private File buffer;
 
-
-
 // console prompt
 private String prompt;
+
 
 // private command parser of this console manager
 private CommandParser command_parser;
@@ -73,9 +76,8 @@ private PrintWriter err;
 // boolean telling if the console manager is running
 private boolean running;
 
-// list of command widgets
-private LinkedList<CommandWidgets> widgets;
-
+//selection manager of this console manager
+private SelectionManager selection_manager;
 
 /**
 * public constructor of a console Manager
@@ -84,31 +86,33 @@ private LinkedList<CommandWidgets> widgets;
 */
 public ConsoleManager (Context context) throws IOException, IOException {
 
-	this.context = context;
-	this.reader = LineReaderBuilder.builder().build();
-            	this.out = this.reader.getTerminal().writer();
-	this.buffer = File.createTempFile("Uppaal", "");
-	this.nano = new Nano(this.reader.getTerminal(), this.buffer);
-	this.err = new PrintWriter(System.err);
-	this.command_parser = new CommandParser(context);
-	this.widgets = new LinkedList<CommandWidgets>();
+	try {
+		Terminal terminal = TerminalBuilder.builder().build();
+		this.reader = LineReaderBuilder.builder().terminal(terminal).build();
+		this.reader.setKeyMap(LineReader.MAIN);
+		this.out = this.reader.getTerminal().writer();
+		this.err = new PrintWriter(System.err);
+
+		this.context = context;
+		this.buffer = File.createTempFile("Uppaal", "");
+		this.nano = new Nano(this.reader.getTerminal(), this.buffer);
+
+		this.command_parser = new CommandParser(context);
+		this.selection_manager = new SelectionManager(terminal, context);
 
 // add the undo and redo widgets to this console manager
 
-	try {
 		Method undo = context.getClass().getMethod("undo");
 		CommandWidgets undo_widget = new CommandWidgets(this.reader, context, undo, "undo");
 		undo_widget.addWidget("undo-widget", undo_widget::onKey);
 		undo_widget.getKeyMap().bind(new Reference("undo-widget"), KeyMap.ctrl('U'));
-		this.widgets.add(undo_widget);
 
 		Method redo = context.getClass().getMethod("redo");
 		CommandWidgets redo_widget = new CommandWidgets(this.reader, context, redo, "redo");
 		redo_widget.addWidget("redo-widget", redo_widget::onKey);
 		redo_widget.getKeyMap().bind(new Reference("redo-widget"), KeyMap.ctrl('R'));
-		this.widgets.add(undo_widget);
 	} catch (Exception e) {
-		System.err.println(e);
+		System.err.println(e.getMessage());
 		e.printStackTrace();
 		System.exit(1);
 	}
@@ -210,9 +214,62 @@ private void processResult (CommandResult result) {
 		}
 		break;
 
+		case ADD_TEMPLATE:
+		this.command_parser.addTemplate(result.getArgumentAt(0));
+		break;
+
+		case ADD_TEMPLATES:
+		for (String template:result) this.command_parser.addTemplate(template);
+		break;
+
+		case REMOVE_TEMPLATE:
+		this.command_parser.removeTemplate(result.getArgumentAt(0));
+		break;
+
+		case RENAME_TEMPLATE:
+		this.command_parser.removeTemplate(result.getArgumentAt(0));
+		this.command_parser.addTemplate(result.getArgumentAt(1));
+		break;
+
+		case CLEAR_TEMPLATES:
+		this.command_parser.clearTemplates();
+		break;
+
+// if template selection is required select them and update the command parser
+
+		case SELECT_TEMPLATES:
+		for (String template: this.selection_manager.selectTemplates())
+			this.command_parser.addTemplate(template);
+		break;
+
+		case SELECT_TRANSITION:
+		this.selection_manager.selectTransition();
+		break;
+
+		case SELECT_STATE:
+		this.selection_manager.selectState();
+		break;
+
+// if mode changed update the prompt and the command parser
+
 		case MODE_CHANGED:
 		String mode = result.getArgumentAt(0);
 		this.prompt = "uppaal "+mode+"$";
+		switch (mode) {
+			case "editor":
+			this.command_parser.setElementType("template");
+			this.command_parser.setDefaultType("template");
+			break;
+
+			case "simulator":
+			this.command_parser.setElementType("process");
+			this.command_parser.setDefaultType("variable");
+			break;
+			case "verifier":
+			this.command_parser.setElementType("template");
+			this.command_parser.setDefaultType("option");
+			break;
+		}
 		break;
 
 // if exit command was entered simply leave the uppaal command line interface
@@ -232,6 +289,13 @@ private void processResult (CommandResult result) {
 
 		 case ENGINE_ERROR:
 		this.err.println("Engine error: try to run disconnect followed by connect.");
+		this.err.flush();
+		 break;
+
+// for an engine advize the user to disconnect and reconnect the engine
+
+		 case EVALUATION_ERROR:
+		this.err.println("Compilation error: impossible to achieve the operation that you asked.");
 		this.err.flush();
 		 break;
 

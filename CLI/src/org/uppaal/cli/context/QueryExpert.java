@@ -209,6 +209,47 @@ public void clearQueries () {
 }
 
 /**
+* get the value of a specific query property
+* @param index the index of the query to inspect
+* @param property the name of the property to inspect
+* @return the value of the specific property for the query at the specified index
+*/
+public String getQueryProperty (String index, String property) {
+
+// get the query at the specified index
+
+	Query query = this.context.getDocument().getQueryList().get(Integer.parseInt(index));
+		if (query==null)
+		this.throwMissingElementException("query", index);
+
+// return the value of the provided property
+
+	return (String) query.getPropertyValue(property);
+}
+
+/**
+* set the value of a specific query property
+* @param index the index of the query to update
+* @param property the name of the property to update
+* @param value the new value for the query property
+*/
+public void setQueryProperty (String index, String property, String value) {
+
+// get the query at the specified index
+
+	Query query = this.context.getDocument().getQueryList().get(Integer.parseInt(index));
+		if (query==null)
+		this.throwMissingElementException("query", index);
+
+// set the value of the specified property for the query at the specified index
+
+
+	SetPropertyCommand command = new SetPropertyCommand(query, property, value);
+	command.execute();
+	this.context.addCommand(command);
+}
+
+/**
 * get a query described by one of its properties and a corresponding value
 * @param property the name of the property to search for
 * @param the value of the property to search for
@@ -228,9 +269,16 @@ private Query getQuery (String property, String value) {
 
 public LinkedList<String> showQueries() {
 	QueryList queries = this.context.getDocument().getQueryList();
-	LinkedList<String> names = new LinkedList<String>();
-	for (Query query : queries) names.addLast((String)query.getPropertyValue("name"));
-	return names;
+	LinkedList<String> result = this.result;
+	result.clear();
+	int index = 0;
+
+	for (Query query : queries) {
+		result.addLast(""+index+": "+(String)query.getPropertyValue("formula"));
+		index++;
+	}
+
+	return result;
 }
 
 /**
@@ -243,14 +291,13 @@ public String showQuery (String name) {
 
 // check that the query already exists
 
-	Query query = this.getQuery("name", name);
+	Query query = this.context.getDocument().getQueryList().get(Integer.parseInt(name));
 		if (query==null)
 		this.throwMissingElementException("query", name);
 
 // otherwise return the name, the formula and the comment of the query
 
 	StringBuffer description = new StringBuffer();
-	description.append("query "+name+" = \n");
 	description.append(query.getFormula()+"\n");
 	description.append(query.getComment());
 	return description.toString();
@@ -292,41 +339,18 @@ public void addQuery (String name, String formula, String comment) {
 * @param name the name of the query to remove
 */
 
-public void removeQuery (String name) {
+public void removeQuery (String index) {
 
 // check that the query does not already exists
 
-	Query query = this.getQuery("name", name);
+	Query query = this.context.getDocument().getQueryList().get(Integer.parseInt(index));
 	if (query==null)
 		return;
 
 // otherwise insert the query at the end of the list
 
 	QueryList list = this.context.getDocument().getQueryList();
-	int index = list.indexOf(query);
-	RemoveQueryCommand command = new RemoveQueryCommand(list, index);
-	command.execute();
-	this.context.addCommand(command);
-}
-
-/**
-* update a query in this context
-* @param name the name of the query to update
-* @param property the name of the property to update
-* @param value the value of the property to update
-*/
-
-public void setQueryProperty(String name, String property, String value) {
-
-// check that the query already exists
-
-	Query query = this.getQuery("name", name);
-		if (query==null)
-		this.throwMissingElementException("query", name);
-
-// otherwise update the provided query
-
-	SetPropertyCommand command = new SetPropertyCommand(query, property, value);
+	RemoveQueryCommand command = new RemoveQueryCommand(list, Integer.parseInt(index));
 	command.execute();
 	this.context.addCommand(command);
 }

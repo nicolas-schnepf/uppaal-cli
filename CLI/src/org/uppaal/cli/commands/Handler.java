@@ -55,6 +55,13 @@ public boolean acceptMode (ModeCode mode);
 public void addArgument(String argument);
 
 /**
+* set the argument at the specified index
+* @param index the index of the element to set
+* @param argument the new argument to set in the handler
+*/
+public void setArgument (int index, String argument);
+
+/**
 * @return the number of arguments of this command
 */
 public int getArgumentNumber();

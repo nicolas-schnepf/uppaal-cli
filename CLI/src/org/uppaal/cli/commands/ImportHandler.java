@@ -35,6 +35,7 @@ public ImportHandler (Context context) {
 	super(context, "import");
 	try {
 	this.operation_map.put("document", this.getClass().getMethod("importDocument"));
+	this.operation_map.put("templates", this.getClass().getMethod("importTemplates"));
 	this.operation_map.put("queries", this.getClass().getMethod("importQueries"));
 	} catch (Exception e) {
 		System.out.println(e.getMessage());
@@ -56,7 +57,28 @@ public void importDocument() {
 		if (!extension.equals("xta") && !extension.equals("xml")) 
 			this.throwWrongExtensionException ("import", "document", extension);
 		this.context.getModelExpert().loadDocument(filename);
+		LinkedList<String> templates = this.context.getTemplateExpert().showTemplates();
+		for (String template:templates) this.command_result.addArgument(template);
+		this.command_result.setResultCode(ResultCode.ADD_TEMPLATES);
+	} catch (IOException e) {
+		this.command_result.setResultCode(ResultCode.IO_ERROR);
+		this.command_result.addArgument(filename);
+	}
+}
 
+public void importTemplates() {
+	String filename = this.getArgumentAt(0);
+	int index = filename.length()-1;
+	while (filename.charAt(index)!='.' && index>0) index --;
+	String extension = filename.substring(index+1);
+
+	try {
+		this.checkMode("import", "templates", ModeCode.EDITOR);
+		if (!extension.equals("xta") && !extension.equals("xml")) 
+			this.throwWrongExtensionException ("import", "templates", extension);
+		this.context.getTemplateExpert().clearTemplates();
+		int templates = this.context.getTemplateExpert().loadTemplates(filename);
+		this.command_result.setResultCode(ResultCode.SELECT_TEMPLATES);
 	} catch (IOException e) {
 		this.command_result.setResultCode(ResultCode.IO_ERROR);
 		this.command_result.addArgument(filename);
@@ -85,8 +107,7 @@ public void importQueries() {
 public boolean acceptMode (ModeCode mode) {
 	switch(mode) {
 		case EDITOR:
-		case SYMBOLIC_SIMULATOR:
-		case CONCRETE_SIMULATOR:
+		case SIMULATOR:
 		return true;
 
 		default:

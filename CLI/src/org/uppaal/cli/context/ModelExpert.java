@@ -136,10 +136,13 @@ public LinkedList<String> compileDocument () throws EngineException, IOException
 
 // finally if no serious error was encountered set the system in the context, otherwise set it to null
 
-	if (!fatal)
+	if (!fatal) {
 		this.system = system;
-	else
+		this.context.getStateExpert().setSystem(this.system);
+	}else {
 		this.system = null;
+		this.context.getStateExpert().setSystem(null);
+	}
 
 	return result;
 }

@@ -111,12 +111,13 @@ public void handleStart() {
 
 			case EDITOR:
 			this.context.setMode(this.getArgumentAt(0));
+			this.command_result.addArgument("editor");
 			break;
 
 // start simulator handler if requested
 
-		case CONCRETE_SIMULATOR:
-		case SYMBOLIC_SIMULATOR:
+		case SIMULATOR:
+		case VERIFIER:
 
 		if (this.context.getMode()==ModeCode.EDITOR) {
 		try {
@@ -127,8 +128,15 @@ public void handleStart() {
 				return;
 			}
 
-			if (this.context.getTrace()==null) this.context.getTraceExpert().setTrace(mode);
 			this.context.setMode(this.getArgumentAt(0));
+			this.command_result.addArgument(this.arguments.get(0));
+
+			if ((this.context.getTrace()==null) || (this.arguments.size()>1)) {
+				if (this.arguments.size()>1)
+					this.context.getTraceExpert().setTrace(this.arguments.get(1));
+				else
+					this.context.getTraceExpert().setTrace("symbolic");
+			}
 		} catch (EngineException e) {
 		this.command_result.setResultCode(ResultCode.ENGINE_ERROR);
 		return;
@@ -141,30 +149,6 @@ public void handleStart() {
 		}
 		}
 
-			break;
-
-// if the verifier handler is requested first check that we have a valid system before changing mode
-
-		case VERIFIER:
-
-		if (this.context.getMode()==ModeCode.EDITOR) {
-		try {
-			LinkedList<String> problems = this.context.getModelExpert().compileDocument();
-			for (String problem: problems) this.command_result.addArgument(problem);
-			if (this.context.getSystem()==null) {
-				this.command_result.setResultCode(ResultCode.COMPILATION_ERROR);
-				return;
-			}
-		} catch (EngineException e) {
-		this.command_result.setResultCode(ResultCode.ENGINE_ERROR);
-		return;
-		} catch (IOException e) {
-			this.command_result.setResultCode(ResultCode.IO_ERROR);
-			return;
-		}
-		}
-
-		this.context.setMode(this.getArgumentAt(0));
 			break;
 
 // if the mode is not known throw an unknown mode exception

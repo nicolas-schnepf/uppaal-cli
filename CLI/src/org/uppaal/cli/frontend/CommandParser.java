@@ -16,6 +16,8 @@ import java.lang.IllegalAccessException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Collection;
 
 public class CommandParser {
 
@@ -52,6 +54,15 @@ private ParserException parser_exception;
 // unknown command exception of this handler
 private UnknownCommandException unknown_command_exception;
 
+// hash set of template names
+private HashSet<String> templates;
+
+// current element type of this command parser
+private String element_type;
+
+// current default type of this command parser
+private String default_type;
+
 public CommandParser(Context context) {
 	this.lexer = new CommandLexer();
 	this.type_checker = new TypeChecker();
@@ -60,6 +71,9 @@ public CommandParser(Context context) {
 	this.token_map = new HashMap<TokenType, String>();
 	this.parser_exception = new ParserException();
 	this.unknown_command_exception = new UnknownCommandException();
+	this.templates = new HashSet<String>();
+	this.element_type = "template";
+	this.default_type = "template";
 
 	this.token_map.put(TokenType.STRING, "string");
 	this.token_map.put(TokenType.NUMBER, "number");
@@ -85,6 +99,54 @@ public CommandParser(Context context) {
 		e.printStackTrace();
 		System.exit(1);
 	}
+}
+
+/**
+* set the element type of this command parser
+* @param type the new element type of this command parser
+*/
+public void setElementType(String type) {
+	this.element_type = type;
+}
+
+/**
+* set the default type of this command parser
+* @param type the new default type of this command parser
+*/
+public void setDefaultType(String type) {
+	this.default_type = type;
+}
+
+/**
+* add a new template name to this parser
+* @param template the template name to add
+*/
+public void addTemplate(String template) {
+	this.templates.add(template);
+}
+
+/**
+* add all templates from a provided collection
+* @param collection the collection of templates to add
+*/
+public void addTemplates(Collection<String> templates) {
+	this.templates.addAll(templates);
+}
+
+
+/**
+* remove a template name from this parser
+* @param template the template to remove
+*/
+public void removeTemplate(String template) {
+	this.templates.remove(template);
+}
+
+/**
+* clear the set of template names
+*/
+public void clearTemplates() {
+	this.templates.clear();
 }
 
 /**
@@ -333,7 +395,7 @@ public void parseShow() {
 public void parseSelect() {
 	String token = this.getNextToken();
 	if (token.equals("state") || token.equals("transition")) this.handler.addArgument(token);
-	else this.parseQueryRef();
+	else this.parseIndexedRef("query");
 }
 
 /**
@@ -342,8 +404,8 @@ public void parseSelect() {
 */
 public void parseCheck() {
 	((DefaultHandler)this.handler).setCommand("check");
-	this.getNextToken();
-	this.parseQueryRef();
+	this.checkNextToken("queries");
+	this.parseIndexedRef("query");
 }
 
 
@@ -404,16 +466,49 @@ public void parseRef () {
 
 // identify the type of the reference and apply the corresponding method
 
-	if (this.type_checker.isTypeProperty(this.type, this.token)) this.parseProperty();
-	else if (this.token.equals("queries")) this.parseQueryRef();
-	else if (this.token.equals("options")) this.parseOptionRef();
-	else this.parseElementRef();
+	switch (this.token) {
+		case "queries":
+		this.parseIndexedRef("query");
+		break;
+
+		case "options":
+		this.type="option";
+		this.handler.addArgument(this.token);
+		break;
+
+		case "parameters":
+		this.parseIndexedRef("setting");
+		break;
+
+		case "variables":
+		this.parseIndexedRef("variable");
+		break;
+
+		case "processes":
+			this.parseIndexedRef("process");
+		break;
+
+		case "trace":
+		this.type = "trace";
+		break;
+
+		case "state":
+		this.type="state";
+		break;
+
+		default:
+		if (this.type_checker.isTypeProperty(this.type, this.token)) this.parseProperty();
+		else this.parseElementRef();
+		break;
+		}
+
 
 // if the next token is a dot check that the provided property well belongs to the type of the object
 
 	if (this.token!=null && this.token.equals(".")) {
 		this.getNextToken();
-		this.parseProperty();
+		if (this.type.equals("process")) this.parseIndexedRef("variable");
+		else this.parseProperty();
 }
 
 	this.handler.setObjectType(this.type);
@@ -439,18 +534,28 @@ public void parseElementRef () {
 // the first token must be the name of a template
 
 	this.checkTokenType(TokenType.STRING);
-	this.type = "template";
+	if (this.templates.contains(this.token)) this.type = this.element_type;
+	else this.type = this.default_type;
 	this.handler.addArgument(this.token);
 
 // if some index is provided parse it accordingly
 
 	this.getNextToken();
 	if (this.token!=null && this.token.equals("[")) {
+		if (this.type.equals("template")) {
 		if (!this.getNextToken().equals("*")) this.checkTokenType(TokenType.STRING);
-		this.type = "location";
 		this.handler.addArgument(this.token);
+			this.type = "location";
+		} else if (this.type.equals("process")) {
+			this.getNextToken();
+			this.checkTokenType(TokenType.NUMBER);
+			int argument_number = this.handler.getArgumentNumber();
+			String process = this.handler.getArgumentAt(argument_number-1);
+			this.handler.setArgument(argument_number-1, process+"("+this.token+")");
+		}
 
 		if(this.getNextToken().equals("->")) {
+			this.type_checker.checkType(this.type, "location");
 			if (!this.getNextToken().equals("*")) this.checkTokenType(TokenType.STRING);
 			this.handler.addArgument(this.token);
 			this.type = "edge";
@@ -468,50 +573,36 @@ public void parseElementRef () {
 * QUERYREF : query [(* | NAME | NUMBER)? ]
 */
 
-public void parseQueryRef () {
-
-// check that the reference begins with the keyword query followed by a [
-
-	this.checkToken("query");
-	this.checkNextToken("[");
+public void parseIndexedRef (String type) {
 
 // get the argument of the query and check that it is well a string or a number
 
-	String query = this.getNextToken();
-	this.checkTokenType(TokenType.STRING, TokenType.NUMBER);
+	String name = this.token;
+	String bracket = this.getNextToken();
+	this.type = type;
+
+	if (bracket!=null) {
+	this.checkToken("[");
+	String index = this.getNextToken();
+	this.checkTokenType(TokenType.NUMBER);
 	this.checkNextToken("]");
+	this.getNextToken();
 
 // finally add the query as argument to the handler and set the reference type
 
-	this.handler.addArgument(query);
-	this.type = "query";
+		if (this.handler.getArgumentNumber()>0) {
+			String process = this.handler.getArgumentAt(0);
+			this.handler.setArgument(0, process+"."+name+"["+index+"]");
+		} else
+		this.handler.addArgument(index);
 	if (this.handler instanceof SetHandler) this.require_value = true;
-}
-
-
-
-/**
-* parse the reference to an uppaal option
-* OPTIONREF : option[* | NAME ]
-*/
-public void parseOptionRef () {
-
-// check that the reference begins with the keyword option followed by a [
-
-	this.checkToken("option");
-	this.checkNextToken("[");
-
-// get the argument of the option and check that it is well a string
-
-	String option = this.getNextToken();
-	this.checkTokenType(TokenType.STRING);
-	this.checkNextToken("]");
-
-// finally add the option as argument to the handler and set the reference type
-
-	this.handler.addArgument(option);
-	this.type = "option";
-	if (this.handler instanceof SetHandler) this.require_value = true;
+	} else {
+		if (this.handler.getArgumentNumber()>0) {
+			String process = this.handler.getArgumentAt(0);
+			this.handler.setArgument(0, process+"."+name);
+		} else
+			this.handler.addArgument(name);
+	}
 }
 
 /**
