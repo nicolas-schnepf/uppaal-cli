@@ -25,6 +25,10 @@ import org.jline.keymap.KeyMap;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.io.OutputStream;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.BufferedWriter;
 import java.io.PrintWriter;
 import java.io.FileWriter;
@@ -79,18 +83,29 @@ private boolean running;
 //selection manager of this console manager
 private SelectionManager selection_manager;
 
+// buffered reader of this console manager
+private BufferedReader buffered_reader;
+
+public ConsoleManager (Context context, String filename) throws IOException {
+	this.context = context;
+	this.buffered_reader = new BufferedReader(new FileReader(filename));
+	this.out = new PrintWriter(System.out);
+	this.err = new PrintWriter(System.err);
+	this.command_parser = new CommandParser(context);
+}
+
 /**
 * public constructor of a console Manager
 * initializing its different attributes to default value
 * @param context the uppaal context to handle
 */
-public ConsoleManager (Context context) throws IOException, IOException {
+public ConsoleManager (Context context) throws IOException {
 
 	try {
 		Terminal terminal = TerminalBuilder.builder().build();
 		this.reader = LineReaderBuilder.builder().terminal(terminal).build();
 		this.reader.setKeyMap(LineReader.MAIN);
-		this.out = this.reader.getTerminal().writer();
+		this.out = new PrintWriter(this.reader.getTerminal().writer());
 		this.err = new PrintWriter(System.err);
 
 		this.context = context;
@@ -137,8 +152,10 @@ public void run () throws EngineException, IOException {
 
 	while (this.running) {
 		try {
-			line = reader.readLine(this.prompt);
-			if (line.equals("")) continue;
+			if (this.reader!=null) line = reader.readLine(this.prompt);
+			else line = this.buffered_reader.readLine();
+			if (line==null) break;
+			else if (line.equals("")) continue;
 
 // parse the provided command line, execute it and process the corresponding result
 
@@ -250,11 +267,15 @@ private void processResult (CommandResult result) {
 		this.selection_manager.selectState();
 		break;
 
+		case SELECT_QUERIES:
+		this.selection_manager.selectQueries();
+		break;
+
 // if mode changed update the prompt and the command parser
 
 		case MODE_CHANGED:
 		String mode = result.getArgumentAt(0);
-		this.prompt = "uppaal "+mode+"$";
+		if (!this.prompt.equals("")) this.prompt = "uppaal "+mode+"$";
 		switch (mode) {
 			case "editor":
 			this.command_parser.setElementType("template");

@@ -192,6 +192,11 @@ public void handleDisconnect () {
 			this.command_result.setResultCode(ResultCode.OK);
 }
 
+@Override
+public void clear() {
+	super.clear();
+	this.command = null;
+}
 
 @Override
 public ModeCode getMode() {

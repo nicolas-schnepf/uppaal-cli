@@ -135,7 +135,10 @@ String option_info = engine.getOptionsInfo();
 public String getOptionString() {
 	if (this.option_string!=null) return this.option_string;
 	StringBuffer buffer = new StringBuffer();
-	for (String option:this.options.keySet()) buffer.append(option+" "+this.options.get(option)+"\n");
+	for (String option:this.options.keySet()) {
+		if (!this.options.get(option).equals(""))
+			buffer.append(option+" "+this.options.get(option)+"\n");
+	}
 	this.option_string = buffer.toString();
 	return this.option_string;
 }

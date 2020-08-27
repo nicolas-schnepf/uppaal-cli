@@ -33,6 +33,9 @@ private TransitionSelector transition_selector;
 // state selector of this selection manager
 private StateSelector state_selector;
 
+// query selector of this selection manager
+private QuerySelector query_selector;
+
 /**
 * public constructor of a selection manager
 * @param terminal the terminal for this selection manager
@@ -45,6 +48,7 @@ public SelectionManager (Terminal terminal, Context context) {
 	this.template_selector = new TemplateSelector(this.selection_reader, context);
 	this.transition_selector = new TransitionSelector(this.selection_reader, context);
 	this.state_selector = new StateSelector(this.selection_reader, context);
+	this.query_selector = new QuerySelector(this.selection_reader, context);
 	this.selection_reader.setKeyMap(LineReader.MAIN);
 
 	try {
@@ -112,6 +116,15 @@ public void selectTransition() {
 */
 public void selectState() {
 	this.selector = this.state_selector;
+	this.selector.run();
+	this.selector = null;
+}
+
+/**
+* perform a query selection
+*/
+public void selectQueries() {
+	this.selector = this.query_selector;
 	this.selector.run();
 	this.selector = null;
 }

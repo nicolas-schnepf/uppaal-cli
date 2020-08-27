@@ -29,6 +29,7 @@ public CommandLauncher (Context context) {
 	this.command_map.put("reset", new ResetHandler(context));
 	this.command_map.put("set", new SetHandler(context));
 	this.command_map.put("unset", new UnsetHandler(context));
+	this.command_map.put("check", new CheckHandler(context));
 }
 
 /**

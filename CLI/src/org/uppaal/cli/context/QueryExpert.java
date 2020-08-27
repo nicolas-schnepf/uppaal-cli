@@ -15,6 +15,7 @@ import com.uppaal.model.core2.InsertQueryCommand;
 import com.uppaal.model.core2.RemoveQueryCommand;
 import com.uppaal.model.core2.SetPropertyCommand;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -28,8 +29,12 @@ import java.io.IOException;
 
 public class QueryExpert extends AbstractExpert {
 
+// hash set of selected queries of this expert
+private QueryList selected_queries;
+
 public QueryExpert (Context context) {
 	super(context);
+	this.selected_queries = new QueryList();
 }
 
 /**
@@ -214,13 +219,13 @@ public void clearQueries () {
 * @param property the name of the property to inspect
 * @return the value of the specific property for the query at the specified index
 */
-public String getQueryProperty (String index, String property) {
+public String getQueryProperty (int index, String property) {
 
 // get the query at the specified index
 
-	Query query = this.context.getDocument().getQueryList().get(Integer.parseInt(index));
+	Query query = this.context.getDocument().getQueryList().get(index);
 		if (query==null)
-		this.throwMissingElementException("query", index);
+		this.throwMissingElementException("query", ""+index);
 
 // return the value of the provided property
 
@@ -362,4 +367,77 @@ public int getQueryNumber () {
 	return this.context.getDocument().getQueryList().size();
 }
 
+/**
+* show the name of all queries of this document
+* @return the list of names of all queries in this document
+*/
+
+public LinkedList<String> showSelectedQueries() {
+	LinkedList<String> result = this.result;
+	result.clear();
+	int index = 0;
+
+	for (Query query : this.selected_queries) {
+		result.addLast(""+index+": "+(String)query.getPropertyValue("formula"));
+		index++;
+	}
+
+	return result;
+}
+
+/**
+* show the information about a selected query
+* @param index the index of the selected query to show
+* @return the description of the corresponding selected query
+* @exception a missing element exception if the query does not exist
+*/
+public String showSelectedQuery (int index) {
+
+// check that the query already exists
+
+	Query query = this.selected_queries.get(index);
+		if (query==null)
+		this.throwMissingElementException("query", ""+index);
+
+// otherwise return the name, the formula and the comment of the query
+
+	StringBuffer description = new StringBuffer();
+	description.append(query.getFormula()+"\n");
+	description.append(query.getComment());
+	return description.toString();
+}
+
+/**
+* clear the set of selected queries
+*/
+public void clearSelectedQueries() {
+	this.selected_queries.removeAll();
+}
+
+/**
+* select a query based on its index
+* @param the index of the query to select
+*/
+public void selectQuery(int index) {
+	Query query = this.context.getDocument().getQueryList().get(index);
+	if (query!=null)
+		this.selected_queries.addLast(new Query(query.getFormula(), query.getComment()));
+	else 
+			this.throwMissingElementException("query", ""+index);
+}
+
+/**
+* unselect a query based on its index
+* @param the index of the query to unselect
+*/
+public void unselectQuery(int index) {
+	if (index<0 || index>=this.selected_queries.size()) this.selected_queries.remove(index);
+}
+
+/**
+* @return the list of selected queries
+*/
+public QueryList getSelectedQueries() {
+	return this.selected_queries;
+}
 }

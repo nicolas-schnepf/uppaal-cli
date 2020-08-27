@@ -59,6 +59,7 @@ public SetHandler (Context context) {
 	this.operation_map.put("system", this.getClass().getMethod("setSystem"));
 	this.operation_map.put("state", this.getClass().getMethod("setState"));
 	this.operation_map.put("option", this.getClass().getMethod("setOption"));
+	this.operation_map.put("selection", this.getClass().getMethod("setSelection"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -244,6 +245,10 @@ public void setOption () {
 	String option = this.arguments.get(0);
 	String value = this.arguments.get(1);
 	this.context.getOptionExpert().setOption(option, value);
+}
+
+public void setSelection () {
+	this.command_result.setResultCode(ResultCode.SELECT_QUERIES);
 }
 
 @Override

@@ -54,6 +54,7 @@ public UnsetHandler (Context context) {
 	this.operation_map.put("system", this.getClass().getMethod("unsetSystem"));
 	this.operation_map.put("option", this.getClass().getMethod("unsetOption"));
 	this.operation_map.put("options", this.getClass().getMethod("unsetOptions"));
+	this.operation_map.put("selection", this.getClass().getMethod("unsetSelection"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -218,6 +219,16 @@ public void unsetOption () {
 
 public void unsetOptions () {
 	this.context.getOptionExpert().resetOptions();
+}
+
+public void unsetSelection () {
+	String name = this.arguments.get(0);
+	if (name.equals("selection"))
+		this.context.getQueryExpert().clearSelectedQueries();
+	else {
+		int index = Integer.parseInt(name);
+		this.context.getQueryExpert().unselectQuery(index);
+	}
 }
 
 @Override

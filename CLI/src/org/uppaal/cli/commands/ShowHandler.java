@@ -53,6 +53,7 @@ public ShowHandler (Context context) {
 	this.operation_map.put("trace", this.getClass().getMethod("showTrace"));
 	this.operation_map.put("option", this.getClass().getMethod("showOption"));
 	this.operation_map.put("setting", this.getClass().getMethod("showSetting"));
+	this.operation_map.put("selection", this.getClass().getMethod("showSelection"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -85,13 +86,13 @@ public void showQuery() {
 }
 
 public void showFormula () {
-	String index = this.arguments.get(0);
+	int index = Integer.parseInt(this.arguments.get(0));
 	String formula = this.context.getQueryExpert().getQueryProperty(index, "formula");
 	this.command_result.addArgument(formula);
 }
 
 public void showComment () {
-	String index = this.arguments.get(0);
+	int index = Integer.parseInt(this.arguments.get(0));
 	String comment = this.context.getQueryExpert().getQueryProperty(index, "comment");
 	this.command_result.addArgument(comment);
 }
@@ -178,6 +179,18 @@ public void showSetting() {
 	String index = this.arguments.get(0);
 	LinkedList<String> output = this.context.getOptionExpert().showParameter(index);
 	for (String line:output) this.command_result.addArgument(line);
+}
+
+public void showSelection () {
+	String name = this.arguments.get(0);
+	if (name.equals("selection")) {
+		LinkedList<String> selection = this.context.getQueryExpert().showSelectedQueries();
+		for (String query: selection) this.command_result.addArgument(query);
+	} else {
+		int index = Integer.parseInt(name);
+		String query = this.context.getQueryExpert().showSelectedQuery(index);
+		this.command_result.addArgument(query);
+	}
 }
 
 @Override

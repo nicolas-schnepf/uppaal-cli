@@ -403,9 +403,8 @@ public void parseSelect() {
 * check QUERRYREF
 */
 public void parseCheck() {
-	((DefaultHandler)this.handler).setCommand("check");
-	this.checkNextToken("queries");
-	this.parseIndexedRef("query");
+	this.checkNextToken("queries", "selection");
+	this.parseRef();
 }
 
 
@@ -471,8 +470,12 @@ public void parseRef () {
 		this.parseIndexedRef("query");
 		break;
 
+		case "selection":
+		this.parseIndexedRef("selection");
+		break;
+
 		case "options":
-		this.type="option";
+		this.type = "option";
 		this.handler.addArgument(this.token);
 		break;
 
