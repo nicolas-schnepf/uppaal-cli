@@ -20,6 +20,7 @@ import java.net.URL;
 
 public class Test {
 public static void main (String[] args) throws Exception {
-System.out.println("X              Y              Variation      Convexity");
+double nan = Double.NaN;
+System.out.println(Double.NaN);
 }
 }
