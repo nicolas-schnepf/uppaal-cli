@@ -91,7 +91,7 @@ public ConsoleManager (Context context, String filename) throws IOException {
 	this.buffered_reader = new BufferedReader(new FileReader(filename));
 	this.out = new PrintWriter(System.out);
 	this.err = new PrintWriter(System.err);
-	this.command_parser = new CommandParser(context);
+		this.command_parser = new CommandParser(context);
 }
 
 /**
@@ -103,6 +103,7 @@ public ConsoleManager (Context context) throws IOException {
 
 	try {
 		Terminal terminal = TerminalBuilder.builder().build();
+		System.out.println(terminal.getWidth());
 		this.reader = LineReaderBuilder.builder().terminal(terminal).build();
 		this.reader.setKeyMap(LineReader.MAIN);
 		this.out = new PrintWriter(this.reader.getTerminal().writer());
@@ -274,8 +275,15 @@ private void processResult (CommandResult result) {
 // if mode changed update the prompt and the command parser
 
 		case MODE_CHANGED:
-		String mode = result.getArgumentAt(0);
+		String mode = result.removeLastArgument();
 		if (!this.prompt.equals("")) this.prompt = "uppaal "+mode+"$";
+		if (result.getArgumentNumber()>0) {
+			for (String argument: result) {
+				this.err.println(argument);
+				this.err.flush();
+			}
+		}
+
 		switch (mode) {
 			case "editor":
 			this.command_parser.setElementType("template");

@@ -9,8 +9,9 @@ import com.uppaal.model.core2.AbstractCommand;
 import com.uppaal.model.core2.Document;
 import com.uppaal.model.system.UppaalSystem;
 import com.uppaal.engine.Engine;
-import com.uppaal.model.system.AbstractTrace;
+import com.uppaal.model.system.AbstractTransition;
 import org.uppaal.cli.exceptions.UnknownModeException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.HashMap;
 
@@ -44,6 +45,7 @@ private EdgeExpert edge_expert;
 private TraceExpert trace_expert;
 private StateExpert state_expert;
 private OptionExpert option_expert;
+private DataExpert data_expert;
 
 /**
 * create an empty console without any argument
@@ -80,6 +82,7 @@ public Context () {
 	this.trace_expert = new TraceExpert(this);
 	this.state_expert = new StateExpert(this);
 	this.option_expert = new OptionExpert(this);
+	this.data_expert = new DataExpert(this);
 }
 
 /**
@@ -116,7 +119,7 @@ public Engine getEngine () {
 /**
 * @return the trace attached to this context
 */
-public AbstractTrace getTrace () {
+public ArrayList<AbstractTransition> getTrace () {
 	return this.trace_expert.getTrace();
 }
 
@@ -209,6 +212,13 @@ public  StateExpert getStateExpert () {
 */
 public OptionExpert getOptionExpert() {
 	return this.option_expert;
+}
+
+/**
+* @return the data expert of this context
+*/
+public DataExpert getDataExpert() {
+	return this.data_expert;
 }
 
 /**

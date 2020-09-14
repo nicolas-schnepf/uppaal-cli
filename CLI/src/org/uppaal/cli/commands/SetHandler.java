@@ -102,20 +102,16 @@ this.command_result.addArgument(name);
 
 public void setFormula() {
 		this.checkMode("set", "formula", ModeCode.EDITOR);
-				String name = this.getArgumentAt(0);
+				int index = Integer.parseInt(this.getArgumentAt(0));
 				String formula = this.getArgumentAt(1);
-				this.context.getQueryExpert().setQueryProperty(name, "formula", formula);
-				this.command_result.addArgument(name);
-				this.command_result.addArgument(formula);
+				this.context.getQueryExpert().setQueryProperty(index, "formula", formula);
 }
 
 public void setComment () {
 		this.checkMode("set", "comment", ModeCode.EDITOR);
-				String name = this.getArgumentAt(0);
+				int index = Integer.parseInt(this.getArgumentAt(0));
 				String comment = this.getArgumentAt(1);
-				this.context.getQueryExpert().setQueryProperty(name, "comment", comment);
-				this.command_result.addArgument(name);
-				this.command_result.addArgument(comment);
+				this.context.getQueryExpert().setQueryProperty(index, "comment", comment);
 }
 
 public void setTemplate () {

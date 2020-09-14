@@ -122,4 +122,12 @@ public int getArgumentNumber() {
 public String getArgumentAt (int index) {
 	return this.arguments.get(index);
 }
+
+/**
+* remove the last argument from the command result
+* @return the last argument of the command result after removing it
+*/
+public String removeLastArgument() {
+	return this.arguments.removeLast();
+}
 }

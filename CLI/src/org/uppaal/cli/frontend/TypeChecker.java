@@ -50,7 +50,7 @@ public TypeChecker () {
 // finally setup the set of query properties
 
 	properties = new HashSet<String>();
-	Collections.addAll(properties, "name", "formula", "comment");
+	Collections.addAll(properties, "name", "formula", "comment", "result", "data");
 	this.type_properties.put("query", properties);
 }
 

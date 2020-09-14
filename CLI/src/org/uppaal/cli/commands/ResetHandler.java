@@ -34,7 +34,6 @@ public class ResetHandler extends AbstractHandler {
 public ResetHandler (Context context) {
 	super(context, "reset");
 	try {
-	this.operation_map.put("query", this.getClass().getMethod("resetQuery"));
 	this.operation_map.put("template", this.getClass().getMethod("resetTemplate"));
 	this.operation_map.put("location", this.getClass().getMethod("resetLocation"));
 	this.operation_map.put("option", this.getClass().getMethod("resetOption"));
@@ -44,13 +43,6 @@ public ResetHandler (Context context) {
 	e.printStackTrace();
 	System.exit(1);
 	}
-}
-
-public void resetQuery() {
-			this.checkMode("reset", "query", ModeCode.EDITOR);
-		String name = this.getArgumentAt(0);
-		String new_name = this.getArgumentAt(1);
-			this.context.getQueryExpert().setQueryProperty(name, "name", new_name);
 }
 
 public void resetTemplate () {

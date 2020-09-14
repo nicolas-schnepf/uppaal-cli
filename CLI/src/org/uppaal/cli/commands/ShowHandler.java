@@ -54,6 +54,8 @@ public ShowHandler (Context context) {
 	this.operation_map.put("option", this.getClass().getMethod("showOption"));
 	this.operation_map.put("setting", this.getClass().getMethod("showSetting"));
 	this.operation_map.put("selection", this.getClass().getMethod("showSelection"));
+	this.operation_map.put("result", this.getClass().getMethod("showResult"));
+	this.operation_map.put("data", this.getClass().getMethod("showData"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -82,7 +84,7 @@ public void showQuery() {
 		LinkedList<String> names = this.context.getQueryExpert().showQueries();
 		for (String arg: names) this.command_result.addArgument(arg);
 	} else
-			this.command_result.addArgument(this.context.getQueryExpert().showQuery(name));
+			this.command_result.addArgument(this.context.getQueryExpert().showQuery(Integer.parseInt(name)));
 }
 
 public void showFormula () {
@@ -95,6 +97,19 @@ public void showComment () {
 	int index = Integer.parseInt(this.arguments.get(0));
 	String comment = this.context.getQueryExpert().getQueryProperty(index, "comment");
 	this.command_result.addArgument(comment);
+}
+
+public void showResult () {
+	int index = Integer.parseInt(this.arguments.get(0));
+	String result = this.context.getQueryExpert().showQueryResult(index);
+	this.command_result.addArgument(result);
+}
+
+public void showData () {
+	int index = Integer.parseInt(this.arguments.get(0));
+	boolean result = this.context.getDataExpert().importData(index);
+	if (result) this.command_result.setResultCode(ResultCode.SELECT_DATA);
+	else this.command_result.addArgument("No data to plot.");
 }
 
 public void showTemplate() {

@@ -20,11 +20,6 @@ import java.net.URL;
 
 public class Test {
 public static void main (String[] args) throws Exception {
-com.uppaal.model.io2.XMLReader.setXMLResolver(new com.uppaal.model.io2.UXMLResolver());
-	PrototypeDocument doc_loader = new PrototypeDocument();
-		//URL location = new URL("file", null, args[0]);
-	URL location = new URL("file://localhost"+System.getProperty("user.dir")+"/train-gate.xml");
-	Document document = doc_loader.load(location);
-	document.save("queries.q");
+System.out.println("X              Y              Variation      Convexity");
 }
 }

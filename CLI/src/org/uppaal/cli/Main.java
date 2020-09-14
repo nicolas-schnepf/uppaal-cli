@@ -26,8 +26,8 @@ public static void main(String[] args) {
 
 
 		ConsoleManager console_manager;
-		if (args.length==0) console_manager = new ConsoleManager(context);
-		else console_manager = new ConsoleManager(context, args[0]);
+		if (args.length==0) console_manager =new ConsoleManager(context);
+		else console_manager =new ConsoleManager(context, args[0]);
 		console_manager.run();
 	} catch (IOException e) {
 		System.err.println("File "+args[0]+" does not exist.");

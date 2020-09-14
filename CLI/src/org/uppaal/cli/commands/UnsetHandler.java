@@ -87,19 +87,19 @@ public void unsetDeclaration() {
 
 public void unsetQuery () {
 		this.checkMode("unset", "query", ModeCode.EDITOR);
-		String name =  name = this.getArgumentAt(0);
-			this.context.getQueryExpert().removeQuery(name);
+		int index = Integer.parseInt(this.getArgumentAt(0));
+			this.context.getQueryExpert().removeQuery(index);
 }
 
 public void unsetFormula () {
 		this.checkMode("unset", "query", ModeCode.EDITOR);
-		String index = this.getArgumentAt(0);
+		int index = Integer.parseInt(this.getArgumentAt(0));
 			this.context.getQueryExpert().setQueryProperty(index, "formula", null);
 }
 
 public void unsetComment () {
 		this.checkMode("unset", "query", ModeCode.EDITOR);
-		String index = this.getArgumentAt(0);
+		int index = Integer.parseInt(this.getArgumentAt(0));
 			this.context.getQueryExpert().setQueryProperty(index, "comment", null);
 }
 

@@ -243,14 +243,20 @@ public boolean hasTransitions() {
 public String showTransition (int index) {
 
 	AbstractTransition transition = this.transitions.get(index);
+	if (transition instanceof SymbolicTransition) return this.showSymbolicTransition((SymbolicTransition)transition);
+	else return this.showConcreteTransition((ConcreteTransition)transition);
+}
 
+/**
+* show the description of a symbolic transition
+* @param transition the transition to describe
+* @return the textual description of the input transition
+*/
+private String showSymbolicTransition(SymbolicTransition transition) {
 			// check the number of edges involved:
 	if (transition.getSize()==0) {
 // no edges, something special (like "deadlock"):
-		if (transition instanceof SymbolicTransition)
-			return ((SymbolicTransition)transition).getEdgeDescription();
-		else
-			return null;
+			return transition.getEdgeDescription();
 	} else {
 // one or more edges involved, print them:
 		StringBuffer buffer = new StringBuffer();
@@ -264,6 +270,15 @@ public String showTransition (int index) {
 
 		return buffer.toString();
 	}
+}
+
+/**
+* return the textual description of a concrete transition
+* @param transition the transition to describe
+* @return a textual description of the input transition
+*/
+private String showConcreteTransition (ConcreteTransition transition) {
+	return "";
 }
 
 /**
@@ -282,7 +297,9 @@ public String showVariableAssignment (int index) {
 
 	AbstractTransition transition = this.transitions.get(index);
 	int[] source_values = ((SymbolicState) this.state).getVariableValues();
-	int[] target_values = ((SymbolicState)(transition.getTarget())).getVariableValues();
+	int[] target_values = null;
+	if (transition instanceof SymbolicTransition) 
+		target_values = ((SymbolicTransition)transition).getTarget().getVariableValues();
 	StringBuffer output = new StringBuffer();
 
 // iterate over all variables to find those that are affected by the transition
@@ -311,7 +328,8 @@ public void clearTransitions () {
 */
 public AbstractTransition selectTransition (int index) {
 	AbstractTransition transition = this.transitions.get(index);
-	this.state = transition.getTarget();
+	if (transition instanceof SymbolicTransition)
+		this.state = ((SymbolicTransition)transition).getTarget();
 	this.context.getTraceExpert().addTransition(transition);
 	this.clearTransitions();
 	return transition;

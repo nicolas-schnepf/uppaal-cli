@@ -8,13 +8,15 @@ import com.uppaal.model.core2.QueryList;
 import com.uppaal.model.core2.Query;
 import com.uppaal.engine.Engine;
 import com.uppaal.engine.EngineException;
+import com.uppaal.model.system.concrete.ConcreteTransitionRecord;
+import com.uppaal.model.system.symbolic.SymbolicTransition;
 import com.uppaal.engine.EngineStub;
-import com.uppaal.model.system.symbolic.SymbolicTrace;
-import com.uppaal.model.system.concrete.ConcreteTrace;
 import com.uppaal.model.system.UppaalSystem;
 import com.uppaal.engine.QueryFeedback;
 import com.uppaal.engine.QueryResult;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,16 +61,20 @@ public EngineExpert (Context context) {
 		{
 		}
 
-		@Override
-		public void setTrace(char result, String feedback,
-							 SymbolicTrace trace, QueryResult queryVerificationResult)
-		{
-		}
 
-		public void setTrace(char result, String feedback,
-							 ConcreteTrace trace, QueryResult queryVerificationResult)
-		{
-		}
+	    @Override
+	    public void setTrace(char result, String feedback,
+				 ArrayList<SymbolicTransition> trace, int cycle,
+				 QueryResult queryVerificationResult)
+	    {
+	    }
+
+	    public void setTraceSMC(char result, String feedback,
+				    ArrayList<ConcreteTransitionRecord> trace, int cycle,
+				    QueryResult queryVerificationResult)
+	    {
+	    }
+
 		@Override
 		public void setFeedback(String feedback)
 		{
@@ -192,7 +198,7 @@ public String checkQuery(int index) throws EngineException {
 // finally check the query, store and return its result
 
 	QueryResult query_result = engine.query(system, options, query, query_feedback);
-	this.query_results.put(query, query_result);
+	query.setResult(query_result);
 	return query_result.toString();
 }
 

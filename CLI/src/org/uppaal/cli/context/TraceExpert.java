@@ -5,12 +5,9 @@ import com.uppaal.engine.EngineException;
 import com.uppaal.engine.CannotEvaluateException;
 import com.uppaal.model.system.UppaalSystem;
 import com.uppaal.model.system.SystemState;
-import com.uppaal.model.system.AbstractTrace;
 import com.uppaal.model.system.AbstractTransition;
-import com.uppaal.model.system.symbolic.SymbolicTrace;
 import com.uppaal.model.system.symbolic.SymbolicState;
 import com.uppaal.model.system.symbolic.SymbolicTransition;
-import com.uppaal.model.system.concrete.ConcreteTrace;
 import com.uppaal.model.system.concrete.ConcreteState;
 import com.uppaal.model.system.concrete.ConcreteTransitionRecord;
 
@@ -18,6 +15,7 @@ import org.uppaal.cli.context.ModeCode;
 import org.uppaal.cli.exceptions.TraceFormatException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Iterator;
 
@@ -28,7 +26,7 @@ import java.util.Iterator;
 public class TraceExpert extends AbstractExpert {
 
 // simulation trace of this trace expert
-private AbstractTrace trace;
+private ArrayList<AbstractTransition> trace;
 
 // current system state of this trace expert if any
 private SystemState state;
@@ -38,48 +36,60 @@ private int state_index;
 
 public TraceExpert (Context context) {
 	super(context);
-	this.trace = null;
+	this.trace = new ArrayList<AbstractTransition>();
 	this.state = null;
 	this.state_index = -1;
 }
 
 /**
-* set the trace of this trace expert
-* @param type the type of the trace to be set to
+* set the trace of this trace expert as a concrete trace
+* @param strategy the strategy to apply to the simulation
 * @return the newly created trace
 */
 
-public AbstractTrace setTrace (String type) throws EngineException, CannotEvaluateException {
+public ArrayList<AbstractTransition> setTrace (String strategy) throws EngineException, CannotEvaluateException {
+
+// get the uppaal engine and clear the trace
 
 	Engine engine = this.context.getEngine();
 	UppaalSystem system = this.context.getSystem();
+	this.trace.clear();
 
-	switch (type) {
-// if the requested type is concrete set the trace accordingly
+// compute the initial state
 
-		case "concrete":
-		ConcreteState concrete_state = engine.getConcreteInitialState(system);
-		ConcreteTrace concrete_trace = new ConcreteTrace();
-		this.trace = concrete_trace;
-		ConcreteTransitionRecord concrete_transition = new ConcreteTransitionRecord (null, null, concrete_state);
-		concrete_trace.add(concrete_transition);
-		this.context.getStateExpert().setState(concrete_state);
-		this.context.getStateExpert().setIndex(0);
-		break;
+	ConcreteState concrete_state = engine.getConcreteInitialState(system, strategy);
+	ConcreteTransitionRecord transition = new ConcreteTransitionRecord (null, null, concrete_state);
 
-// otherwise if the provided type is symbolic set it accordingly
+// update the information of the context
 
-		case "symbolic":
-		SymbolicState symbolic_state = engine.getInitialState(system);
-		SymbolicTrace symbolic_trace = new SymbolicTrace();
-		this.trace = symbolic_trace;
-		SymbolicTransition transition = new SymbolicTransition (null, null, symbolic_state);
-		symbolic_trace.add(transition);
-		this.context.getStateExpert().setState(symbolic_state);
-		this.context.getStateExpert().setIndex(0);
-		break;
-	}
+	this.trace.add(transition);
+	this.context.getStateExpert().setState(concrete_state);
+	this.context.getStateExpert().setIndex(0);
+	return this.trace;
+}
 
+/**
+* set the trace of this trace expert as a symbolic trace
+* @return the newly created trace
+*/
+public ArrayList<AbstractTransition> setTrace () throws EngineException, CannotEvaluateException {
+
+// get the uppaal engine and clear the trace
+
+	Engine engine = this.context.getEngine();
+	UppaalSystem system = this.context.getSystem();
+	this.trace.clear();
+
+// compute the information about the initial state
+
+	SymbolicState symbolic_state = engine.getInitialState(system);
+	SymbolicTransition transition = new SymbolicTransition (null, null, symbolic_state);
+
+// update the information of the uppaal context
+
+	this.trace.add(transition);
+	this.context.getStateExpert().setState(symbolic_state);
+	this.context.getStateExpert().setIndex(0);
 	return this.trace;
 }
 
@@ -100,14 +110,14 @@ public void saveTrace (String filename) throws IOException {
 
 // check that the trace is well symbolic
 
-	if (!(this.trace instanceof SymbolicTrace)) 
+	if (!(this.trace.get(0) instanceof SymbolicTransition)) 
 		throw new TraceFormatException();
 
 	FileWriter out = new FileWriter(filename);
-	Iterator<SymbolicTransition> it = ((SymbolicTrace)this.trace).iterator();
-	it.next().getTarget().writeXTRFormat(out);
+	Iterator<AbstractTransition> it = this.trace.iterator();
+	((SymbolicTransition) it.next()).getTarget().writeXTRFormat(out);
 	while (it.hasNext()) {
-		it.next().writeXTRFormat(out);
+		((SymbolicTransition)it.next()).writeXTRFormat(out);
 	}
 	out.write(".\n");
 	out.close();
@@ -116,7 +126,7 @@ public void saveTrace (String filename) throws IOException {
 /**
 * @return the trace of this expert
 */
-public AbstractTrace getTrace() {
+public ArrayList<AbstractTransition> getTrace() {
 	return this.trace;
 }
 
@@ -149,7 +159,10 @@ public void clearState() {
 * @return the state at the specified index
 */
 private SystemState getState (int index) {
-	if (index != this.state_index) this.state =  this.trace.get(index).getTarget();
+	if (index != this.state_index) {
+		if (this.trace.get(0) instanceof SymbolicTransition)
+			this.state =  ((SymbolicTransition)this.trace.get(index)).getTarget();
+	}
 	return this.state;
 }
 

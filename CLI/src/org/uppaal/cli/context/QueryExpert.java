@@ -14,6 +14,7 @@ import com.uppaal.model.core2.Node;
 import com.uppaal.model.core2.InsertQueryCommand;
 import com.uppaal.model.core2.RemoveQueryCommand;
 import com.uppaal.model.core2.SetPropertyCommand;
+import com.uppaal.engine.QueryResult;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -221,14 +222,9 @@ public void clearQueries () {
 */
 public String getQueryProperty (int index, String property) {
 
-// get the query at the specified index
-
-	Query query = this.context.getDocument().getQueryList().get(index);
-		if (query==null)
-		this.throwMissingElementException("query", ""+index);
-
 // return the value of the provided property
 
+	Query query = this.getQuery(index);
 	return (String) query.getPropertyValue(property);
 }
 
@@ -238,22 +234,34 @@ public String getQueryProperty (int index, String property) {
 * @param property the name of the property to update
 * @param value the new value for the query property
 */
-public void setQueryProperty (String index, String property, String value) {
-
-// get the query at the specified index
-
-	Query query = this.context.getDocument().getQueryList().get(Integer.parseInt(index));
-		if (query==null)
-		this.throwMissingElementException("query", index);
+public void setQueryProperty (int index, String property, String value) {
 
 // set the value of the specified property for the query at the specified index
 
-
+	Query query = this.getQuery(index);
 	SetPropertyCommand command = new SetPropertyCommand(query, property, value);
 	command.execute();
 	this.context.addCommand(command);
 }
 
+/**
+* get a query specified by its index
+* @param index the index of the query to return
+* @return the intended query if it exists
+* @exception a missing element exception if the query does not exist
+*/
+public Query getQuery(int index) {
+
+// get the query at the specified index
+
+	if (index>=this.getQueryNumber())
+		this.throwMissingElementException("query", ""+index);
+
+	Query query = this.context.getDocument().getQueryList().get(index);
+		if (query==null)
+		this.throwMissingElementException("query", ""+index);
+	return query;
+}
 /**
 * get a query described by one of its properties and a corresponding value
 * @param property the name of the property to search for
@@ -292,21 +300,29 @@ public LinkedList<String> showQueries() {
 * @return the description of the corresponding query
 * @exception a missing element exception if the query does not exist
 */
-public String showQuery (String name) {
+public String showQuery (int index) {
 
-// check that the query already exists
-
-	Query query = this.context.getDocument().getQueryList().get(Integer.parseInt(name));
-		if (query==null)
-		this.throwMissingElementException("query", name);
-
-// otherwise return the name, the formula and the comment of the query
-
+	Query query = this.getQuery(index);
 	StringBuffer description = new StringBuffer();
 	description.append(query.getFormula()+"\n");
 	description.append(query.getComment());
 	return description.toString();
 }
+
+/**
+* show the result of a query specified by its index
+* @param index the index whose we need to know the result
+* @return a string describing the result of the query, possibly null
+*/
+public String showQueryResult (int index) {
+
+// returns the result of the query
+
+	Query query = this.getQuery(index);
+	QueryResult result = query.getResult();
+	return result.toString();
+}
+
 /**
 * add a new query to this context
 * @param name the name of the query to add
@@ -344,18 +360,13 @@ public void addQuery (String name, String formula, String comment) {
 * @param name the name of the query to remove
 */
 
-public void removeQuery (String index) {
-
-// check that the query does not already exists
-
-	Query query = this.context.getDocument().getQueryList().get(Integer.parseInt(index));
-	if (query==null)
-		return;
+public void removeQuery (int index) {
 
 // otherwise insert the query at the end of the list
 
+	Query query = this.getQuery(index);
 	QueryList list = this.context.getDocument().getQueryList();
-	RemoveQueryCommand command = new RemoveQueryCommand(list, Integer.parseInt(index));
+	RemoveQueryCommand command = new RemoveQueryCommand(list, index);
 	command.execute();
 	this.context.addCommand(command);
 }
