@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import javax.xml.transform.TransformerException;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
 * concrete class implementing an export handler
@@ -38,6 +40,7 @@ public ExportHandler (Context context) {
 	this.operation_map.put("document", this.getClass().getMethod("exportDocument"));
 	this.operation_map.put("queries", this.getClass().getMethod("exportQueries"));
 	this.operation_map.put("trace", this.getClass().getMethod("exportTrace"));
+	this.operation_map.put("data", this.getClass().getMethod("exportData"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -99,6 +102,29 @@ this.checkMode("export", "trace", ModeCode.SIMULATOR);
 	} 
 }
 
+public void exportData () {
+	int index = this.arguments.size()>1? Integer.parseInt(this.getArgumentAt(0)): -1;
+	String filename = this.arguments.getLast();
+	int idx = filename.length()-1;
+	while (filename.charAt(idx)!='.' && idx>0) idx --;
+	String extension = filename.substring(idx+1);
+
+	try {
+		if (!extension.equals("xml")) 
+			this.throwWrongExtensionException ("export", "data", extension);
+
+		if (index==-1 || this.context.getDataExpert().importData(index))
+			this.context.getDataExpert().exportData(filename);
+		else
+			this.command_result.addArgument("No data to export.");
+	}  catch (TransformerException e) {
+		this.command_result.setResultCode(ResultCode.IO_ERROR);
+		this.command_result.addArgument(filename);
+	} catch (ParserConfigurationException e) {
+		this.command_result.setResultCode(ResultCode.IO_ERROR);
+		this.command_result.addArgument(filename);
+	}
+}
 
 @Override
 public boolean acceptMode (ModeCode mode) {

@@ -37,6 +37,7 @@ public ImportHandler (Context context) {
 	this.operation_map.put("document", this.getClass().getMethod("importDocument"));
 	this.operation_map.put("templates", this.getClass().getMethod("importTemplates"));
 	this.operation_map.put("queries", this.getClass().getMethod("importQueries"));
+	this.operation_map.put("data", this.getClass().getMethod("importData"));
 	} catch (Exception e) {
 		System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -103,6 +104,22 @@ public void importQueries() {
 	}
 }
 
+public void importData () {
+	String filename = this.getArgumentAt(0);
+	int index = filename.length()-1;
+	while (filename.charAt(index)!='.' && index>0) index --;
+	String extension = filename.substring(index+1);
+
+	try {
+
+		if (!extension.equals("xml")) 
+			this.throwWrongExtensionException ("import", this.getObjectType(), extension);
+		this.context.getDataExpert().importData(filename);
+	} catch (Exception e) {
+		this.command_result.setResultCode(ResultCode.IO_ERROR);
+		this.command_result.addArgument(filename);
+	}
+}
 
 public boolean acceptMode (ModeCode mode) {
 	switch(mode) {

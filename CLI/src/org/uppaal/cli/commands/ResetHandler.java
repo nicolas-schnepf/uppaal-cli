@@ -38,6 +38,7 @@ public ResetHandler (Context context) {
 	this.operation_map.put("location", this.getClass().getMethod("resetLocation"));
 	this.operation_map.put("option", this.getClass().getMethod("resetOption"));
 	this.operation_map.put("options", this.getClass().getMethod("resetOptions"));
+	this.operation_map.put("precision", this.getClass().getMethod("resetPrecision"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -71,6 +72,11 @@ public void resetOption () {
 
 public void resetOptions () {
 	this.context.getOptionExpert().resetOptions();
+}
+
+public void resetPrecision () {
+	this.command_result.addArgument("0.0");
+	this.command_result.setResultCode(ResultCode.SET_PRECISION);
 }
 
 @Override

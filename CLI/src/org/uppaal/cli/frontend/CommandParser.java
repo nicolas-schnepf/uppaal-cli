@@ -326,7 +326,7 @@ public void parseImport () {
 // check that the command starts with  import, is followed by a valid type followed by a string
 
 	this.checkToken("import");
-	String type = this.checkNextToken("document", "queries", "templates");
+	String type = this.checkNextToken("document", "queries", "templates", "data");
 	String filename = this.lexer.parseFilename();
 	this.handler.setObjectType(type);
 	this.handler.addArgument(filename);
@@ -341,9 +341,21 @@ public void parseExport () {
 // check that the command starts with  export, is followed by a valid type followed by a string
 
 	this.checkToken("export");
-	String type = this.checkNextToken("document", "queries", "TRACE");
+	String type = this.getNextToken();
+	switch (type) {
+		case "document":
+		case "trace":
+		case "data":
+		this.type=type;
+		this.getNextToken();
+		break;
+		default:
+		this.parseRef();
+	}
+	
+	this.checkToken("to");
 	String filename = this.lexer.parseFilename();
-	this.handler.setObjectType(type);
+	this.handler.setObjectType(this.type);
 	this.handler.addArgument(filename);
 }
 
@@ -492,11 +504,9 @@ public void parseRef () {
 		break;
 
 		case "trace":
-		this.type = "trace";
-		break;
-
+		case "data":
 		case "state":
-		this.type="state";
+		this.type = this.token;
 		break;
 
 		default:

@@ -36,6 +36,9 @@ private StateSelector state_selector;
 // query selector of this selection manager
 private QuerySelector query_selector;
 
+// data selector of this selection manager
+private DataSelector data_selector;
+
 /**
 * public constructor of a selection manager
 * @param terminal the terminal for this selection manager
@@ -49,6 +52,7 @@ public SelectionManager (Terminal terminal, Context context) {
 	this.transition_selector = new TransitionSelector(this.selection_reader, context);
 	this.state_selector = new StateSelector(this.selection_reader, context);
 	this.query_selector = new QuerySelector(this.selection_reader, context);
+	this.data_selector = new DataSelector(this.selection_reader, context);
 	this.selection_reader.setKeyMap(LineReader.MAIN);
 
 	try {
@@ -92,6 +96,13 @@ public SelectionManager (Terminal terminal, Context context) {
 }
 
 /**
+* set the precision of the data selector
+* @param precision the new precision for the data selector
+*/
+public void setPrecision (double precision) {
+	this.data_selector.setPrecision(precision);
+}
+/**
 * manage a template selection
 * @return the set of selected template names
 */
@@ -125,6 +136,15 @@ public void selectState() {
 */
 public void selectQueries() {
 	this.selector = this.query_selector;
+	this.selector.run();
+	this.selector = null;
+}
+
+/**
+* perform a data selection
+*/
+public void selectData() {
+	this.selector = this.data_selector;
 	this.selector.run();
 	this.selector = null;
 }

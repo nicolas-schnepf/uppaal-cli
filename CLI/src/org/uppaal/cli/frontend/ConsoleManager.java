@@ -103,7 +103,6 @@ public ConsoleManager (Context context) throws IOException {
 
 	try {
 		Terminal terminal = TerminalBuilder.builder().build();
-		System.out.println(terminal.getWidth());
 		this.reader = LineReaderBuilder.builder().terminal(terminal).build();
 		this.reader.setKeyMap(LineReader.MAIN);
 		this.out = new PrintWriter(this.reader.getTerminal().writer());
@@ -270,6 +269,17 @@ private void processResult (CommandResult result) {
 
 		case SELECT_QUERIES:
 		this.selection_manager.selectQueries();
+		break;
+
+		case SELECT_DATA:
+		this.selection_manager.selectData();
+		break;
+
+// if the precision of the data selector needs to be updated perform it
+
+		case SET_PRECISION:
+		double precision = Double.parseDouble(result.removeLastArgument());
+		this.selection_manager.setPrecision(precision);
 		break;
 
 // if mode changed update the prompt and the command parser

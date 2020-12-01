@@ -56,6 +56,7 @@ public ShowHandler (Context context) {
 	this.operation_map.put("selection", this.getClass().getMethod("showSelection"));
 	this.operation_map.put("result", this.getClass().getMethod("showResult"));
 	this.operation_map.put("data", this.getClass().getMethod("showData"));
+	this.operation_map.put("precision", this.getClass().getMethod("showPrecision"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -106,8 +107,14 @@ public void showResult () {
 }
 
 public void showData () {
-	int index = Integer.parseInt(this.arguments.get(0));
-	boolean result = this.context.getDataExpert().importData(index);
+	boolean result;
+	
+	if (this.arguments.size()>0) {
+		int index = Integer.parseInt(this.arguments.get(0));
+		result = this.context.getDataExpert().importData(index);
+	} else
+		result = this.context.getDataExpert().hasData();
+
 	if (result) this.command_result.setResultCode(ResultCode.SELECT_DATA);
 	else this.command_result.addArgument("No data to plot.");
 }
@@ -206,6 +213,17 @@ public void showSelection () {
 		String query = this.context.getQueryExpert().showSelectedQuery(index);
 		this.command_result.addArgument(query);
 	}
+}
+
+public void showPrecision () {
+	if (this.context.getDataExpert().getFloating()) {
+		double precision = 100 * this.context.getDataExpert().getPrecision();
+		if (precision==Math.round(precision)) 
+			this.command_result.addArgument(String.format("%d%%", Math.round(precision)));
+		else
+			this.command_result.addArgument(String.format("%f%%", precision));
+	} else
+		this.command_result.addArgument(""+this.context.getDataExpert().getPrecision());
 }
 
 @Override

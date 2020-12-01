@@ -60,6 +60,7 @@ public SetHandler (Context context) {
 	this.operation_map.put("state", this.getClass().getMethod("setState"));
 	this.operation_map.put("option", this.getClass().getMethod("setOption"));
 	this.operation_map.put("selection", this.getClass().getMethod("setSelection"));
+	this.operation_map.put("precision", this.getClass().getMethod("setPrecision"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -245,6 +246,12 @@ public void setOption () {
 
 public void setSelection () {
 	this.command_result.setResultCode(ResultCode.SELECT_QUERIES);
+}
+
+public void setPrecision () {
+	String precision = this.getArgumentAt(0);
+	this.command_result.addArgument(precision);
+	this.command_result.setResultCode(ResultCode.SET_PRECISION);
 }
 
 @Override

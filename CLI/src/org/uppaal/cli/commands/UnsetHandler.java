@@ -55,6 +55,7 @@ public UnsetHandler (Context context) {
 	this.operation_map.put("option", this.getClass().getMethod("unsetOption"));
 	this.operation_map.put("options", this.getClass().getMethod("unsetOptions"));
 	this.operation_map.put("selection", this.getClass().getMethod("unsetSelection"));
+	this.operation_map.put("precision", this.getClass().getMethod("unsetPrecision"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -229,6 +230,11 @@ public void unsetSelection () {
 		int index = Integer.parseInt(name);
 		this.context.getQueryExpert().unselectQuery(index);
 	}
+}
+
+public void unsetPrecision () {
+	this.command_result.addArgument("0.0");
+	this.command_result.setResultCode(ResultCode.SET_PRECISION);
 }
 
 @Override
