@@ -119,8 +119,6 @@ public LinkedList<String> showProcesses (SystemState watched_state) {
 
 	for (int i=0;i<this.system.getNoOfProcesses();i++) {
 		String res = this.system.getProcess(i).getName()+": "+locations[i].getName();
-		res = res.replace('(', '[');
-		res = res.replace(')', ']');
 		this.result.addLast(res);
 	}
 
@@ -148,8 +146,6 @@ public String showProcess (String id) {
 
 	SystemLocation[] locations = watched_state.getLocations();
 	String res = this.system.getProcess(index).getName()+": "+locations[index].getName();
-	res = res.replace('(', '[');
-	res = res.replace(')', ']');
 	return res;
 }
 
@@ -190,13 +186,14 @@ public String showVariable (String name) {
 	SystemState watched_state = this.state;
 
 	int index = this.system.getVariables().indexOf(name);
+	if (index==-1) return this.showConstraints(name);
 		int values[] = ((SymbolicState)watched_state).getVariableValues();
 	return name+" = "+values[index];
 }
 
 /**
+* return all clock constraints of the current state
 * @return the list of constraints of the current state
-* @exception a trace exception if the format of the trace does not support this operation
 */
 
 public LinkedList<String> showConstraints () {
@@ -210,8 +207,35 @@ public LinkedList<String> showConstraints () {
 }
 
 /**
+* return all constraints for a given clock in the current state
+* @param name the name of the clock to show
+* @return the list of constraints for the given clock in the current state
+*/
+
+public String showConstraints (String name) {
+	if (this.state instanceof ConcreteState) 
+		this.throwTraceFormatException("show", "constraints");
+
+	this.result.clear();
+	SystemState watched_state = this.state;
+	((SymbolicState)watched_state).getPolyhedron().getAllConstraints(this.result);
+	StringBuffer output = new StringBuffer();
+
+	for (String constraint: this.result) {
+		if (constraint.contains(name)) {
+			if (output.length()>0) output.append("\n");
+			output.append(constraint);
+		}
+	}
+
+	if (output.length()==0) this.throwMissingElementException("variable", name);
+	return output.toString();
+}
+
+/**
 * compute the available transitions for the current state
-* @exception an exception related to the engine if a problem was encountered
+* @throws EngineException an exception if some problem was encountered with the engine
+* @throws  CannotEvaluateException an exception if it is not possible to evaluate the current state
 */
 public void computeTransitions () throws EngineException, CannotEvaluateException {
 	Engine engine = this.context.getEngine();

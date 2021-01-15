@@ -24,12 +24,24 @@ private int index;
 // the type of the current token
 private TokenType token_type;
 
+// boolean telling if some spaces where skipped
+private boolean skipped;
+
+
 public CommandLexer () {
 	this.token_exception = new TokenException ();
 	this.line = null;
 	this.length = -1;
 	this.starting_index = 0;
 	this.index = 0;
+}
+
+/**
+* return the value of the boolean for skipped spaces
+* @return the boolean skipped
+*/
+public boolean getSkipped() {
+	return this.skipped;
 }
 
 /**
@@ -70,11 +82,19 @@ public String getNextToken() {
 
 // check that we are not at the end of the line
 
-	if (this.index>=this.length) return null;
 	this.skipWhiteSpaces();
+	if (this.index>=this.length) return null;
 	char c = this.line.charAt(this.index);
 
 switch (c) {
+
+// if the character is a # the line is a comment, just skip it
+
+		case '#':
+		return null;
+
+// return single character tokens
+
 		case ';':
 		case '.':
 		case ':':
@@ -86,6 +106,8 @@ switch (c) {
 		case '}':
 		case '[':
 		case ']':
+		case '\'' :
+		case '"':
 		this.starting_index = this.index;
 		this.index++;
 		return this.line.substring(this.starting_index, this.index);
@@ -101,12 +123,6 @@ switch (c) {
 			else this.index ++;
 		} else this.throwTokenException ("reached end of line while looking for >");
 		return this.line.substring(this.starting_index, this.index);
-
-// for a delimited string call the correct method
-
-		case '\'' :
-		case '"':
-		return this.parseDelimitedString();
 
 // finally in the default case check that we have either a number or a default string
 
@@ -125,6 +141,7 @@ switch (c) {
 public String parseFilename () {
 	StringBuffer filename = new StringBuffer();
 	this.skipWhiteSpaces();
+	if (this.index>=this.line.length()) return null;
 		char c = this.line.charAt(this.index);
 
 	while (c!=' ' && this.index<this.length) {
@@ -185,7 +202,12 @@ private void throwTokenException(String message) {
 * skip white spaces
 */
 private void skipWhiteSpaces () {
-	while (this.index<this.length && this.line.charAt(this.index)==' ') this.index ++;
+	int spaces = 0;
+	while (this.index<this.length && this.line.charAt(this.index)==' ') {
+		this.index ++;
+		spaces++;
+	}
+	this.skipped = spaces>0;
 }
 
 /**
@@ -201,17 +223,14 @@ private String parseNumber () {
 
 /**
 * parse a string delimited by a certain character
+* @param delimiter the delimiter for the string
 * @return the parsed string without its delimiters
 */
-private String parseDelimitedString () {
-	char delimiter = this.line.charAt(this.index);
-	this.index++;
+public String parseDelimitedString (char delimiter) {
 	this.starting_index = this.index;
 	while (this.index<this.length && this.line.charAt(this.index)!=delimiter) this.index++;
-	if (this.index == this.length) this.throwTokenException("unclosed string");
 	String str = this.line.substring (this.starting_index, this.index);
 	this.token_type = TokenType.DELIMITED_STRING;
-	this.index ++;
 	return str;
 }
 

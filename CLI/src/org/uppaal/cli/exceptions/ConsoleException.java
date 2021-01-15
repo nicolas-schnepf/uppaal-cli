@@ -31,7 +31,6 @@ protected String message;
 /**
 * protected constructor of a console exception
 * initialize an exception with its exception code
-* @param code the code of the exception
 */
 protected ConsoleException () {
 }

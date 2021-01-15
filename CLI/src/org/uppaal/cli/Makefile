@@ -1,6 +1,6 @@
-DIRS = enumerations context exceptions commands frontend
+DIRS = context exceptions commands frontend test
 build :  subdirs *.java
-	javac -Xlint:unchecked -cp $(CLASSPATH) *.java
+	javac -d ${ROOT}/bin -Xlint:unchecked -cp $(CLASSPATH) *.java
 
 clean: *.class
 	rm *.class  ; for dir in $(DIRS) ; do make -C $${dir} clean ; done

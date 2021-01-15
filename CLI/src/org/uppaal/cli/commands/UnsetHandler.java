@@ -34,7 +34,6 @@ public UnsetHandler (Context context) {
 	super(context, "unset");
 	try {
 	this.operation_map.put("document", this.getClass().getMethod("unsetDocument"));
-	this.operation_map.put("queries", this.getClass().getMethod("unsetQueries"));
 	this.operation_map.put("templates", this.getClass().getMethod("unsetTemplates"));
 	this.operation_map.put("declaration", this.getClass().getMethod("unsetDeclaration"));
 	this.operation_map.put("query", this.getClass().getMethod("unsetQuery"));
@@ -50,7 +49,10 @@ public UnsetHandler (Context context) {
 	this.operation_map.put("select", this.getClass().getMethod("unsetSelect"));
 	this.operation_map.put("guard", this.getClass().getMethod("unsetGuard"));
 	this.operation_map.put("sync", this.getClass().getMethod("unsetSync"));
-	this.operation_map.put("assign", this.getClass().getMethod("unsetAssign"));
+	this.operation_map.put("synchronisation", this.getClass().getMethod("unsetSync"));
+	this.operation_map.put("assign", this.getClass().getMethod("unsetAssignment"));
+	this.operation_map.put("assignment", this.getClass().getMethod("unsetAssignment"));
+	this.operation_map.put("controllable", this.getClass().getMethod("unsetControllable"));
 	this.operation_map.put("system", this.getClass().getMethod("unsetSystem"));
 	this.operation_map.put("option", this.getClass().getMethod("unsetOption"));
 	this.operation_map.put("options", this.getClass().getMethod("unsetOptions"));
@@ -65,11 +67,7 @@ public UnsetHandler (Context context) {
 
 public void unsetDocument () {
 		this.context.getModelExpert().clearDocument();
-}
-
-public void unsetQueries () {
-		this.checkMode("unset", "queries", ModeCode.EDITOR);
-			this.context.getQueryExpert().clearQueries();
+		this.command_result.setResultCode(ResultCode.CLEAR_TEMPLATES);
 }
 
 public void unsetTemplates () {
@@ -88,8 +86,9 @@ public void unsetDeclaration() {
 
 public void unsetQuery () {
 		this.checkMode("unset", "query", ModeCode.EDITOR);
-		int index = Integer.parseInt(this.getArgumentAt(0));
-			this.context.getQueryExpert().removeQuery(index);
+	String argument = this.getArgumentAt(0);
+	if ("queries".equals(argument)) this.context.getQueryExpert().clearQueries();
+			else this.context.getQueryExpert().removeQuery(Integer.parseInt(argument));
 }
 
 public void unsetFormula () {
@@ -107,9 +106,13 @@ public void unsetComment () {
 public void unsetTemplate() {
 	this.checkMode("unset", "template", ModeCode.EDITOR);
 	String name =  this.getArgumentAt(0);
-	this.context.getTemplateExpert().removeTemplate(name);
-	if (name.equals("*")) this.command_result.setResultCode(ResultCode.CLEAR_TEMPLATES);
-	else {
+
+	if (name.equals("templates")) {
+		for (String template:this.context.getTemplateExpert().showTemplates())
+			this.context.getTemplateExpert().removeTemplate(template);
+		this.command_result.setResultCode(ResultCode.CLEAR_TEMPLATES);
+	} else {
+		this.context.getTemplateExpert().removeTemplate(name);
 		this.command_result.setResultCode(ResultCode.REMOVE_TEMPLATE);
 		this.command_result.addArgument(name);
 	}
@@ -191,21 +194,29 @@ public void unsetGuard () {
 }
 
 public void unsetSync () {
-		this.checkMode("unset", "sync", ModeCode.EDITOR);
+		this.checkMode("unset", "synchronisation", ModeCode.EDITOR);
 		String template = this.getArgumentAt(0);
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
-		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "sync", null);
+		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "synchronisation", null);
 
 }
 
-public void unsetAssign () {
-		this.checkMode("unset", "assign", ModeCode.EDITOR);
+public void unsetAssignment () {
+		this.checkMode("unset", "assignment", ModeCode.EDITOR);
 		String template = this.getArgumentAt(0);
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
-		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "assign", null);
+		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "assignment", null);
 
+}
+
+public void unsetControllable () {
+		this.checkMode("set", "assignment", ModeCode.EDITOR);
+		String template = this.getArgumentAt(0);
+		String source = this.getArgumentAt(1);
+		String target = this.getArgumentAt(2);
+		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "controllable", false);
 }
 
 public void unsetSystem () {
@@ -246,5 +257,15 @@ public boolean acceptMode (ModeCode mode) {
 		default:
 		return false;
 	}
+}
+
+@Override
+public String getHelpMessage() {
+	return "Unset the information about a certain object or property.";
+}
+
+@Override
+public String getSyntax() {
+	return "\"unset\" REFERENCE";
 }
 }

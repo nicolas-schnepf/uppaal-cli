@@ -45,6 +45,8 @@ public TraceExpert (Context context) {
 * set the trace of this trace expert as a concrete trace
 * @param strategy the strategy to apply to the simulation
 * @return the newly created trace
+* @throws EngineException an exception if there was a problem with the engine
+* @throws CannotEvaluateException an exception if it is not possible to evaluate the current state
 */
 
 public ArrayList<AbstractTransition> setTrace (String strategy) throws EngineException, CannotEvaluateException {
@@ -71,6 +73,8 @@ public ArrayList<AbstractTransition> setTrace (String strategy) throws EngineExc
 /**
 * set the trace of this trace expert as a symbolic trace
 * @return the newly created trace
+* @throws EngineException an engine exception if there were a problem with the engine
+* @throws CannotEvaluateException an exception if it is not possible to evaluate the current state
 */
 public ArrayList<AbstractTransition> setTrace () throws EngineException, CannotEvaluateException {
 
@@ -104,7 +108,7 @@ public void addTransition (AbstractTransition transition) {
 /**
 * export the trace to a provided file
 * @param filename the name of the file to export the trace
-* @exception an io exception if the trace could not be written to the specified filename
+* @throws IOException an io exception if the trace could not be written to the specified filename
 */
 public void saveTrace (String filename) throws IOException {
 

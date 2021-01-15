@@ -39,6 +39,7 @@ public void checkQuery() {
 		}
 	} catch (EngineException e) {
 		this.command_result.setResultCode(ResultCode.ENGINE_ERROR);
+		this.command_result.addArgument(e.getMessage());
 	}
 }
 
@@ -50,6 +51,7 @@ public void checkSelection () {
 	for (String result: results) this.command_result.addArgument(result);
 	} catch (EngineException e) {
 		this.command_result.setResultCode(ResultCode.ENGINE_ERROR);
+		this.command_result.addArgument(e.getMessage());
 	}
 }
 
@@ -62,5 +64,15 @@ public boolean acceptMode (ModeCode mode) {
 		default:
 		return false;
 	}
+}
+
+@Override
+public String getHelpMessage() {
+	return "Check one or several queries.";
+}
+
+@Override
+public String getSyntax() {
+	return "\"check\" ( \"selection\" | \"queries\" [ \"[\" INDEX \"]\" ] )";
 }
 }

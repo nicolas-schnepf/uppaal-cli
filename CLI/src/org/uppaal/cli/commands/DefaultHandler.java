@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 
 /**
 * concrete class implementing a default handler
@@ -26,7 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 * to hide the process of command execution to client classes
 */
 
-public class DefaultHandler extends AbstractHandler {
+public class DefaultHandler extends AbstractHandler implements Iterable<String> {
 
 
 // private unknown command exception to throw when receiving an unknown command
@@ -38,6 +39,7 @@ private String command;
 // command map of this default handler
 
 private HashMap <String, Method> command_map;
+
 /**
 * public constructor of a command handler
 * initializing it from a given context
@@ -61,6 +63,11 @@ public DefaultHandler (Context context) {
 	}
 }
 
+@Override
+public Iterator<String> iterator() {
+	return this.command_map.keySet().iterator();
+}
+
 /**
 * set the command of this default handler
 * @param command the new command for this default handler
@@ -82,6 +89,7 @@ public CommandResult handle () {
 
 	if (!this.command_map.keySet().contains(this.command)) {
 this.unknown_command_exception.setCommand(this.command);
+		this.unknown_command_exception.setStackTrace(Thread.currentThread().getStackTrace());
 		throw this.unknown_command_exception;
 	}
 
@@ -119,34 +127,37 @@ public void handleStart() {
 		case SIMULATOR:
 		case VERIFIER:
 
-		if (this.context.getMode()==ModeCode.EDITOR) {
 		try {
+		if (this.context.getMode()==ModeCode.EDITOR) {
 			LinkedList<String> problems = this.context.getModelExpert().compileDocument();
 			for (String problem: problems) this.command_result.addArgument(problem);
 			if (this.context.getSystem()==null) {
 				this.command_result.setResultCode(ResultCode.COMPILATION_ERROR);
 				return;
 			}
+		}
 
 			this.context.setMode(this.getArgumentAt(0));
 			this.command_result.addArgument(this.arguments.get(0));
 
-			if ((this.context.getTrace()==null) || (this.arguments.size()>1)) {
+			if (this.getArgumentAt(0).equals("simulator") && 
+			(this.context.getTrace().isEmpty() || (this.arguments.size()>1))) {
 				if (this.arguments.size()>1)
 					this.context.getTraceExpert().setTrace(this.arguments.get(1));
 				else
-					this.context.getTraceExpert().setTrace("symbolic");
+					this.context.getTraceExpert().setTrace();
 			}
 		} catch (EngineException e) {
 		this.command_result.setResultCode(ResultCode.ENGINE_ERROR);
+		this.command_result.addArgument(e.getMessage());
 		return;
 		} catch (CannotEvaluateException e) {
 		this.command_result.setResultCode(ResultCode.ENGINE_ERROR);
+		this.command_result.addArgument(e.getMessage());
 		return;
 		} catch (IOException e) {
 			this.command_result.setResultCode(ResultCode.IO_ERROR);
 			return;
-		}
 		}
 
 			break;
@@ -206,5 +217,58 @@ public ModeCode getMode() {
 @Override
 public boolean acceptMode (ModeCode mode) {
 	return true;
+}
+
+@Override
+public String getHelpMessage () {
+	return null;
+}
+
+@Override
+public String getSyntax() {
+	return null;
+}
+
+/**
+* return the help message for a specified command
+* @param command the command to document
+* @return the intended help message
+*/
+public String getHelpMessage (String command) {
+
+	switch (command) {
+		case "start":
+		return "Start a specified mode.";
+
+		case "exit":
+		return "Exit the uppaal command line interface";
+
+		case "compile":
+		return "compile the uppaal model.";
+
+		case "connect":
+		return "Connect the uppaal engine.";
+
+		case "disconnect":
+		return "Disconnect the uppaal engine.";
+	}
+
+	return null;
+}
+
+/**
+* return the syntax of a specified command
+* @param command the command to document
+* @return the regex matching the syntax for the provided command
+*/
+public String getSyntax(String command) {
+
+	switch (command) {
+		case "start":
+		return "\"start\" ( \"editor\" | \"simulator\" | \"verifier\" )";
+
+		default:
+		return String.format("\"%s\"", command);
+	}
 }
 }

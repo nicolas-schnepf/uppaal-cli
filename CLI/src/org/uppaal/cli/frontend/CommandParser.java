@@ -12,6 +12,8 @@ import org.uppaal.cli.commands.SetHandler;
 import org.uppaal.cli.commands.CommandLauncher;
 import org.uppaal.cli.commands.Handler;
 import org.uppaal.cli.context.Context;
+import org.jline.reader.ParsedLine;
+import org.jline.reader.Parser;
 import java.lang.IllegalAccessException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,19 +21,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Collection;
 
-public class CommandParser {
+public class CommandParser extends AbstractParser {
 
-// command lexer of this parser
-private CommandLexer lexer;
-
-// type checker of this command parser
-private TypeChecker type_checker;
-
-// current token of this parser
-private String token;
-
-// type of the reference of the command parsed by this parser
-private String type;
+// private reference parser of this command parser
+private ReferenceParser reference_parser;
 
 // map of command methods to invoke
 private HashMap<String, Method> command_map;
@@ -39,55 +32,34 @@ private HashMap<String, Method> command_map;
 // command launcher of this command parser
 private CommandLauncher command_launcher;
 
-// current command handler associated with this parser
-private Handler handler;
-
-// hash map of token names to associate to an error message
-private HashMap<TokenType, String> token_map;
-
-// boolean telling if a reference require a value
-private boolean require_value;
-
-// parser exception of this parser
-private ParserException parser_exception;
-
-// unknown command exception of this handler
-private UnknownCommandException unknown_command_exception;
-
-// hash set of template names
-private HashSet<String> templates;
-
-// current element type of this command parser
-private String element_type;
-
-// current default type of this command parser
-private String default_type;
+// private type checker of this command parser
+private TypeChecker type_checker;
 
 public CommandParser(Context context) {
+	super(context);
+	this.command_line = new CommandLine();
 	this.lexer = new CommandLexer();
-	this.type_checker = new TypeChecker();
 	this.command_launcher = new CommandLauncher(context);
 	this.command_map = new HashMap<String, Method>();
-	this.token_map = new HashMap<TokenType, String>();
-	this.parser_exception = new ParserException();
-	this.unknown_command_exception = new UnknownCommandException();
 	this.templates = new HashSet<String>();
-	this.element_type = "template";
-	this.default_type = "template";
+	this.type_checker = new TypeChecker();
+	this.buffer = new StringBuffer();
 
-	this.token_map.put(TokenType.STRING, "string");
-	this.token_map.put(TokenType.NUMBER, "number");
-	this.token_map.put(TokenType.DELIMITED_STRING, "delimited string");
+	this.reference_parser = new ReferenceParser(this.context);
+	this.reference_parser.setTemplates(this.templates);
+	this.reference_parser.setCommandLine(this.command_line);
+	this.reference_parser.setLexer(this.lexer);
+	this.reference_parser.setBuffer(this.buffer);
+	this.reference_parser.setTypeChecker(this.type_checker);
 
 	try {
 	this.command_map.put("start", this.getClass().getMethod("parseStart"));
-	this.command_map.put("import", this.getClass().getMethod("parseImport"));
-	this.command_map.put("export", this.getClass().getMethod("parseExport"));
+	this.command_map.put("load", this.getClass().getMethod("parseLoad"));
+	this.command_map.put("save", this.getClass().getMethod("parseSave"));
 	this.command_map.put("unset", this.getClass().getMethod("parseUnset"));
 	this.command_map.put("set", this.getClass().getMethod("parseSet"));
 	this.command_map.put("reset", this.getClass().getMethod("parseReset"));
 	this.command_map.put("show", this.getClass().getMethod("parseShow"));
-	this.command_map.put("select", this.getClass().getMethod("parseSelect"));
 	this.command_map.put("check", this.getClass().getMethod("parseCheck"));
 	this.command_map.put("help", this.getClass().getMethod("parseHelp"));
 	this.command_map.put("exit", this.getClass().getMethod("parseExit"));
@@ -101,100 +73,165 @@ public CommandParser(Context context) {
 	}
 }
 
-/**
-* set the element type of this command parser
-* @param type the new element type of this command parser
-*/
+@Override
+protected String getNextToken() {
+	super.getNextToken();
+	this.reference_parser.setToken(this.token);
+	return this.token;
+}
+
+@Override
+protected String checkNextToken(String ...value) {
+	super.checkNextToken(value);
+	this.reference_parser.setToken(this.token);
+	return this.token;
+}
+
+@Override
+protected String checkNextTokenType(TokenType... types) {
+	super.checkNextTokenType(types);
+	this.reference_parser.setToken(this.token);
+	return this.token;
+}
+
+@Override
+public String parseRef () {
+	this.token = this.reference_parser.parseRef();
+	this.type = this.reference_parser.getType();
+	this.delimiter = this.reference_parser.getDelimiter();
+	this.require_value = this.reference_parser.getRequireValue();
+	return this.token;
+}
+
+@Override
+public void setType (String type) {
+	this.type = type;
+	this.reference_parser.setType(type);
+}
+
+@Override
 public void setElementType(String type) {
-	this.element_type = type;
+	this.reference_parser.setElementType(type);
 }
 
-/**
-* set the default type of this command parser
-* @param type the new default type of this command parser
-*/
+@Override
 public void setDefaultType(String type) {
-	this.default_type = type;
+	this.reference_parser.setDefaultType(type);
+}
+
+@Override
+public void setCommandCompleter (CommandCompleter completer) {
+	super.setCommandCompleter(completer);
+	this.command_completer.setCommands(this.command_map.keySet());
+	this.reference_parser.setCommandCompleter(this.command_completer);
 }
 
 /**
-* add a new template name to this parser
-* @param template the template name to add
-*/
-public void addTemplate(String template) {
-	this.templates.add(template);
-}
-
-/**
-* add all templates from a provided collection
-* @param collection the collection of templates to add
-*/
-public void addTemplates(Collection<String> templates) {
-	this.templates.addAll(templates);
-}
-
-
-/**
-* remove a template name from this parser
-* @param template the template to remove
-*/
-public void removeTemplate(String template) {
-	this.templates.remove(template);
-}
-
-/**
-* clear the set of template names
-*/
-public void clearTemplates() {
-	this.templates.clear();
-}
-
-/**
-* set the line to parse
+* parse a command and return the corresponding parsed line
 * @param line the line to parse
+* @param cursor the current cursor in the line
+* @param ctx the parsing context
+* @return the parsed line
 */
-public void setLine (String line) {
-	this.lexer.setLine(line);
-}
+public ParsedLine parse(String line, int cursor, ParseContext ctx) {
 
-/**
-* get the next token from the line
-* @return the next token of the line, null if terminated
-*/
-private String getNextToken() {
-	this.token = this.lexer.getNextToken();
-	return this.token;
-}
+// reset the command line and parse the command
 
-/**
-* parse a property value from the line
-* @return the property value extracted from the line
-*/
-private String parsePropertyValue() {
-	this.token = this.lexer.parsePropertyValue();
-	return this.token;
-}
+	try {
+		this.console_exception = null;
+		this.command_line.reset(line);
+		this.command_completer.clear();
+		this.command_line.setCursor(cursor);
+		this.parseCommand(line);
+	} catch (ConsoleException e) {
+		this.console_exception = e;
+	}
 
+return this.command_line;
+}
 /**
 * parse a command line and return the corresponding handler will all the intended information
 * @param line the line to parse
 * @return the handler to execute to manage the command
-* @exception an exception if an unknown command is provided or if the syntax is not correct
 */
 public Handler parseCommand (String line) {
+	if (this.delimiter==null && line.equals("")) return this.handler = null;
 	this.lexer.setLine(line);
-	this.type = "document";
-	String command = this.getNextToken();
-	if (command==null || !this.command_map.keySet().contains(command)) {
-		this.unknown_command_exception.setCommand(command);
-		throw this.unknown_command_exception;
+
+// if we are in a delimited string parse the line and return the handler if the string was completed
+
+	if (this.delimiter!=null) {
+		String value = this.reference_parser.parsePropertyValue();
+
+		if (value!=null) {
+			((SetHandler)this.handler).addProperty(this.type, value);
+			this.delimiter = null;
+
+		if (this.getNextToken()!=null) this.throwParserException(this.token, null);
+			return this.handler;
+		} else return null;
 	}
+
+// otherwise parse the command entered by the user
+
+	this.setType("document");
+	String command = this.getNextToken();
+
+	if (command==null)
+		return null;
+
+// if the command entered by the user is a well known keyword launch the requested command handler
+
+	else if (this.command_map.keySet().contains(command)) {
+		this.handler = this.command_launcher.getCommandHandler(command);
+		this.reference_parser.setHandler(this.handler);
+		this.handler.clear();
+		if (this.command_completer!=null) {
+			this.command_completer.setCommand(command);
+			this.command_line.addWord(command);
+		}
+	}
+
+// else if the line entered by the user starts with the name of a template setup a set command
+
+	else {
+		this.command_line.addWord(command);
+		this.handler = this.command_launcher.getCommandHandler("set");
+		this.handler.clear();
+
+// setup the type according to the entered keyword
+
+		switch (command) {
+			case "system":
+			case "declaration":
+			this.setType(command);
+			break;
+
+			case "queries":
+			this.setType("query");
+			break;
+
+// by default if the word entered by the user is a template parse it as such
+
+			default:
+			if (this.templates.contains(command)) this.setType("template");
+
+// and otherwise throw a parser exception
+
+			else {
+				this.unknown_command_exception.setCommand(command);
+				throw this.unknown_command_exception;
+			}
+			break;
+		}
+
+		if (this.command_completer!=null) this.command_completer.setCommand("set");
+		command = "set";
+	} 
 
 // if the command is correct launch the corresponding handler and execute the appropriate method
 
 	try {
-		this.handler = this.command_launcher.getCommandHandler(command);
-		this.handler.clear();
 		this.command_map.get(command).invoke(this);
 	} catch (IllegalAccessException e) {
 		System.out.println(e.getMessage());
@@ -216,84 +253,6 @@ public Handler parseCommand (String line) {
 }
 
 /**
-* throw a parser exception
-* @param token the token for the exception
-* @param expected the expected token for the exception
-* @exception a parser exception with all the intended information
-*/
-private void throwParserException (String token, String expected) {
-	this.parser_exception.setToken(token);
-	this.parser_exception.setStartingIndex(this.lexer.getStartingIndex());
-	this.parser_exception.setExpectedToken (expected);
-	this.parser_exception.setLine(this.lexer.getLine());
-	throw this.parser_exception;
-}
-
-/**
-* check the value of the current token
-* @param value the expected value of the token
-* @exception a parser error if the current token does not belongs to the provided value
-*/
-private void checkToken(String... values) {
-	if (this.token!=null) {
-		for (String value : values) {
-			if (this.token.equals(value)) return;
-	}
-}
-
-	StringBuffer expected = new StringBuffer();
-	for (String value:values) {
-		if (expected.length()>0) expected.append(" or ");
-		expected.append(value);
-	}
-
-	this.throwParserException(this.token, expected.toString());
-}
-
-/**
-* get the next token from the lexer and check its type
-* @param value the expected value of the next token
-* @exception a parser exception if the next token does not belongs to the intended value
-*/
-private String checkNextToken(String ...value) {
-	this.getNextToken();
-	this.checkToken(value);
-	return this.token;
-}
-
-/**
-* check the type of the current token
-* @param types the accepted types for the current token
-* @exception a parser exception containing a message describing the error
-*/
-private void checkTokenType(TokenType... types) {
-	for (TokenType type: types) {
-		if (type==this.lexer.getTokenType()) return;
-	}
-
-	String token_type = this.token_map.get(this.lexer.getTokenType());
-	StringBuffer expected = new StringBuffer();
-
-	for (TokenType type : types) {
-		if (expected.length()!=0) expected.append (" or ");
-		expected.append(this.token_map.get(type));
-	}
-this.throwParserException (token, expected.toString());
-}
-
-/**
-* check the type of the next token
-* @param types the possible types for the next token
-* @return the next token if correct
-* @exception a parser exception if the next token does not belongs to the intended type
-*/
-private String checkNextTokenType(TokenType... types) {
-	this.getNextToken();
-	this.checkTokenType(types);
-	return this.token;
-}
-
-/**
 * parse a start command requiring a new mode to be started
 * start MODE (type = (symbolic | concrete)?
 */
@@ -304,7 +263,7 @@ public void parseStart () {
 
 	this.checkToken("start");
 	((DefaultHandler)this.handler).setCommand("start");
-	String mode = this.getNextToken();
+	String mode = this.checkNextToken("editor", "simulator", "verifier");
 	this.checkTokenType(TokenType.STRING);
 	this.handler.addArgument(mode);
 
@@ -318,44 +277,70 @@ public void parseStart () {
 		}
 
 /**
-* parse an import command
-* import ( document | templates | queries ) FILENAME
+* parse a load command
+* load ( document | templates | queries ) FILENAME
 */
-public void parseImport () {
+public void parseLoad () {
 
-// check that the command starts with  import, is followed by a valid type followed by a string
+// check the type of the command and its syntax
 
-	this.checkToken("import");
-	String type = this.checkNextToken("document", "queries", "templates", "data");
+	if (this.getNextToken()==null)
+		this.throwParserException (null, "\"document\", \"templates\", \"strategy\", \"data\" or NAME");
+
+	switch (this.token) {
+	case "document":
+		case "queries":
+		case "templates":
+		case "data":
+		this.handler.setObjectType(this.token);
+		break;
+
+		default:
+		this.handler.setObjectType("strategy");
+		this.handler.addArgument(this.token);
+		break;
+	}
+	
+	this.command_line.addWord(this.token);
+	this.checkNextToken("from");
+	this.command_line.addWord(this.token);
 	String filename = this.lexer.parseFilename();
-	this.handler.setObjectType(type);
+	if (filename==null) this.throwParserException(null, "FILENAME");
+	this.command_line.addWord(filename);
 	this.handler.addArgument(filename);
 }
 
 /**
-* parse an export command
-* export ( document | trace | queries ) FILENAME
+* parse a save command
+* save ( document | trace | queries ) FILENAME
 */
-public void parseExport () {
+public void parseSave () {
 
 // check that the command starts with  export, is followed by a valid type followed by a string
 
-	this.checkToken("export");
-	String type = this.getNextToken();
-	switch (type) {
-		case "document":
+	if (this.getNextToken()==null)
+		this.throwParserException (null, "document, templates, queries, data or NAME");
+
+	switch (this.token) {
+	case "document":
+		case "queries":
 		case "trace":
 		case "data":
-		this.type=type;
-		this.getNextToken();
+		this.handler.setObjectType(this.token);
 		break;
+
 		default:
-		this.parseRef();
+		this.handler.setObjectType("strategy");
+		this.handler.addArgument(this.token);
+		break;
 	}
-	
-	this.checkToken("to");
+
+	this.command_line.addWord(this.token);
+	this.checkNextToken("to");
+	this.command_line.addWord(this.token);
 	String filename = this.lexer.parseFilename();
-	this.handler.setObjectType(this.type);
+	if (filename==null) this.throwParserException(null, "FILENAME");
+	this.command_line.addWord(filename);
 	this.handler.addArgument(filename);
 }
 
@@ -364,8 +349,8 @@ public void parseExport () {
 * unset REF
 */
 public void parseUnset() {
-	if (this.getNextToken().equals("*")) this.handler.addArgument(this.token);
-	else this.parseRef();
+	this.getNextToken();
+	this.parseRef();
 }
 
 /**
@@ -373,10 +358,19 @@ public void parseUnset() {
 * set REF = VALUE
 */
 public void parseSet() {
-	this.getNextToken();
+
+// first of all parse the reference of the command
+
+	if (this.type.equals("document")) this.getNextToken();
 	this.parseRef();
-	if (this.token!=null && this.token.equals("=")) {
-		this.parseValue();
+
+// if the reference is of an element type or that an assignmentment is explicitly requested parse it
+
+		if (this.type_checker.isElementType(this.type) || "=".equals(this.token)) {
+			this.checkToken("=");
+		this.reference_parser.parseValue();
+		this.delimiter = this.reference_parser.getDelimiter();
+		this.cancelRequireValue();
 	}
 }
 
@@ -401,16 +395,6 @@ public void parseShow() {
 }
 
 /**
-* parse a select command
-* select QUERYREF | STATE | TRANSITION
-*/
-public void parseSelect() {
-	String token = this.getNextToken();
-	if (token.equals("state") || token.equals("transition")) this.handler.addArgument(token);
-	else this.parseIndexedRef("query");
-}
-
-/**
 * parse a check command
 * check QUERRYREF
 */
@@ -426,15 +410,9 @@ public void parseCheck() {
 */
 public void parseHelp () {
 	String token = this.getNextToken();
-	if (this.command_map.keySet().contains(token)) this.handler.addArgument(token);
-	else {
-		StringBuffer expected = new StringBuffer();
-		for (String command:this.command_map.keySet()) {
-			if (expected.length()!=0) expected.append(" or");
-			expected.append(command);
-		}
-		this.throwParserException(token, expected.toString());
-	}
+	if (token!=null) this.setType(token);
+	else this.setType("commands");
+	this.handler.setObjectType(this.type);
 }
 
 
@@ -462,218 +440,17 @@ public void parseDisconnect() {
 }
 
 /**
-* parse an exit command
+* parse a compile command
 */
 public void parseCompile() {
 	this.checkToken("compile");
 	((DefaultHandler)this.handler).setCommand("compile");
 }
 
-/**
-* parse a reference
-* ref : PROPERTY | ((ELEMREF | QUERYREF | OPTIONREF ) ( . PROPERTY)?)
-*/
-public void parseRef () {
-
-// identify the type of the reference and apply the corresponding method
-
-	switch (this.token) {
-		case "queries":
-		this.parseIndexedRef("query");
-		break;
-
-		case "selection":
-		this.parseIndexedRef("selection");
-		break;
-
-		case "options":
-		this.type = "option";
-		this.handler.addArgument(this.token);
-		break;
-
-		case "parameters":
-		this.parseIndexedRef("setting");
-		break;
-
-		case "variables":
-		this.parseIndexedRef("variable");
-		break;
-
-		case "processes":
-			this.parseIndexedRef("process");
-		break;
-
-		case "trace":
-		case "data":
-		case "state":
-		this.type = this.token;
-		break;
-
-		default:
-		if (this.type_checker.isTypeProperty(this.type, this.token)) this.parseProperty();
-		else this.parseElementRef();
-		break;
-		}
-
-
-// if the next token is a dot check that the provided property well belongs to the type of the object
-
-	if (this.token!=null && this.token.equals(".")) {
-		this.getNextToken();
-		if (this.type.equals("process")) this.parseIndexedRef("variable");
-		else this.parseProperty();
-}
-
-	this.handler.setObjectType(this.type);
-}
-
-/**
-* parse a property and check that its type is correct
-* @exception a type exception if the parsed property does not belongs to the current type
-*/
-public void parseProperty() {
-	this.type_checker.checkTypeProperty(this.type, this.token);
-	this.type = this.token;
-	if (this.handler instanceof SetHandler) this.require_value = true;
-	this.getNextToken();
-}
-
-/**
-* parse a reference to an uppaal element
-* ELEMENTREF : NAME ([((* (, *)?) |(NAME (, NAME) ? ) ] )?
-*/
-public void parseElementRef () {
-
-// the first token must be the name of a template
-
-	this.checkTokenType(TokenType.STRING);
-	if (this.templates.contains(this.token)) this.type = this.element_type;
-	else this.type = this.default_type;
-	this.handler.addArgument(this.token);
-
-// if some index is provided parse it accordingly
-
-	this.getNextToken();
-	if (this.token!=null && this.token.equals("[")) {
-		if (this.type.equals("template")) {
-		if (!this.getNextToken().equals("*")) this.checkTokenType(TokenType.STRING);
-		this.handler.addArgument(this.token);
-			this.type = "location";
-		} else if (this.type.equals("process")) {
-			this.getNextToken();
-			this.checkTokenType(TokenType.NUMBER);
-			int argument_number = this.handler.getArgumentNumber();
-			String process = this.handler.getArgumentAt(argument_number-1);
-			this.handler.setArgument(argument_number-1, process+"("+this.token+")");
-		}
-
-		if(this.getNextToken().equals("->")) {
-			this.type_checker.checkType(this.type, "location");
-			if (!this.getNextToken().equals("*")) this.checkTokenType(TokenType.STRING);
-			this.handler.addArgument(this.token);
-			this.type = "edge";
-			this.getNextToken();
-		}
-
-		this.checkToken("]");
-		this.getNextToken();
-	}
-}
-
-
-/**
-* parse a reference to an uppaal query
-* QUERYREF : query [(* | NAME | NUMBER)? ]
-*/
-
-public void parseIndexedRef (String type) {
-
-// get the argument of the query and check that it is well a string or a number
-
-	String name = this.token;
-	String bracket = this.getNextToken();
-	this.type = type;
-
-	if (bracket!=null) {
-	this.checkToken("[");
-	String index = this.getNextToken();
-	this.checkTokenType(TokenType.NUMBER);
-	this.checkNextToken("]");
-	this.getNextToken();
-
-// finally add the query as argument to the handler and set the reference type
-
-		if (this.handler.getArgumentNumber()>0) {
-			String process = this.handler.getArgumentAt(0);
-			this.handler.setArgument(0, process+"."+name+"["+index+"]");
-		} else
-		this.handler.addArgument(index);
-	if (this.handler instanceof SetHandler) this.require_value = true;
-	} else {
-		if (this.handler.getArgumentNumber()>0) {
-			String process = this.handler.getArgumentAt(0);
-			this.handler.setArgument(0, process+"."+name);
-		} else
-			this.handler.addArgument(name);
-	}
-}
-
-/**
-* check that a value is well formed
-* VALUE : STRING | {(PROPERTY:STRING (, PROPERTY: STRING)* )?}
-*/
-public void parseValue () {
-
-// if the current token is an opening brass check that the reference is well an element
-
-	if (this.type_checker.isElementType(this.type)) {
-		this.checkNextToken("{");
-		boolean finished = false;
-
-		while (!finished) {
-
-// check that the next token is well a property of the referred type
-
-			String property = this.checkNextTokenType(TokenType.STRING);
-			this.type_checker.checkTypeProperty(this.type, property);
-
-// check that a delimited string is assigned to this property
-
-			this.checkNextToken(":");
-			String value = this.parsePropertyValue();
-
-// add the property and its value to the command handler
-
-		((SetHandler) this.handler).addProperty(property, value);
-
-// finally parse the argument delimiter and finish the loop if it is a closing brass
-
-			String delimiter = this.checkNextToken(";", "}");
-			finished = delimiter.equals("}");
-		}
-	}
-
-// if the current token is a string check that the reference is well a property
-
-	else {
-		this.type_checker.checkProperty(this.type);
-		String value = this.parsePropertyValue();
-		this.handler.addArgument(value);
-		this.require_value = false;
-	}
-}
-
-/**
-* @return true if and only if a value is required
-*/
-public boolean getRequireValue() {
-	return this.require_value;
-}
-
-/**
-* cancel the value requirement
-*/
+@Override
 public void cancelRequireValue() {
-	this.require_value = false;
+	super.cancelRequireValue();
+	this.reference_parser.cancelRequireValue();
 }
+	
 }

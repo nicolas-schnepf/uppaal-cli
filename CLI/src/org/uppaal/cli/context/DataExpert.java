@@ -147,8 +147,8 @@ public boolean importData(QueryData query_data) {
 
 /**
 * set the current data of this data expert
-* @param plot the index of the plot to display
-* @param traj the index of the trajectory to plot
+* @param plot_index the index of the plot to display
+* @param trajectory_index the index of the trajectory to plot
 * @return a list of strings containing the title of the graphic to display in the command line
 */
 public LinkedList<String> selectData (int plot_index, int trajectory_index) {
@@ -182,10 +182,11 @@ public Iterator<double[]> iterator () {
 /**
 * export the curent query data to a xml file
 * @param filename the name of the file to export the data
-* @exception an exception if the file does not exist
+* @throws TransformerException an exception if there was some problem with the transformer
+* @throws ParserConfigurationException an exception if there was some problem with the parser configuration
 */
 
-public void exportData (String filename) throws TransformerException, ParserConfigurationException {
+public void saveData (String filename) throws TransformerException, ParserConfigurationException {
 
 // create the xml document object and its root
 
@@ -302,9 +303,11 @@ public void exportData (String filename) throws TransformerException, ParserConf
 /**
 * load the data from a data file
 * @param filename the path to the file where the data is stored
-* @exception an exception if there is a problem while reading the data
+* @throws ParserConfigurationException an exception if there was some error with the parser configuration
+* @throws  SAXException an exception if there was some error with the sax library
+* @throws IOException an exception if there was some error while reading the input file
 */
-public void importData(String filename) 
+public void loadData(String filename) 
 throws ParserConfigurationException, SAXException, IOException {
 
 // load the data from the provided file

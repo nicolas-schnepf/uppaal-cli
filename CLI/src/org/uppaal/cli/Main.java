@@ -9,7 +9,6 @@ import java.io.IOException;
 
 /**
  * The main/entry class implementing the command line interface.
- * @author Marius Mikucionis <marius@cs.aau.dk>
  */
 public class Main
 {
@@ -26,11 +25,14 @@ public static void main(String[] args) {
 
 
 		ConsoleManager console_manager;
-		if (args.length==0) console_manager =new ConsoleManager(context);
-		else console_manager =new ConsoleManager(context, args[0]);
-		console_manager.run();
+		if (args.length==0) {
+			console_manager =new ConsoleManager(context);
+			console_manager.printWelcomeMessage();
+		} else console_manager =new ConsoleManager(context, args[0]);
+		console_manager.run(true);
 	} catch (IOException e) {
 		System.err.println("File "+args[0]+" does not exist.");
+		e.printStackTrace();
 		System.exit(1);
 	}catch (Exception e) {
 		System.err.println("Unable to start the console interface.");

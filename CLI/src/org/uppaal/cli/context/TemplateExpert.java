@@ -58,9 +58,10 @@ public LinkedList<String> showTemplates () {
 
 /**
 * load the templates from a document described by its location
-* @param the location of the document
+* @param filename the location of the document
 * @return the number of loaded templates
-* @exception an exception if the location of the document is not well formated
+* @throws IOException an io exception if there was some error with the provided file
+* @throws MalformedURLException an exception if the provided filename is a malformed url
 */
 
 public int loadTemplates (String filename) throws IOException, MalformedURLException  {
@@ -110,16 +111,62 @@ public void unselectTemplate (int index) {
 * add a new template to the current document
 * @param name the name of the template
 * @param parameter the parameter of the template
+* @param declaration the declaration of this template
 */
 public void addTemplate(String name, String parameter, String declaration) {
+
+// check that the template does not already exist
+
+	if (this.context.getDocument().getTemplate(name)!=null)
+		this.throwExistingElementException ("template", name);
+
+// create the template and set its attributes
+
 	Template template = this.context.getDocument().createTemplate();
 	template.setProperty("name", name);
 	template.setProperty("parameter", parameter);
 	template.setProperty("declaration", declaration);
 
+// insert the template into the document
+
 	InsertTemplateCommand command = new InsertTemplateCommand(this.context.getDocument(), null, template);
 	command.execute();
 	this.context.addCommand(command);
+}
+
+/**
+* copy a template in the document
+* @param name1 the name of the first template
+* @param name2 the name of the second template
+*/
+public void copyTemplate(String name1, String name2) {
+
+// check that the first provided name does not match any template
+
+	AbstractTemplate template = this.context.getDocument().getTemplate(name1);
+	if (template!=null) this.throwExistingElementException("template", name1);
+
+// check that the second name well refers to an existing template
+
+	template = this.context.getDocument().getTemplate(name2);
+	if (template==null) this.throwMissingElementException("template", name2);
+
+// copy the fetched template
+
+	try {
+	template = (AbstractTemplate)template.clone();
+	template.setProperty("name", name1);
+
+// insert the template into the document
+
+	InsertTemplateCommand command = new InsertTemplateCommand(this.context.getDocument(), null, template);
+	command.execute();
+	this.context.addCommand(command);
+	} catch (Exception e) {
+		System.out.println(e.getMessage());
+		e.printStackTrace();
+		System.exit(1);
+	}
 }
 
 /**
@@ -240,8 +287,8 @@ public String showLoadedTemplate (int index) {
 /**
 * return a certain property of a template
 * @param name the name of the template to return
+* @param property the name of the property to return
 * @return the corresponding property of the template
-* @exception a missing element exception if the template is missing
 */
 public String getTemplateProperty (String name, String property) {
 	AbstractTemplate template = this.context.getDocument().getTemplate(name);
@@ -253,9 +300,8 @@ public String getTemplateProperty (String name, String property) {
 /**
 * set a property of an existing template
 * @param name the name of the template to update
-* @param value the value to update
+* @param property the name of the property to update
 * @param value the new value for the property of the template
-* @exception a missing element exception if the template was not found
 */
 public void setTemplateProperty (String name, String property, String value) {
 	AbstractTemplate template = this.context.getDocument().getTemplate(name);
@@ -272,7 +318,7 @@ public void setTemplateProperty (String name, String property, String value) {
 * clear the templates of this context
 */
 public void clearTemplates() {
-	this.context.getModelExpert().clearDocument();
+	for (String template: this.showTemplates()) this.removeTemplate(template);
 }
 
 /**
@@ -309,5 +355,17 @@ public String getPropertyValue (String name, String property) {
 		this.throwMissingElementException("template", name);
 
 	return (String) template.getPropertyValue(property);
+}
+
+/**
+* copy a property from a template to another one
+* @param template1 the name of the source template
+* @param template2 the name of the target template
+* @param property the name of the property to copy
+*/
+public void copyTemplateProperty (String template1, String template2, String property) {
+	String value = this.getPropertyValue(template1, property);
+	value = new String(value);
+	this.setTemplateProperty(template2, property, value);
 }
 }

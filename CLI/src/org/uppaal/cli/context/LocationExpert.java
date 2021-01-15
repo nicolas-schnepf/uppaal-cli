@@ -27,7 +27,7 @@ public LocationExpert (Context context) {
 * add a location described by its name and the name of its template
 * @param template_name the name of the template to update
 * @param location_name the name of the new location
-* @exception an exception will be thrown if the template does not exist
+* @param invariant the invariant of this location
 */
 public void addLocation (String template_name, String location_name, String invariant) {
 	Template template = (Template) this.context.getDocument().getTemplate(template_name);
@@ -45,9 +45,56 @@ public void addLocation (String template_name, String location_name, String inva
 }
 
 /**
+* copy a location from a template to another one
+* @param name1 the name of the source template
+* @param location1 the name of the source location
+* @param name2 the name of the target template
+* @param location2 the name of the target location
+*/
+public void copyLocation (String name1, String location1, String name2, String location2) {
+
+// check that the source and target template well exist
+
+	Template template1 = (Template) this.context.getDocument().getTemplate(name1);
+	if (template1==null) this.throwMissingElementException("template", name1);
+	Template template2 = (Template) this.context.getDocument().getTemplate(name2);
+	if (template2==null) this.throwMissingElementException("template", name2);
+
+// check that the source location well exists
+
+	Location location = this.getLocation(name1, "name", location1);
+	if (location==null)this.throwMissingElementException("location", location1);
+	if (this.getLocation(name2, "name", location2)!=null) 
+		this.throwExistingElementException("location", name2);
+
+// finally insert a copy of the source location in the target template
+
+	try {
+	location = (Location)location.clone();
+	location.setProperty("name", location2);
+	InsertElementCommand command = new InsertElementCommand(location.getCommandManager(), template2, null, location);
+	command.execute();
+	this.context.addCommand(command);
+	} catch (Exception e) {}
+}
+
+/**
+* copy a property from a location to another one
+* @param name1 the name of the source template
+* @param location1 the name of the source location
+* @param name2 the name of the target template
+* @param location2 the name of the target location
+* @param property the name of the property to copy
+*/
+public void copyLocationProperty (String name1, String location1, String name2, String location2, String property) {
+	String value = this.getPropertyValue(name1, location1, property);
+	value = new String (value);
+	this.setLocationProperty(name2, location2, property, value);
+}
+
+/**
 * remove all locations from a template
 * @param name the name of the template to clean
-* @exception a missing element exception if the template does not exist
 */
 public void removeLocations (String name) {
 
@@ -81,7 +128,7 @@ public void removeLocations (String name) {
 /**
 * remove a location based on its name and on the name of its template
 * @param template the name of the template to inspect
-* @param location the name of the location to remove
+* @param name the name of the location to remove
 */
 public void removeLocation (String template, String name) {
 	Location location = this.getLocation(template, "name", name);
@@ -92,8 +139,37 @@ public void removeLocation (String template, String name) {
 }
 
 /**
+* get the name of all locations of a template
+* @param name the name of the template to describe
+* @return a linked list containing all locations to show
+*/
+public LinkedList<String> getLocations (String name) {
+
+
+// get the given template if it exists
+
+	AbstractTemplate template = this.context.getDocument().getTemplate(name);
+	if (template==null) 
+		this.throwMissingElementException("template", name);
+
+// get the given location and return it if it exists
+
+	LinkedList<String> locations = new LinkedList<String>();
+	Node node = template.getFirst();
+
+	while(node!=null) {
+		if (node instanceof Location) 
+			locations.add((String)node.getPropertyValue("name"));
+
+		node = node.getNext();
+	}
+
+	return locations;
+}
+
+/**
 * show all locations of a template
-* @param template the name of the template to describe
+* @param name the name of the template to describe
 * @return a linked list containing all locations to show
 */
 public LinkedList<String> showLocations (String name) {
@@ -125,7 +201,6 @@ public LinkedList<String> showLocations (String name) {
 * @param template the name of the template to inspect
 * @param name the name of the location to describe
 * @return a string containing the description of the location
-* @exception a missing element exception if either the template or the location does not exist
 */
 public String showLocation (String template, String name) {
 	Location location = this.getLocation (template, "name", name);
@@ -139,14 +214,12 @@ public String showLocation (String template, String name) {
 * @param name the name of the location to update
 * @param property the name of the property to update
 * @param value the new value for the property
-* @exception an exception if the template, the source or the target does not exist
 */
 public void setLocationProperty (String template, String name, String property, Object value) {
 
 // first of all check that such a location does not already exist in the template
 
 	Location location = this.getLocation(template, property, value);
-
 	if (location!=null) {
 		switch (property) {
 			case "name":
@@ -179,6 +252,7 @@ public void setLocationProperty (String template, String name, String property, 
 */
 public String getPropertyValue (String template, String name, String property) {
 	Location location = this.getLocation(template, "name", name);
+	if (location==null) this.throwMissingElementException("location", name);
 	return (String) location.getPropertyValue(property);
 }
 }

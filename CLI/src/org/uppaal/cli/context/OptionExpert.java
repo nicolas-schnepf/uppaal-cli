@@ -15,6 +15,8 @@ import java.io.StringReader;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.HashMap;
+import java.util.Collections;
+import java.util.Collection;
 
 public class OptionExpert extends AbstractExpert {
 
@@ -55,8 +57,17 @@ public OptionExpert (Context context) {
 }
 
 /**
+* return a list of all available options
+* @return a list containing all available options
+*/
+public Collection<String> getOptions() {
+	this.result.clear();
+	this.result.addAll(this.options.keySet());
+	return this.result;
+}
+
+/**
 * throw a boolean type exception
-* @exception a type exception set to the boolean type
 */
 private void throwTypeException(String type) {
 	this.type_exception.setType(type);
@@ -65,7 +76,8 @@ private void throwTypeException(String type) {
 
 /**
 * load the options from the uppaal engine
-* @exception an engine exception if the engine is not available
+* @throws EngineException an exception if a problem was encountered with the engine
+* @throws  IOException an exception if there was some error while loading the options
 */
 public void loadOptions() throws EngineException, IOException {
 
@@ -155,7 +167,6 @@ public String showOptions() {
 * get the information about a specific option, its current value and possible choices
 * @param option the name of the option to show
 * @return a string containing all intended information
-* @exception a missing element exception if the option is not known
 */
 public String showOption (String option) {
 
@@ -230,7 +241,6 @@ public LinkedList<String> showParameter(String index) {
 * set the value of an option
 * @param option the name of the option to update
 * @param value the new value of the option
-* @exception a missing element exception if the option is not known
 */
 public void setOption (String option, String value) {
 
@@ -277,7 +287,6 @@ public void setOption (String option, String value) {
 /**
 * reset the value of a particular option
 * @param option the name of the option to reset
-* @exception a missing element exception if the provided option does not exist
 */
 public void resetOption (String option) {
 

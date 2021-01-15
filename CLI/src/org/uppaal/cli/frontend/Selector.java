@@ -47,7 +47,6 @@ public void refresh ();
 
 /**
 * set the number of elements of this selector
-* @param element_number the new number of elements of this selector
 */
 public void setElementNumber();
 

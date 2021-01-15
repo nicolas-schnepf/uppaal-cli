@@ -45,7 +45,7 @@ public String getCommand() {
 
 /**
 * set the command code of this result
-* @param the new command code of this result
+* @param command the new command code of this result
 */
 
 public void setCommand(String command) {

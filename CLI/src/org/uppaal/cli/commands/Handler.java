@@ -29,7 +29,6 @@ public void setObjectType(String object_type);
 
 /**
 * handle a command and return its result
-* @param command the command to execute
 * @return the result of the command
 */
 
@@ -44,7 +43,7 @@ public ModeCode getMode();
 /**
 * check that a handler accept a certain mode
 * @param mode the mode to test
-* @param true if and only if the attached command supports this mode for at least one object
+* @return true if and only if the attached command supports this mode for at least one object
 */
 public boolean acceptMode (ModeCode mode);
 
@@ -77,4 +76,16 @@ public void clear() ;
 * @return the intended argument
 */
 public String getArgumentAt (int index) ;
+
+/**
+* get the help message attached to this handler
+* @return the help message of this handler
+*/
+public String getHelpMessage();
+
+/**
+* get the syntax of the command for this handler
+* @return a string containing a regex encoding the syntax for this command
+*/
+public String getSyntax();
 }

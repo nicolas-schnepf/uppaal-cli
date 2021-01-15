@@ -3,6 +3,7 @@ import org.jline.builtins.CommandRegistry;
 import org.jline.builtins.Completers;
 import org.jline.builtins.Completers.SystemCompleter;
 import org.jline.builtins.Completers.TreeCompleter;
+import org.jline.builtins.Completers.TreeCompleter.Node;
 import org.jline.builtins.Options.HelpException;
 import org.jline.builtins.Widgets.ArgDesc;
 import org.jline.builtins.Widgets.AutopairWidgets;
@@ -32,15 +33,27 @@ import org.jline.utils.AttributedStyle;
 import org.jline.utils.InfoCmp;
 import org.jline.utils.InfoCmp.Capability;
 import org.jline.utils.Status;
+import org.jline.builtins.Completers;
+import org.jline.builtins.Completers.RegexCompleter;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 public class Main {
 public static void main (String[] args) {
-    LineReader reader = LineReaderBuilder.builder().build();
+
+	Node name_node = new Node(new StringsCompleter("toto", "titi"), new LinkedList<Node>());
+	LinkedList<Node> nodes = new LinkedList<Node>();
+	nodes.add(name_node);
+	Node node1 = new Node (new StringsCompleter("bonjour"), nodes);
+	Node node2 = new Node (new StringsCompleter("salut"), nodes);
+	TreeCompleter completer = new TreeCompleter(node1, node2);
+    LineReader reader = LineReaderBuilder.builder().completer(completer).build();
     String prompt = "toto";
     while (true) {
         String line = null;
         try {
             line = reader.readLine(prompt);
+            for (String word: reader.getParsedLine().words()) System.out.println(word);
             ((LineReaderImpl)reader).clearScreen();
         } catch (UserInterruptException e) {
             // Ignore

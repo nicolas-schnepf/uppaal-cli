@@ -52,10 +52,13 @@ public SetHandler (Context context) {
 	this.operation_map.put("init", this.getClass().getMethod("setInit"));
 	this.operation_map.put("committed", this.getClass().getMethod("setCommitted"));
 	this.operation_map.put("edge", this.getClass().getMethod("setEdge"));
-	this.operation_map.put("select", this.getClass().getMethod("setSelect"));
-	this.operation_map.put("guard", this.getClass().getMethod("setGuard"));
-	this.operation_map.put("sync", this.getClass().getMethod("setSync"));
-	this.operation_map.put("assign", this.getClass().getMethod("setAssign"));
+	this.operation_map.put("select", this.getClass().getMethod("setEdgeProperty"));
+	this.operation_map.put("guard", this.getClass().getMethod("setEdgeProperty"));
+	this.operation_map.put("sync", this.getClass().getMethod("setEdgeProperty"));
+	this.operation_map.put("synchronisation", this.getClass().getMethod("setEdgeProperty"));
+	this.operation_map.put("assign", this.getClass().getMethod("setEdgeProperty"));
+	this.operation_map.put("assignment", this.getClass().getMethod("setEdgeProperty"));
+	this.operation_map.put("controllable", this.getClass().getMethod("setEdgeProperty"));
 	this.operation_map.put("system", this.getClass().getMethod("setSystem"));
 	this.operation_map.put("state", this.getClass().getMethod("setState"));
 	this.operation_map.put("option", this.getClass().getMethod("setOption"));
@@ -71,7 +74,7 @@ public SetHandler (Context context) {
 /**
 * add a new property to this set handler
 * @param property the name of the property to handle
-* @param value the value assigned to the property
+* @param value the value for the property
 */
 public void addProperty (String property, String value) {
 	this.properties.put(property, value);
@@ -116,47 +119,78 @@ public void setComment () {
 }
 
 public void setTemplate () {
-		this.checkMode("set", "template", ModeCode.EDITOR);
-		String name = this.getArgumentAt(0);
+	this.checkMode("set", "template", ModeCode.EDITOR);
+	String name = this.getArgumentAt(0);
+
+	if (this.arguments.size()==1) {
 		String parameter = this.properties.get("parameter");
 		String declaration = this.properties.get("declaration");
-			this.context.getTemplateExpert().addTemplate(name, parameter, declaration);
+		this.context.getTemplateExpert().addTemplate(name, parameter, declaration);
+	} else this.context.getTemplateExpert().copyTemplate(name, this.arguments.get(1));
+
+	this.command_result.addArgument(name);
+	this.command_result.setResultCode(ResultCode.ADD_TEMPLATE);
 }
 
 public void setDeclaration() {
-		this.checkMode("set", "declaration", ModeCode.EDITOR);
-		if (this.getArgumentNumber()==2) {
-				String name = this.getArgumentAt(0);
-				String declaration = this.getArgumentAt(1);
-				this.context.getTemplateExpert().setTemplateProperty(name, "declaration",  declaration);
-			} else {
-				String declaration = this.getArgumentAt(0);
-				this.context.getModelExpert().setDocumentProperty("declaration", declaration);
-		}
+	this.checkMode("set", "declaration", ModeCode.EDITOR);
+	if (this.getArgumentNumber()==2) {
+		String template1 = this.getArgumentAt(0);
+		String template2 = this.getArgumentAt(1);
+		this.context.getTemplateExpert().copyTemplateProperty(template2, template1, "declaration");
+	} else if (this.getArgumentNumber()==1) {
+		String name = this.getArgumentAt(0);
+		String declaration = this.properties.get("declaration");
+		this.context.getTemplateExpert().setTemplateProperty(name, "declaration",  declaration);
+	} else {
+		String declaration = this.properties.get("declaration");
+		this.context.getModelExpert().setDocumentProperty("declaration", declaration);
+	}
 }
 
 public void setParameter() {
-		this.checkMode("set", "parameter", ModeCode.EDITOR);
-				String name = this.getArgumentAt(0);
-				String parameter = this.getArgumentAt(1);
-				this.context.getTemplateExpert().setTemplateProperty(name, "parameter", parameter);
+	this.checkMode("set", "parameter", ModeCode.EDITOR);
+	if (this.getArgumentNumber()==2) {
+		String template1 = this.getArgumentAt(0);
+		String template2 = this.getArgumentAt(1);
+		this.context.getTemplateExpert().copyTemplateProperty(template2, template1, "parameter");
+	} else if (this.getArgumentNumber()==1) {
+		String name = this.getArgumentAt(0);
+		String parameter = this.properties.get("parameter");
+		this.context.getTemplateExpert().setTemplateProperty(name, "parameter", parameter);
+	}
 }
 
-
 public void setLocation() {
-		this.checkMode("set", "location", ModeCode.EDITOR);
+	this.checkMode("set", "location", ModeCode.EDITOR);
+	if (this.getArgumentNumber()==4) {
+		String template1 = this.getArgumentAt(0);
+		String location1 = this.getArgumentAt(1);
+		String template2 = this.getArgumentAt(2);
+		String location2 = this.getArgumentAt(3);
+		this.context.getLocationExpert().copyLocation(template2, location2, template1, location1);
+	} else if (this.getArgumentNumber()==2) {
 		String template = this.getArgumentAt(0);
 		String name = this.getArgumentAt(1);
 		String invariant = this.properties.get("invariant");
 		this.context.getLocationExpert().addLocation(template, name, invariant);
+	}
 }
 
 public void setInvariant () {
-		this.checkMode("set", "invariant", ModeCode.EDITOR);
+	this.checkMode("set", "invariant", ModeCode.EDITOR);
+	if (this.getArgumentNumber()==4) {
+		String template1 = this.getArgumentAt(0);
+		String location1 = this.getArgumentAt(1);
+		String template2 = this.getArgumentAt(2);
+		String location2 = this.getArgumentAt(3);
+		this.context.getLocationExpert().copyLocationProperty(template2, location2, template1, location1, "invariant");
+	} else if (this.getArgumentNumber()==2) {
 		String template = this.getArgumentAt(0);
 		String name = this.getArgumentAt(1);
-		String value = this.getArgumentAt(2);
+		String value = this.properties.get("invariant");
 		this.context.getLocationExpert().setLocationProperty(template, name, "invariant", value);
+	}
 }
 
 public void setInit () {
@@ -174,56 +208,56 @@ public void setCommitted () {
 }
 
 public void setEdge () {
-		this.checkMode("set", "edge", ModeCode.EDITOR);
+	this.checkMode("set", "edge", ModeCode.EDITOR);
+	if (this.getArgumentNumber()==6) {
+		String template1 = this.getArgumentAt(0);
+		String source1 = this.getArgumentAt(1);
+		String target1 = this.getArgumentAt(2);
+		String template2 = this.getArgumentAt(3);
+		String source2 = this.getArgumentAt(4);
+		String target2 = this.getArgumentAt(5);
+		this.context.getEdgeExpert().copyEdge(template2, source2, target2, template1, source1, target1);
+	} else if (this.getArgumentNumber()==3) {
 		String template = this.getArgumentAt(0);
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
 		String select = this.properties.get("select");
 		String guard = this.properties.get("guard");
-		String sync = this.properties.get("sync");
-		String assign = this.properties.get("assign");
-		this.context.getEdgeExpert().addEdge(template, source, target, select, guard, sync, assign);
+		String sync = this.properties.get("synchronisation");
+		if (sync==null) sync = this.properties.get("sync");
+		String assignment = this.properties.get("assignment");
+		if (assignment==null) assignment = this.properties.get("assign");
+		this.context.getEdgeExpert().addEdge(template, source, target, select, guard, sync, assignment);
+	}
 }
 
-public void setSelect() {
-		this.checkMode("set", "select", ModeCode.EDITOR);
+public void setEdgeProperty() {
+	this.checkMode("set", "select", ModeCode.EDITOR);
+	String type = this.object_type;
+	if (type.equals("sync")) type = "synchronisation";
+	else if (type.equals("assign")) type="assignment";
+
+	if (this.getArgumentNumber()==6) {
+		String template1 = this.getArgumentAt(0);
+		String source1 = this.getArgumentAt(1);
+		String target1 = this.getArgumentAt(2);
+		String template2 = this.getArgumentAt(3);
+		String source2 = this.getArgumentAt(4);
+		String target2 = this.getArgumentAt(5);
+		this.context.getEdgeExpert().copyEdgeProperty(template2, source2, target2, template1, source1, target1, type);
+	} else if (this.getArgumentNumber()==3) {
 		String template = this.getArgumentAt(0);
 		String source = this.getArgumentAt(1);
 		String target = this.getArgumentAt(2);
-		String value = this.getArgumentAt(3);
-		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "select", value);
-}
-		
-public void setGuard() {
-		this.checkMode("set", "guard", ModeCode.EDITOR);
-		String template = this.getArgumentAt(0);
-		String source = this.getArgumentAt(1);
-		String target = this.getArgumentAt(2);
-		String value = this.getArgumentAt(3);
-		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "guard", value);
+		String value = this.properties.get(type);
+		this.context.getEdgeExpert().setEdgeProperty(template, source, target, type, value);
+	}
 }
 
-public void setSync () {
-		this.checkMode("set", "sync", ModeCode.EDITOR);
-		String template = this.getArgumentAt(0);
-		String source = this.getArgumentAt(1);
-		String target = this.getArgumentAt(2);
-		String value = this.getArgumentAt(3);
-		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "sync", value);
-}
-
-public void setAssign () {
-		this.checkMode("set", "assign", ModeCode.EDITOR);
-		String template = this.getArgumentAt(0);
-		String source = this.getArgumentAt(1);
-		String target = this.getArgumentAt(2);
-		String value = this.getArgumentAt(3);
-		this.context.getEdgeExpert().setEdgeProperty(template, source, target, "assign", value);
-}
 
 public void setSystem() {
 		this.checkMode("set", "system", ModeCode.EDITOR);
-		String system = this.getArgumentAt(0);
+		String system = this.properties.get("system");
 		this.context.getModelExpert().setDocumentProperty("system", system);
 }
 
@@ -303,4 +337,14 @@ public String getPropertyValue() {
 	if (result==null) result = "";
 	return result;
 	}
+
+@Override
+public String getHelpMessage() {
+	return "Set the information about a certain object or property.";
+}
+
+@Override
+public String getSyntax() {
+	return "\"set\" REFERENCE [ \"=\" VALUE ]";
+}
 }

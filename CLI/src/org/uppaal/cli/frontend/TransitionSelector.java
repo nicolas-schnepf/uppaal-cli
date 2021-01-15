@@ -19,7 +19,7 @@ public class TransitionSelector extends AbstractSelector {
 // edge constant for the show element method
 private static final int EDGES = 0;
 
-// assignment constant for the show element method
+// assignmentment constant for the show element method
 private static final int ASSIGNMENT = 1;
 
 // end of file exception of this selector
@@ -50,9 +50,11 @@ public void selectCurrentElement() {
 		this.setElementNumber();
 	} catch (EngineException e) {
 		System.err.println("Engine error: try to disconnect and connect and retry the simulation");
+		this.eof_exception.setStackTrace(Thread.currentThread().getStackTrace());
 		throw this.eof_exception;
 	} catch (CannotEvaluateException e) {
 		System.err.println("Evaluation error: select another transition and retry");
+		this.eof_exception.setStackTrace(Thread.currentThread().getStackTrace());
 		throw this.eof_exception;
 	}
 }

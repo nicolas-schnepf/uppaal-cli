@@ -46,6 +46,7 @@ private TraceExpert trace_expert;
 private StateExpert state_expert;
 private OptionExpert option_expert;
 private DataExpert data_expert;
+private StrategyExpert strategy_expert;
 
 /**
 * create an empty console without any argument
@@ -83,6 +84,7 @@ public Context () {
 	this.state_expert = new StateExpert(this);
 	this.option_expert = new OptionExpert(this);
 	this.data_expert = new DataExpert(this);
+	this.strategy_expert = new StrategyExpert(this);
 }
 
 /**
@@ -97,6 +99,7 @@ private void throwUnknownModeException (String mode) {
 
 /**
 * get the document attached to this context
+* @return the document of this context
 */
 public Document getDocument () {
 	return this.model_expert.getDocument();
@@ -180,7 +183,7 @@ public TemplateExpert getTemplateExpert() {
 }
 
 /**
-* return the location expert of this context
+* @return the location expert of this context
 */
 public LocationExpert getLocationExpert() {
 	return this.location_expert;
@@ -219,6 +222,14 @@ public OptionExpert getOptionExpert() {
 */
 public DataExpert getDataExpert() {
 	return this.data_expert;
+}
+
+/**
+* get the strategy expert of this context
+* @return the strategy expert of this controller
+*/
+public StrategyExpert getStrategyExpert() {
+	return this.strategy_expert;
 }
 
 /**

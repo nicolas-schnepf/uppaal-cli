@@ -112,6 +112,8 @@ public Engine getEngine () {
 
 /***
 * connect to an uppaal engine based on the path declared in the UPPAALPATH environment variable
+@throws EngineException an engine exception if there were a problem with the engine
+@throws IOException an io exception if some input / output error was encountered while connecting to the engine
 */
 
 public void connectEngine() throws EngineException, IOException {
@@ -177,7 +179,7 @@ public boolean checkQuerySyntax(Query query) {
 * check a single query described by its index
 * @param index the index of the query to check
 * @return a string describing the result of the check
-* @exception an engine exception if it was not possible to evaluate the query
+* @throws EngineException an engine exception if there were a problem with the engine
 */
 public String checkQuery(int index) throws EngineException {
 
@@ -190,6 +192,16 @@ public String checkQuery(int index) throws EngineException {
 // get all the intended information to check the query
 
 	Query query = query_list.get(index);
+	return this.checkQuery(query);
+}
+
+/**
+* check a query provided as parameter
+* @param query the query to check
+* @return a string describing the status of the check
+* @throws EngineException an engine exception if some problem was encountered with the engine
+*/
+public String checkQuery (Query query) throws EngineException {
 	if (!this.checkQuerySyntax(query)) return "";
 	UppaalSystem system = this.context.getModelExpert().getSystem();
 	Engine engine = this.context.getEngineExpert().getEngine();
@@ -205,7 +217,7 @@ public String checkQuery(int index) throws EngineException {
 /**
 * check all queries
 * @return a string describing the result of the checks
-* @exception an engine exception if it was not possible to evaluate the query
+* @throws EngineException an engine exception if there were a problem with the engine
 */
 public LinkedList<String> checkQueries() throws EngineException {
 
@@ -232,7 +244,7 @@ public LinkedList<String> checkQueries() throws EngineException {
 /**
 * check all selected queries
 * @return a string describing the result of the checks
-* @exception an engine exception if it was not possible to evaluate the query
+* @throws EngineException an engine exception if there were a problem with the engine
 */
 public LinkedList<String> checkSelectedQueries() throws EngineException {
 

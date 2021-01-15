@@ -54,6 +54,7 @@ private KeyMap<Binding> key_map;
 * public constructor of an abstract selector
 * @param reader the reader used to initialize the selector
 * @param context the context on which invoque the provided action
+* @param view_number the number of view of this selector
 */
         public AbstractSelector(LineReader reader, Context context, int view_number) {
 	super();

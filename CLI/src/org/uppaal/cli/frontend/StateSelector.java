@@ -19,7 +19,7 @@ public class StateSelector extends AbstractSelector {
 // edge constant for the show element method
 private static final int PROCESSES = 0;
 
-// assignment constant for the show element method
+// assignmentment constant for the show element method
 private static final int VARIABLES = 1;
 
 // end of file exception of this selector

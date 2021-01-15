@@ -39,7 +39,7 @@ public void setExpectedToken (String expected_token) {
 
 /**
 * set the value of the starting index of the wrong token
-* @param starting the starting index for this exception
+* @param starting_index the starting index for this exception
 */
 public void setStartingIndex (int starting_index) {
 	this.starting_index = starting_index;
@@ -47,7 +47,7 @@ public void setStartingIndex (int starting_index) {
 
 /**
 * set the line of this exception
-* @param the new line for this exception
+* @param line the new line for this exception
 */
 public void setLine (String line) {
 	this.line = line;
@@ -63,7 +63,7 @@ public String getMessage () {
 		message.append("Parser error: unexpected token ");
 		message.append(this.token);
 		message.append (" at "+this.starting_index);
-		message.append ("while looking for "+this.expected_token+".\n");
+		message.append ("while looking for "+this.expected_token+"\n");
 		message.append(this.line+"\n");
 		for (int i = 0; i<this.starting_index;i++) message.append(" ");
 		message.append("^");

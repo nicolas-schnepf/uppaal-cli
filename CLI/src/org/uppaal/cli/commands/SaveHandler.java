@@ -1,5 +1,6 @@
 package org.uppaal.cli.commands;
 
+import com.uppaal.engine.EngineException;
 import com.uppaal.model.core2.AbstractTemplate;
 import com.uppaal.model.core2.Template;
 import com.uppaal.model.core2.Location;
@@ -29,18 +30,19 @@ import javax.xml.transform.TransformerException;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
-* concrete class implementing an export handler
-* supporting all possible export commands under mode control
+* concrete class implementing an save handler
+* supporting all possible save commands under mode control
 */
 
-public class ExportHandler extends AbstractHandler {
-public ExportHandler (Context context) {
-	super(context, "export");
+public class SaveHandler extends AbstractHandler {
+public SaveHandler (Context context) {
+	super(context, "save");
 	try {
-	this.operation_map.put("document", this.getClass().getMethod("exportDocument"));
-	this.operation_map.put("queries", this.getClass().getMethod("exportQueries"));
-	this.operation_map.put("trace", this.getClass().getMethod("exportTrace"));
-	this.operation_map.put("data", this.getClass().getMethod("exportData"));
+	this.operation_map.put("document", this.getClass().getMethod("saveDocument"));
+	this.operation_map.put("queries", this.getClass().getMethod("saveQueries"));
+	this.operation_map.put("trace", this.getClass().getMethod("saveTrace"));
+	this.operation_map.put("xmla", this.getClass().getMethod("saveData"));
+	this.operation_map.put("strategy", this.getClass().getMethod("saveStrategy"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -48,16 +50,16 @@ public ExportHandler (Context context) {
 	}
 }
 
-public void exportDocument () {
+public void saveDocument () {
 	String filename = this.getArgumentAt(0);
 	int index = filename.length()-1;
 	while (filename.charAt(index)!='.' && index>0) index --;
 	String extension = filename.substring(index+1);
 
 	try {
-		this.checkMode("export", "document", ModeCode.EDITOR);
+		this.checkMode("save", "document", ModeCode.EDITOR);
 		if (!extension.equals("xta") && !extension.equals("xml")) 
-			this.throwWrongExtensionException ("export", "document", extension);
+			this.throwWrongExtensionException ("save", "document", extension);
 		this.context.getModelExpert().saveDocument(filename);
 	} catch (IOException e) {
 		this.command_result.setResultCode(ResultCode.IO_ERROR);
@@ -66,16 +68,16 @@ public void exportDocument () {
 	} 
 }
 
-public void exportQueries () {
+public void saveQueries () {
 	String filename = this.getArgumentAt(0);
 	int index = filename.length()-1;
 	while (filename.charAt(index)!='.' && index>0) index --;
 	String extension = filename.substring(index+1);
 
 	try {
-		this.checkMode("export", "queries", ModeCode.EDITOR, ModeCode.VERIFIER);
+		this.checkMode("save", "queries", ModeCode.EDITOR, ModeCode.VERIFIER);
 		if (!extension.equals("q")) 
-			this.throwWrongExtensionException ("export", "queries", extension);
+			this.throwWrongExtensionException ("save", "queries", extension);
 		this.context.getQueryExpert().saveQueries(filename);
 	} catch (IOException e) {
 		this.command_result.setResultCode(ResultCode.IO_ERROR);
@@ -84,16 +86,16 @@ public void exportQueries () {
 	} 
 }
 
-public void exportTrace () {
+public void saveTrace () {
 	String filename = this.getArgumentAt(0);
 	int index = filename.length()-1;
 	while (filename.charAt(index)!='.' && index>0) index --;
 	String extension = filename.substring(index+1);
 
 	try {
-this.checkMode("export", "trace", ModeCode.SIMULATOR);
+this.checkMode("save", "trace", ModeCode.SIMULATOR);
 		if (!extension.equals("xtr")) 
-			this.throwWrongExtensionException ("export", "trace", extension);
+			this.throwWrongExtensionException ("save", "trace", extension);
 		this.context.getTraceExpert().saveTrace(filename);
 	} catch (IOException e) {
 		this.command_result.setResultCode(ResultCode.IO_ERROR);
@@ -102,7 +104,7 @@ this.checkMode("export", "trace", ModeCode.SIMULATOR);
 	} 
 }
 
-public void exportData () {
+public void saveData () {
 	int index = this.arguments.size()>1? Integer.parseInt(this.getArgumentAt(0)): -1;
 	String filename = this.arguments.getLast();
 	int idx = filename.length()-1;
@@ -110,18 +112,36 @@ public void exportData () {
 	String extension = filename.substring(idx+1);
 
 	try {
-		if (!extension.equals("xml")) 
-			this.throwWrongExtensionException ("export", "data", extension);
+		if (!extension.equals("dat")) 
+			this.throwWrongExtensionException ("save", "data", extension);
 
 		if (index==-1 || this.context.getDataExpert().importData(index))
-			this.context.getDataExpert().exportData(filename);
+			this.context.getDataExpert().saveData(filename);
 		else
-			this.command_result.addArgument("No data to export.");
+			this.command_result.addArgument("No data to save.");
 	}  catch (TransformerException e) {
 		this.command_result.setResultCode(ResultCode.IO_ERROR);
 		this.command_result.addArgument(filename);
 	} catch (ParserConfigurationException e) {
 		this.command_result.setResultCode(ResultCode.IO_ERROR);
+		this.command_result.addArgument(filename);
+	}
+}
+
+public void saveStrategy() {
+	String strategy = this.getArgumentAt(0);
+	String filename = this.getArgumentAt(1);
+	int index = filename.length()-1;
+	while (filename.charAt(index)!='.' && index>0) index --;
+	String extension = filename.substring(index+1);
+
+	try {
+		if (!extension.equals("json"))
+			this.throwWrongExtensionException ("save", "strategy", extension);
+		String result = this.context.getStrategyExpert().saveStrategy(strategy, filename);
+		this.command_result.addArgument(result);
+	} catch (EngineException e) {
+		this.command_result.setResultCode(ResultCode.ENGINE_ERROR);
 		this.command_result.addArgument(filename);
 	}
 }
@@ -136,5 +156,15 @@ public boolean acceptMode (ModeCode mode) {
 		default:
 		return false;
 	}
+}
+
+@Override
+public String getHelpMessage() {
+	return "Save some information into a provided file.";
+}
+
+@Override
+public String getSyntax() {
+	return "\"save\" SAVEABLE \"to\" FILENAME";
 }
 }

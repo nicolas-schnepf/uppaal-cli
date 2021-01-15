@@ -89,4 +89,14 @@ public boolean acceptMode (ModeCode mode) {
 		return false;
 	}
 }
+
+@Override
+public String getHelpMessage() {
+	return "Reset the name or the information about a certain object or property.";
+}
+
+@Override
+public String getSyntax() {
+	return "\"reset\" REFERENCE [ \"as\" NAME ]";
+}
 }

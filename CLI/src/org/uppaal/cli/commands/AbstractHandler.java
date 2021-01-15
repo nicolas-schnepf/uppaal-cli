@@ -58,7 +58,7 @@ protected AbstractHandler (Context context) {
 * protected constructor of an abstract handler
 * initialize it from a context and an array of accepted commands
 * @param context the context that will be used by this handler
-* @param accepted_operations the array of command codes accepted by this handler
+* @param operation_code the command handled by this handler
 */
 
 protected AbstractHandler (Context context, String operation_code) {
@@ -153,7 +153,6 @@ public ModeCode getMode () {
 * @param object_type the object code for which throwing the exception
 * @param expected the expected number of arguments
 * @param received the received number of arguments
-* @exception a missing argument exception
 */
 protected void throwMissingArgumentException (String operation_code, String object_type, int expected, int received) {
 	this.missing_argument_exception.setCommand(operation_code);
@@ -169,7 +168,6 @@ protected void throwMissingArgumentException (String operation_code, String obje
 * @param object_type the code of the object
 * @param expected the expected number of arguments
 * @param received the received number of arguments
-* @exception a extra argument exception
 */
 protected void throwExtraArgumentException (String operation_code, String object_type, int expected, int received) {
 	this.extra_argument_exception.setCommand(operation_code);
@@ -181,13 +179,13 @@ protected void throwExtraArgumentException (String operation_code, String object
 
 /**
 * throw a wrong object exception
-* @param operation_code the name of the command throwing a wrong object exception
+* @param object_type the name of the command throwing a wrong object exception
 * @param object_type the code of the wrong object
-* @exception an exception describing the kind of wrong object which were received
 */
 public void throwWrongObjectException (String object_type) {
 	this.wrong_object_exception.setCommand(this.operation_code);
 	this.wrong_object_exception.setObjectType(object_type);
+	this.wrong_object_exception.setStackTrace(Thread.currentThread().getStackTrace());
 	throw this.wrong_object_exception;
 }
 
@@ -195,12 +193,12 @@ public void throwWrongObjectException (String object_type) {
 * throw a wrong argument exception
 * @param operation_code the code of the command that received the wrong argument
 * @param argument the wrong argument received by the handler
-* @exception a wrong argument exception
 */
 
 protected void throwWrongArgumentException (String operation_code, String argument) {
 	this .wrong_argument_exception.setCommand(operation_code);
 	this.wrong_argument_exception.setMessage(argument);
+	this.wrong_argument_exception.setStackTrace(Thread.currentThread().getStackTrace());
 	throw this.wrong_argument_exception;
 }
 
@@ -209,20 +207,20 @@ protected void throwWrongArgumentException (String operation_code, String argume
 * @param operation_code the code of the command that requires a wrong extension exception
 * @param object_type the code of the object for which the wrong extension exception is thrown
 * @param extension the extension of the file
-* @exception a wrong extension exception
 */
 protected void throwWrongExtensionException(String operation_code, String object_type, String extension) {
 	this.wrong_extension_exception.setCommand(operation_code);
 	this.wrong_extension_exception.setObjectType(object_type);
 	this.wrong_extension_exception.setWrongExtension(extension);
+	this.wrong_extension_exception.setStackTrace(Thread.currentThread().getStackTrace());
 	throw this.wrong_extension_exception;
 }
 
 /**
 * check that a command is allowed in the current mode
 * @param command the command to check
+* @param object_type the command to check
 * @param modes the allowed modes for the command
-* @exception a wrong mode exception if the command is not allowed in the current mode
 */
 
 public void checkMode (String command, String object_type, ModeCode ...modes) {

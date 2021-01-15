@@ -46,20 +46,26 @@ public AbstractExpert (Context context) {
 }
 
 /**
-* @exception a missing element exception containing the object code and the name of the missing element
+* throws a missing element exception
+* @param object_code the name of the type of the missing object
+* @param name the name of the missing element 
 */
 public void throwMissingElementException (String object_code, String name) {
 	this.missing_element_exception.setObjectType(object_code);
 	this.missing_element_exception.setName(name);
+	this.missing_element_exception.setStackTrace(Thread.currentThread().getStackTrace());
 	throw this.missing_element_exception;
 }
 
 /**
-* @exception a existing element exception containing the object code and the name of the existing element
+* throws an exception for an existing element
+* @param object_code the type of the existing element
+* @param name the name of the existing element
 */
 public void throwExistingElementException (String object_code, String name) {
 	this.existing_element_exception.setObjectType(object_code);
 	this.existing_element_exception.setName(name);
+	this.existing_element_exception.setStackTrace(Thread.currentThread().getStackTrace());
 	throw this.existing_element_exception;
 }
 
@@ -104,18 +110,25 @@ protected String describeEdge (Edge edge) {
 
 // append the synchronization of the edge if any
 
-	if (edge.isPropertyLocal("sync")) {
+	if (edge.isPropertyLocal("synchronisation")) {
 		if (properties.length()!=0) properties.append("; ");
-		properties.append("sync "+edge.getPropertyValue("sync"));
+		properties.append("sync "+edge.getPropertyValue("synchronisation"));
 	}
 
-// append the assignment of the edge if any
+// append the assignmentment of the edge if any
 
-	if (edge.isPropertyLocal("assign")) {
+	if (edge.isPropertyLocal("assignment")) {
 		if (properties.length()!=0) properties.append("; ");
-		properties.append("assign "+edge.getPropertyValue("assign"));
+		properties.append("assignment "+edge.getPropertyValue("assignment"));
 	}
 
+
+// append the controllable of the edge if any
+
+	if (edge.isPropertyLocal("controllable")) {
+		if (properties.length()!=0) properties.append("; ");
+		properties.append("controllable "+edge.getPropertyValue("controllable"));
+	}
 			description.append(" { "+properties.toString()+" } ");
 	return description.toString();
 }
@@ -123,11 +136,10 @@ protected String describeEdge (Edge edge) {
 
 /**
 * return a location based on the name of its template, of one of its properties and its value
-* @param template the name of the template to inspect
+* @param template_name the name of the template to inspect
 * @param property the name of the property to inspect
 * @param value the value of the property field of the location to return
 * @return the corresponding location, if found
-* @exception a missing element exception if either the template or the location was not found
 */
 protected Location getLocation (String template_name, String property, Object value) {
 

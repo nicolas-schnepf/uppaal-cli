@@ -37,6 +37,6 @@ public void setName (String name) {
 
 @Override
 public String getMessage() {
-	return "Error: missing "+this.object_type+" "+this.name+".";
+	return "Error: missing "+this.object_type+" "+this.name;
 }
 }

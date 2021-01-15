@@ -41,7 +41,7 @@ public QueryExpert (Context context) {
 /**
 * load a list of queries from the provided filename
 * @param filename the path to the file from which queries should be loaded
-* @exception an io exception if there is a problem with the provided filename
+* @throws IOException an io exception if there is a problem with the provided filename
 */
 public void loadQueries (String filename) throws IOException {
 
@@ -163,7 +163,6 @@ public void loadQueries (String filename) throws IOException {
 					current_index = opening_index;
 					pos = current_index;
 				} else if (line.indexOf("//", pos)!=-1) {
-System.out.println(query.length());
 					query.append(line.substring(pos, line.indexOf("//", pos)));
 					line = reader.readLine();
 					if (line != null) line_number ++;
@@ -177,7 +176,7 @@ System.out.println(query.length());
 				}
 
 				if (query.length()>0) 
-					queries . addLast(new Query(query.toString(), comment.toString()));
+					queries . addLast(new Query(query.toString()+"\n", comment.toString()));
 					queries.get(queries.size()-1).setProperty("name", "q"+queries.size());
 					query.delete(0, query.length());
 					comment.delete(0, comment.length());
@@ -190,7 +189,7 @@ System.out.println(query.length());
 /**
 * save the queries attached to this context
 * @param filename the path to the file to save the current query list
-* @exception an IO exception if there is a problem with the provided filename
+* @throws IOException an IO exception if there is a problem with the provided filename
 */
 public void saveQueries (String filename) throws IOException {
 	BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
@@ -248,7 +247,6 @@ public void setQueryProperty (int index, String property, String value) {
 * get a query specified by its index
 * @param index the index of the query to return
 * @return the intended query if it exists
-* @exception a missing element exception if the query does not exist
 */
 public Query getQuery(int index) {
 
@@ -296,9 +294,8 @@ public LinkedList<String> showQueries() {
 
 /**
 * show the information about a specific query described by its name
-* @param name the name of the query to show
+* @param index the index of the query to show
 * @return the description of the corresponding query
-* @exception a missing element exception if the query does not exist
 */
 public String showQuery (int index) {
 
@@ -357,7 +354,7 @@ public void addQuery (String name, String formula, String comment) {
 
 /**
 * remove a query from this context
-* @param name the name of the query to remove
+* @param index the index of the query to remove
 */
 
 public void removeQuery (int index) {
@@ -400,7 +397,6 @@ public LinkedList<String> showSelectedQueries() {
 * show the information about a selected query
 * @param index the index of the selected query to show
 * @return the description of the corresponding selected query
-* @exception a missing element exception if the query does not exist
 */
 public String showSelectedQuery (int index) {
 
@@ -427,7 +423,7 @@ public void clearSelectedQueries() {
 
 /**
 * select a query based on its index
-* @param the index of the query to select
+* @param index the index of the query to select
 */
 public void selectQuery(int index) {
 	Query query = this.context.getDocument().getQueryList().get(index);
@@ -439,7 +435,7 @@ public void selectQuery(int index) {
 
 /**
 * unselect a query based on its index
-* @param the index of the query to unselect
+* @param index the index of the query to unselect
 */
 public void unselectQuery(int index) {
 	if (index<0 || index>=this.selected_queries.size()) this.selected_queries.remove(index);

@@ -42,11 +42,15 @@ public ShowHandler (Context context) {
 	this.operation_map.put("comment", this.getClass().getMethod("showComment"));
 	this.operation_map.put("template", this.getClass().getMethod("showTemplate"));
 	this.operation_map.put("location", this.getClass().getMethod("showLocation"));
+	this.operation_map.put("invariant", this.getClass().getMethod("showInvariant"));
 	this.operation_map.put("edge", this.getClass().getMethod("showEdge"));
 	this.operation_map.put("guard", this.getClass().getMethod("showEdgeProperty"));
 		this.operation_map.put("select", this.getClass().getMethod("showEdgeProperty"));
 		this.operation_map.put("assign", this.getClass().getMethod("showEdgeProperty"));
+		this.operation_map.put("assignment", this.getClass().getMethod("showEdgeProperty"));
 		this.operation_map.put("sync", this.getClass().getMethod("showEdgeProperty"));
+		this.operation_map.put("synchronisation", this.getClass().getMethod("showEdgeProperty"));
+		this.operation_map.put("controllable", this.getClass().getMethod("showEdgeProperty"));
 	this.operation_map.put("system", this.getClass().getMethod("showSystem"));
 	this.operation_map.put("process", this.getClass().getMethod("showProcess"));
 	this.operation_map.put("variable", this.getClass().getMethod("showVariable"));
@@ -57,6 +61,7 @@ public ShowHandler (Context context) {
 	this.operation_map.put("result", this.getClass().getMethod("showResult"));
 	this.operation_map.put("data", this.getClass().getMethod("showData"));
 	this.operation_map.put("precision", this.getClass().getMethod("showPrecision"));
+	this.operation_map.put("constraint", this.getClass().getMethod("showConstraint"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -139,12 +144,23 @@ public void showLocation () {
 		this.command_result.addArgument(this.context.getLocationExpert().showLocation(template, name));
 }
 
+public void showInvariant() {
+	String template = this.arguments.get(0);
+	String name = this.getArgumentAt(1);
+	this.command_result.addArgument(this.context.getLocationExpert().getPropertyValue(template, name, "invariant"));
+}
+
 public void showEdge () {
-		String template = this.getArgumentAt(0);
-		String source = this.getArgumentAt(1);
-		String target = this.getArgumentAt(2);
+	String template = this.getArgumentAt(0);
+	String source = this.getArgumentAt(1);
+	String target = this.getArgumentAt(2);
+	if (source.equals("*") || target.equals("*")) {
+		for (String description:this.context.getEdgeExpert().showEdges(template, source, target))
+			this.command_result.addArgument(description);
+	} else {
 		String description = this.context.getEdgeExpert().showEdge(template, source, target);
 		this.command_result.addArgument(description);
+	}
 }
 
 public void showEdgeProperty () {
@@ -226,8 +242,25 @@ public void showPrecision () {
 		this.command_result.addArgument(""+this.context.getDataExpert().getPrecision());
 }
 
+public void showConstraint () {
+
+	this.checkMode("show", "constraint", ModeCode.SIMULATOR);
+	LinkedList<String> constraints = this.context.getStateExpert().showConstraints();
+	for (String constraint:constraints) this.command_result.addArgument(constraint);
+}
+
 @Override
 public boolean acceptMode (ModeCode mode) {
 	return true;
+}
+
+@Override
+public String getHelpMessage() {
+	return "Show the information about a certain object or property.";
+}
+
+@Override
+public String getSyntax() {
+	return "\"show\" REFERENCE";
 }
 }

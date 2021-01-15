@@ -44,7 +44,6 @@ public Document getDocument () {
 * return the value of a certain property of this document
 * @param property the name of the property to return
 * @return the value of the property if it is set
-* @exception a missing element exception if the provided property field is not set
 */
 public String getDocumentProperty (String property) {
 	if (!this.document.isPropertyLocal(property)) {
@@ -76,9 +75,10 @@ public void setDocumentProperty(String property, String value) {
 
 /**
 * load a document described by its location
-* @param the location of the document
+* @param filename the location of the document
 * @return the newly loaded document
-* @exception an exception if the location of the document is not well formated
+* @throws IOException an exception if there was some problem with the provided file
+* @throws  MalformedURLException an exception if the provided file path is a malformed url
 */
 
 public Document loadDocument (String filename) throws IOException, MalformedURLException  {
@@ -98,7 +98,8 @@ public Document loadDocument (String filename) throws IOException, MalformedURLE
 /**
 * save the document attached to this context
 * @param filename the path to the file to save the current document
-* @exception an IO exception if there is a problem with the provided filename
+* @throws IOException an exception if there was some problem with the provided file
+* @throws  MalformedURLException an exception if the provided file path is a malformed url
 */
 public void saveDocument (String filename) throws IOException {
 	this.document.save(filename);
@@ -116,6 +117,8 @@ public Document clearDocument() {
 /**
 * compile the current document
 * @return a list of problems encountered during compilation, empty if everything is find
+* @throws IOException an exception if there was some problem with the provided file
+* @throws  EngineException an exception if some error was encountered with the engine
 */
 public LinkedList<String> compileDocument () throws EngineException, IOException {
 

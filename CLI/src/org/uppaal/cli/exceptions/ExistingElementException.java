@@ -34,4 +34,9 @@ public String getName () {
 public void setName (String name) {
 	this.name = name;
 }
+
+@Override
+public String getMessage() {
+	return "Error: existing "+this.object_type+" "+this.name;
+}
 }

@@ -23,13 +23,32 @@ public CommandLauncher (Context context) {
 	this.context = context;
 	this.default_handler = new DefaultHandler(context);
 	this.command_map = new HashMap<String, Handler>();
-	this.command_map.put("import", new ImportHandler(context));
-	this.command_map.put("export", new ExportHandler(context));
+	this.command_map.put("load", new LoadHandler(context));
+	this.command_map.put("save", new SaveHandler(context));
 	this.command_map.put("show", new ShowHandler(context));
 	this.command_map.put("reset", new ResetHandler(context));
 	this.command_map.put("set", new SetHandler(context));
 	this.command_map.put("unset", new UnsetHandler(context));
 	this.command_map.put("check", new CheckHandler(context));
+	this.command_map.put("help", new HelpHandler(context));
+	HelpHandler help_handler = (HelpHandler)this.command_map.get("help");
+
+// setup the help handler with the help for all commands
+
+	for (String command: this.command_map.keySet()) {
+		Handler handler = this.command_map.get(command);
+		help_handler.setHelpMessage(command, handler.getHelpMessage());
+		help_handler.setSyntaxMessage(command, handler.getSyntax());
+	}
+
+// finally add the help about all commands of the default handler
+
+	for (String command: this.default_handler) {
+		String 		message = this.default_handler.getHelpMessage(command);
+		help_handler.setHelpMessage(command, message);
+		message = this.default_handler.getSyntax(command);
+		help_handler.setSyntaxMessage(command, message);
+	}
 }
 
 /**
