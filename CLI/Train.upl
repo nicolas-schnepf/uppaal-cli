@@ -1,0 +1,22 @@
+# setup the train template and its declaration
+
+set Train = {parameter:'const id_t id'}
+Train.declaration = 'clock x;'
+
+# setup the states of the template train
+
+Train(Safe) = {}
+Train(Stop) = {}
+Train(Cross) = { invariant:'x<=5' }
+Train(Appr) = { invariant : 'x<=20' }
+Train(Start) = { invariant:'x<= 15' }
+Train.init = Safe
+
+# setup the edges of the train template
+
+Train(Appr -> Cross) = { guard: 'x>=10'; assignment: 'x=0' }
+Train(Appr -> Stop) = { guard: 'x<=10'; sync: 'stop[id]?'}
+Train (Cross -> Safe) = { guard: 'x>=3'; sync: 'leave[id]!'}
+Train(Safe -> Appr) = { sync: 'appr[id]!'; assignment: 'x=0' }
+Train(Start -> Cross) = { guard: 'x>=7'; assignment: 'x=0'}
+Train(Stop -> Start) = {sync: 'go[id]?'; assignment: 'x=0'}

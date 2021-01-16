@@ -1,0 +1,24 @@
+#! /usr/bin/env uppaal.sh
+
+# load the default train_gate.xml for the sake of debugging
+
+# set the global declaration of the document
+
+set declaration = 'const int N = 6;         // # trains
+typedef int[0,N-1] id_t;
+
+chan        appr[N], stop[N], leave[N];
+urgent chan go[N];
+'
+
+# load the two templates
+
+load templates from Train.upl
+load templates from Gate.upl
+
+# load the queries, setup the system, start the verifier mode and check the queries
+
+load queries from train-gate.q
+set system = 'system Train, Gate;'
+start verifier
+check queries

@@ -1,0 +1,27 @@
+#! /usr/bin/env uppaal.sh
+
+# create a template Template with its attributes
+
+set Template = {parameter:'test'; declaration:'test'}
+Template(l0) = {invariant:"inv"}
+Template(l1) = {invariant:"inv2"}
+Template(l0->l1) = {guard:'guard'; sync:'sync'; assign:'assign'; select:'select'}
+
+# create a template copy and copy its attributes from the template Template
+
+set Copy = {}
+Copy.declaration = Template.declaration
+Copy.parameter = Template.parameter
+
+Copy(l2) = Template(l0)
+Copy(l2).invariant = Template(l0).invariant
+Copy(l3) = Template(l1)
+Copy(l3).invariant = Template(l1).invariant
+
+Copy(l2 -> l3) = Template(l0 -> l1)
+Copy(l3->l2) = {}
+Copy(l3->l2).guard = Template(l0->l1).guard
+Copy(l3->l2).select = Template(l0->l1).select
+Copy(l3->l2).sync = Template(l0->l1).sync
+Copy(l3->l2).assign = Template(l0->l1).assign
+show Copy

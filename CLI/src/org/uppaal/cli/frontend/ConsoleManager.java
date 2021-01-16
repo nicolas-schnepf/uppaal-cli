@@ -274,7 +274,7 @@ catch (EndOfFileException e) {
 
 		catch (ConsoleException e) {
 		this.printError(e.getMessage());
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 	}
 
