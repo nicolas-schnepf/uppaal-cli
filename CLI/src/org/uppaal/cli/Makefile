@@ -1,4 +1,4 @@
-DIRS = context exceptions commands frontend test
+DIRS = exceptions context commands frontend test
 build :  subdirs *.java
 	javac -d ${ROOT}/bin -Xlint:unchecked -cp $(CLASSPATH) *.java
 

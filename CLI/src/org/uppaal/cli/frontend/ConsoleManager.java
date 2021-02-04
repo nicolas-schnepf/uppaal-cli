@@ -20,7 +20,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.Reference;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.Terminal;
-import org.jline.builtins.Nano;
+import org.jline.builtins.PropertyEditor;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Completer;
 import org.jline.reader.impl.completer.AggregateCompleter;
@@ -60,8 +60,8 @@ private Context context;
 // console reader for this console manager
 private LineReader reader;
 
-// nano text editor for this console manager
-private Nano nano;
+// property editor for this console manager
+private PropertyEditor property_editor;
 
 // temporary text buffer for this console manager
 private File buffer;
@@ -130,7 +130,7 @@ public ConsoleManager (Context context) throws IOException {
 
 		this.context = context;
 		this.buffer = File.createTempFile("Uppaal", "");
-		this.nano = new Nano(this.reader.getTerminal(), this.buffer);
+		this.property_editor = new PropertyEditor(this.reader.getTerminal(), this.buffer);
 		this.selection_manager = new SelectionManager(terminal, context);
 
 // add the undo and redo widgets to this console manager
@@ -295,21 +295,22 @@ private void editProperty () throws IOException, FileNotFoundException {
 // get the current value of the property to edit and write it to the text buffer of this console manager
 
 	String value = ((SetHandler) this.handler).getPropertyValue();
+	String type = this.handler.getObjectType();
 	BufferedWriter writer= new BufferedWriter(new FileWriter(this.buffer));
 writer.write(value);
 writer.close();
 
-// run the nano editor with the content of the text buffer
+// run the property editor with the content of the text buffer
 
-this.nano.open(this.buffer.getAbsolutePath());
-this.nano.run();
+this.property_editor.open();
+this.property_editor.run();
 
 // retrieve the new value from the text buffer
 
 Scanner scanner = new Scanner(this.buffer);
 scanner.useDelimiter("\\Z");
-	if (scanner.hasNext()) this.handler.addArgument(scanner.next());
-	else this.handler.addArgument(value);
+	if (scanner.hasNext()) ((SetHandler)this.handler).addProperty(type, scanner.next());
+	else ((SetHandler)this.handler).addProperty(type, value);
 	scanner.close();
 	this.command_parser.cancelRequireValue();
 }

@@ -411,7 +411,7 @@ public void parseCheck() {
 public void parseHelp () {
 	String token = this.getNextToken();
 	if (token!=null) this.setType(token);
-	else this.setType("commands");
+	else this.setType("default");
 	this.handler.setObjectType(this.type);
 }
 

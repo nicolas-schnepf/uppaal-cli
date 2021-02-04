@@ -85,6 +85,7 @@ environment = new StringBuffer();
 	try {
 	this.operation_map.put("commands", this.getClass().getMethod("helpCommands"));
 	this.operation_map.put("environments", this.getClass().getMethod("helpEnvironments"));
+	this.operation_map.put("default", this.getClass().getMethod("helpDefault"));
 	} catch (Exception e) {
 	System.out.println(e.getMessage());
 	e.printStackTrace();
@@ -147,6 +148,15 @@ public void helpEnvironments() {
 	for (String environment: this.environment_messages.keySet())
 		this.command_result.addArgument(environment);
 	this.command_result.addArgument("\nType \"help\" ENVIRONMENT for more information.\n");
+}
+
+/**
+* return the help on everything
+*/
+public void helpDefault() {
+	this.helpCommands();
+	this.command_result.addArgument("");
+	this.helpEnvironments();
 }
 
 /**
