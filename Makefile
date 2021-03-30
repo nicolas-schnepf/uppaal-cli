@@ -9,7 +9,9 @@ uppaal-cli.jar: build
 	jar cvfm uppaal-cli.jar MANIFEST.MF -C bin .  
 
 install:
-	cp uppaal-cli.jar ${UPPAALPATH}; cp uppaal-cli /usr/local/bin
+	cp uppaal-cli.jar ${UPPAALPATH} ; \
+	cp uppaal-cli /usr/local/bin ; \
+	cp lib/jline-3.14.1-SNAPSHOT.jar ${UPPAALPATH}/lib
 
 build: $(SRC)/org/uppaal/cli/Makefile
 	make -C $(SRC)/org/uppaal/cli build
