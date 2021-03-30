@@ -11,7 +11,7 @@ uppaal-cli relies on uppaal64-4.1.20-stratego-7 that can be downloaded [here](ht
 To install simply run the following commands in this repository:
 
 make
-make install
+sudo -E make install
 
 It will copy all dependencies of uppaal-cli in the folder $UPPAALPATH/lib so please make sure that $UPPAALPATH is set before running these commands.
 
