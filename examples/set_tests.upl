@@ -1,4 +1,4 @@
-#! /usr/bin/env uppaal.sh
+#! /usr/bin/env uppaal-cli
 
 # create a template Template with its attributes
 

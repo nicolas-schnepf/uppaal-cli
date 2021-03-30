@@ -1,4 +1,4 @@
-#! /usr/bin/env uppaal.sh
+#! /usr/bin/env uppaal-cli
 
 # load the default train_gate.xml for the sake of debugging
 
