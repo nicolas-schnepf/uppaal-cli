@@ -21,7 +21,7 @@ private ArrayList<Boolean> selected_templates;
 private HashSet<String> templates;
 
 // number of lines of each template
-private LinkedList<LinkedList<String>> template_descriptions;
+protected LinkedList<LinkedList<String>> template_descriptions;
 
 public TemplateSelector (LineReader reader, Context context) {
 	super(reader, context, 1);

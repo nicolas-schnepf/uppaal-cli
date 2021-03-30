@@ -8,6 +8,7 @@ import org.uppaal.cli.context.Context;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 
+import org.uppaal.cli.commands.CommandResult;
 import org.jline.utils.InfoCmp.Capability;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReaderBuilder;
@@ -39,6 +40,9 @@ private QuerySelector query_selector;
 // data selector of this selection manager
 private DataSelector data_selector;
 
+// private result viewer of this selection manager
+private ResultViewer result_viewer;
+
 /**
 * public constructor of a selection manager
 * @param terminal the terminal for this selection manager
@@ -53,6 +57,7 @@ public SelectionManager (Terminal terminal, Context context) {
 	this.state_selector = new StateSelector(this.selection_reader, context);
 	this.query_selector = new QuerySelector(this.selection_reader, context);
 	this.data_selector = new DataSelector(this.selection_reader, context);
+	this.result_viewer = new ResultViewer(this.selection_reader, context);
 	this.selection_reader.setKeyMap(LineReader.MAIN);
 
 	try {
@@ -102,6 +107,26 @@ public SelectionManager (Terminal terminal, Context context) {
 public void setPrecision (double precision) {
 	this.data_selector.setPrecision(precision);
 }
+
+/**
+* view a result longer than the height of the console
+* @param result the command result to view
+* @param view_number the number of views for the result to display
+*/
+public void viewResult (CommandResult result, int view_number) {
+
+// first of all setup the result viewer
+
+	this.result_viewer.setViewNumber(view_number);
+	this.result_viewer.setResult(result);
+
+// then run the result viewer
+
+	this.selector = this.result_viewer;
+	this.selector.run();
+	this.selector = null;
+}
+
 /**
 * manage a template selection
 * @return the set of selected template names

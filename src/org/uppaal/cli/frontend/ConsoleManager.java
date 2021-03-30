@@ -100,6 +100,9 @@ private String filename;
 // line index of this console manager
 private int line_index;
 
+// private result viewer of this console manager
+private ResultViewer result_viewer;
+
 public ConsoleManager (Context context, String filename) throws IOException {
 	this.context = context;
 	this.out = new PrintWriter(System.out);
@@ -132,6 +135,7 @@ public ConsoleManager (Context context) throws IOException {
 		this.buffer = File.createTempFile("Uppaal", "");
 		this.property_editor = new PropertyEditor(this.reader.getTerminal(), this.buffer);
 		this.selection_manager = new SelectionManager(terminal, context);
+		this.result_viewer = new ResultViewer(this.reader, this.context);
 
 // add the undo and redo widgets to this console manager
 
@@ -330,10 +334,16 @@ private void processResult (CommandResult result) throws EngineException, IOExce
 // if result is ok print the result of the command
 
 		case OK:
-		for (String arg:result) {
-			this.out.println(arg);
-			this.out.flush();
-		}
+
+		int line_number = result.getArgumentNumber();
+		int available_height = this.reader.getTerminal().getHeight()-5;
+
+		if (line_number <= available_height || this.buffered_reader != null) {
+			for (String arg:result) {
+				this.out.println(arg);
+				this.out.flush();
+			}
+		} else this.selection_manager.viewResult(result, line_number-available_height);
 		break;
 
 		case ADD_TEMPLATE:
