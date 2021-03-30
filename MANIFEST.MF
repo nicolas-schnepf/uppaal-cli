@@ -1,2 +1,2 @@
 Main-Class: org.uppaal.cli.Main
-Class-Path: lib/uppaal.jar lib/model.jar lib/jline-3.14.1-SNAPSHOT.jar
+Class-Path: uppaal.jar lib/model.jar lib/jline-3.14.1-SNAPSHOT.jar
