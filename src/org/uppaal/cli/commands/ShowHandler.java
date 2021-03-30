@@ -20,6 +20,7 @@ import org.uppaal.cli.context.Context;
 
 import java.net.MalformedURLException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.HashSet;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -129,8 +130,10 @@ public void showTemplate() {
 	if (name.equals("templates")) {
 		LinkedList<String> templates = this.context.getTemplateExpert().showTemplates();
 		for (String temp: templates) this.command_result.addArgument(temp);
-	} else
-		this.command_result.addArgument(this.context.getTemplateExpert().showTemplate(name));
+	} else {
+		List<String> description = this.context.getTemplateExpert().showTemplate(name);
+		for (String line: description) this.command_result.addArgument(line);
+	}
 }
 
 public void showLocation () {

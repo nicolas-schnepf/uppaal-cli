@@ -20,6 +20,7 @@ import com.uppaal.model.core2.RemoveTemplateCommand;
 import com.uppaal.model.core2.SetPropertyCommand;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.HashSet;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -33,10 +34,18 @@ private LinkedList<AbstractTemplate> templates;
 // set of selected templates
 private HashSet<AbstractTemplate> selected_templates;
 
+// private list of locations
+private LinkedList<String> locations;
+
+// private linked list of edges
+private LinkedList<String> edges;
+
 public TemplateExpert (Context context) {
 	super(context);
 	this.templates = new LinkedList<AbstractTemplate>();
 	this.selected_templates = new HashSet<AbstractTemplate>();
+	this.locations = new LinkedList<String>();
+	this.edges = new LinkedList<String>();
 }
 
 /**
@@ -196,14 +205,16 @@ public LinkedList<String> showSelectedTemplates() {
 * @param template the template to describe
 * @return the textual description of the template
 */
-private String describeTemplate (AbstractTemplate template) {
+private List<String> describeTemplate (AbstractTemplate template) {
 // loop over the children of the template
 
 	Node node = template.getFirst();
-	StringBuffer locations = new StringBuffer();
-	StringBuffer edges = new StringBuffer();
 	Location init = null;
 	Location committed = null;
+
+	this.result.clear();
+	this.locations.clear();
+	this.edges.clear();
 
 	while (node!=null) {
 
@@ -211,23 +222,16 @@ private String describeTemplate (AbstractTemplate template) {
 
 		if (node instanceof Location) {
 			Location location = (Location) node;
-			if (locations.length()>0) locations.append(",\n");
-			locations.append("\t");
-			locations.append(this.describeLocation(location));
-
-			if (location.isPropertyLocal("init"))
-				init = location;
-
-			if (location.isPropertyLocal("committed"))
-				committed = location;
+			locations.addLast("\t"+this.describeLocation(location));
+			if (location.isPropertyLocal("init")) init = location;
+			if (location.isPropertyLocal("committed")) committed = location;
 		}
 
 // concatenate edge description to the corresponding buffer
 
 		else if (node instanceof Edge) {
 			Edge edge = (Edge) node;
-			if (edges.length()!=0) edges.append(",\n");
-			edges.append("\t"+this.describeEdge(edge));
+			edges.addLast("\t"+this.describeEdge(edge));
 		}
 
 		node = node.getNext();
@@ -235,25 +239,40 @@ private String describeTemplate (AbstractTemplate template) {
 
 // finally build the description of the template and return it
 
-	StringBuffer description = new StringBuffer();
-	description.append("process "+template.getPropertyValue("name"));
-	description.append("("+template.getPropertyValue("parameter")+"){\n");
-	description.append(template.getPropertyValue("declaration")+"\n");;
+	String header = "process "+template.getPropertyValue("name");
+	header += "("+template.getPropertyValue("parameter")+"){";
+	this.result.addLast(header);
 
-	if (locations.length()>0) 
-		description.append("states\n"+locations.toString()+";\n");
+// add the declaration of the template if it is possible
 
-	if (init!=null) 
-		description.append("init\n\t"+init.getPropertyValue("name")+";\n");
+	for (String line: ((String)template.getPropertyValue("declaration")).split("\n"))
+		this.result.addLast(line);
 
-	if (committed!=null) 
-		description.append("committed\n\t"+committed.getPropertyValue("name")+";\n");
+// add the locations of the template to the result
 
-	if (edges.length()!=0)
-		description.append("trans\n"+edges.toString()+";\n");
+	this.result.addLast("state");
+	for (String location: this.locations) this.result.addLast(location);
 
-	description.append("}");
-	return description.toString();
+// if the init state of the template is set add it to the result
+
+	if (init!=null) {
+		this.result.addLast("init");
+		this.result.addLast("\t"+init.getPropertyValue("name")+";");
+	}
+
+// if the committed state of the template is set add it to the template
+
+	if (committed!=null)  {
+		this.result.addLast("committed");
+		this.result.addLast("\t"+committed.getPropertyValue("name")+";");
+	}
+
+// finally add the edges, close the template and return the result
+
+		this.result.addLast("trans");
+	for (String edge: this.edges) this.result.addLast(edge);
+	this.result.addLast("}");
+	return this.result;
 }
 
 /**
@@ -261,7 +280,7 @@ private String describeTemplate (AbstractTemplate template) {
 * @param name the name of the template
 * @return the description of the specified
 */
-public String showTemplate (String name) {
+public List<String> showTemplate (String name) {
 
 // get the template if it exists
 
@@ -269,7 +288,6 @@ public String showTemplate (String name) {
 
 	if (template==null) 
 		this.throwMissingElementException("template", name);
-
 
 	return this.describeTemplate(template);
 }
@@ -279,7 +297,7 @@ public String showTemplate (String name) {
 * @param index the index of the template to show
 * @return the textual description of the loaded template
 */
-public String showLoadedTemplate (int index) {
+public List<String> showLoadedTemplate (int index) {
 	AbstractTemplate template = this.templates.get(index);
 	return this.describeTemplate(template);
 }

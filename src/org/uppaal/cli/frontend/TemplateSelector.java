@@ -5,6 +5,7 @@ import org.jline.reader.LineReader;
 import org.uppaal.cli.context.Context;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.HashSet;
 
 /**
@@ -20,13 +21,13 @@ private ArrayList<Boolean> selected_templates;
 private HashSet<String> templates;
 
 // number of lines of each template
-private ArrayList<Integer> lines;
+private LinkedList<LinkedList<String>> template_descriptions;
 
 public TemplateSelector (LineReader reader, Context context) {
 	super(reader, context, 1);
 	this.selected_templates = new ArrayList<Boolean>();
 	this.templates = new HashSet<String>();
-	this.lines =new ArrayList<Integer>();
+	this.template_descriptions = new LinkedList<LinkedList<String>>();
 }
 
 /**
@@ -43,37 +44,24 @@ public void clearSelectedTemplates() {
 	this.templates.clear();
 }
 
-/**
-* count the number of lines of the currently selected template
-* @return the number of lines of the current template
-*/
-
-public int countLines() {
-	String template = this.context.getTemplateExpert().showLoadedTemplate(this.current_element);
-	int lines = 0;
-	int pos = template.indexOf("\n");;
-	while (pos!=-1) {
-		pos = template.indexOf("\n", pos+1);
-		lines ++;
-	} this.lines.set(this.current_element, lines);
-
-	return lines;
-	}
 @Override
 public void setElementNumber() {
 	this.element_number = this.context.getTemplateExpert().getTemplateNumber();
 	this.current_element = 0;
-	this.lines.clear();
+
 	for (int i=0;i<this.selected_templates.size();i++) {
 		this.selected_templates.set(i, false);
-		this.lines.add(0);
+		this.template_descriptions.get(i).clear();
 	}
 	for (int j=this.selected_templates.size();j<this.element_number;j++)  {
 		this.selected_templates.add(j, false);
-		this.lines.add(0);
+		this.template_descriptions.add(new LinkedList<String>());
 	}
 
-	int n = this.countLines();
+	List<String> desc = this.context.getTemplateExpert().showLoadedTemplate(this.current_element);
+	for (String line: desc) this.template_descriptions.get(this.current_element).addLast(line);
+
+	int n = this.template_descriptions.get(this.current_element).size();
 	int height = this.reader.getTerminal().getHeight();
 	if (n>height-5) this.view_number = n - (height - 5);
 	else this.view_number = 1;
@@ -82,20 +70,55 @@ public void setElementNumber() {
 
 @Override
 public void showNextElement() {
-	super.showNextElement();
-	if (this.lines.get(this.current_element)==0) this.countLines();
+	this.current_element = (this.current_element + 1) % this.element_number;
+	if (this.template_descriptions.get(this.current_element).size()==0) {
+	List<String> desc = this.context.getTemplateExpert().showLoadedTemplate(this.current_element);
+		for (String line: desc)
+			this.template_descriptions.get(this.current_element).addLast(line);
+	}
+
+// finally setup the number of views for the current element and refresh the screen
+
 	int height = this.reader.getTerminal().getHeight();
-	if (this.lines.get(this.current_element)<=height-5)this.view_number = 1;
-	else this.view_number = this.lines.get(this.current_element) - (height - 5);
+	if (this.template_descriptions.get(this.current_element).size()<=height-5)this.view_number = 1;
+	else this.view_number = this.template_descriptions.get(this.current_element).size() - (height - 5);
+	this.refresh();
 }
 
 @Override
 public void showPreviousElement() {
-	super.showPreviousElement();
-	if (this.lines.get(this.current_element)==0) this.countLines();
+
+// start by decrementing the index of the current element
+
+	if (this.current_element>0) this.current_element--;
+	else this.current_element = this.element_number - 1;
+
+// load the corresponding template description if necessary
+
+	if (this.template_descriptions.get(this.current_element).size()==0) {
+	List<String> desc = this.context.getTemplateExpert().showLoadedTemplate(this.current_element);
+		for (String line: desc)
+			this.template_descriptions.get(this.current_element).addLast(line);
+	}
+
+// finally setup the number of views for the current element and refresh the screen
+
 	int height = this.reader.getTerminal().getHeight();
-	if (this.lines.get(this.current_element)<=height-5)this.view_number = 1;
-	else this.view_number = this.lines.get(this.current_element) - (height - 5);
+	if (this.template_descriptions.get(this.current_element).size()<=height-5)this.view_number = 1;
+	else this.view_number = this.template_descriptions.get(this.current_element).size() - (height - 5);
+	this.refresh();
+}
+
+@Override
+public void showPreviousView() {
+	if (this.current_view<this.view_number) this.current_view++;
+	this.refresh();
+}
+
+@Override
+public void showNextView() {
+	if (this.current_view>0) this.current_view--;
+	this.refresh();
 }
 
 @Override
@@ -134,24 +157,25 @@ public void validateSelection() {
 @Override
 public String showCurrentElement() {
 
-// if there is enough place to display the current template simply return it
+// compute the index of the first and last lines to display
 
-	String template = this.context.getTemplateExpert().showLoadedTemplate(this.current_element);
+	LinkedList<String> description = this.template_descriptions.get(this.current_element);
 	int height = this.reader.getTerminal().getHeight();
-	if (this.lines.get(this.current_element)<=height-5)return template;
+	int inf = description.size()<=height-5 ? 1 : this.current_view;
+	int sup = description.size()<=height-5 ? description.size() : this.current_view + height - 5;
 
-// otherwise split the template in order to make it fit in the current window
+// compute the text to display for the template
 
-	int starting_pos = 0;
-	int pos = 0;
-	int n = 0;
-
-	while (n< this.current_view+height-5) {
-		if (n==this.current_view) starting_pos = pos;
-		pos = template.indexOf("\n", pos+1);
-		n ++;
+	StringBuffer buffer = new StringBuffer();
+	int index = 0;
+	for (String line: description) {
+		if (index>=inf && index<sup) {
+			buffer.append(line);
+			buffer.append("\n");
+		}
+		index++;
 	}
-	if (pos==-1 || pos>=template.length()) return template.substring(starting_pos);
-	else return template.substring(starting_pos, pos);
+
+	return buffer.toString();
 }
 }
